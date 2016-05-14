@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		WE-Markdown.css = WE-Markdown.css
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Test", "..\Stardust.Interstellar.Test\Stardust.Interstellar.Test.csproj", "{B8C0D439-6286-40E9-92C1-1DA267C2E83A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8C0D439-6286-40E9-92C1-1DA267C2E83A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8C0D439-6286-40E9-92C1-1DA267C2E83A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8C0D439-6286-40E9-92C1-1DA267C2E83A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8C0D439-6286-40E9-92C1-1DA267C2E83A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

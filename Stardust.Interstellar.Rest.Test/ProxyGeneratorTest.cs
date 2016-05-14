@@ -39,7 +39,7 @@ namespace Stardust.Interstellar.Rest.Test
             var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
             try
             {
-                var res =await service.ApplyAsync("test", "Jonas Syrstad", "Hello", "Sample");
+                var res =await service.ApplyAsync("101", "Stardust", "Hello", "World");
                 output.WriteLine(res.Value);
             }
             catch (Exception ex)
