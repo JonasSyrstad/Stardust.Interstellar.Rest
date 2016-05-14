@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Rest", "Stardust.Interstellar.Rest.csproj", "{5EE819E3-B588-431F-B5DA-3EBC0557242B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Rest.Test", "..\Stardust.Interstellar.Rest.Test\Stardust.Interstellar.Rest.Test.csproj", "{A8F36C71-B22B-44D4-B4E4-5DAF6D1DAE9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Rest.WcfAdapter", "..\Stardust.Interstellar.Rest.Legacy\Stardust.Interstellar.Rest.WcfAdapter.csproj", "{928518E9-D24D-4C42-A9D8-C6876C8720A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Config", "..\Stardust.Interstellar.Config\Stardust.Interstellar.Config.csproj", "{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5EE819E3-B588-431F-B5DA-3EBC0557242B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EE819E3-B588-431F-B5DA-3EBC0557242B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EE819E3-B588-431F-B5DA-3EBC0557242B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EE819E3-B588-431F-B5DA-3EBC0557242B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8F36C71-B22B-44D4-B4E4-5DAF6D1DAE9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8F36C71-B22B-44D4-B4E4-5DAF6D1DAE9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8F36C71-B22B-44D4-B4E4-5DAF6D1DAE9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8F36C71-B22B-44D4-B4E4-5DAF6D1DAE9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{928518E9-D24D-4C42-A9D8-C6876C8720A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{928518E9-D24D-4C42-A9D8-C6876C8720A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{928518E9-D24D-4C42-A9D8-C6876C8720A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{928518E9-D24D-4C42-A9D8-C6876C8720A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2917D5F-DBEC-48B4-A44D-38A2B26F36AA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
