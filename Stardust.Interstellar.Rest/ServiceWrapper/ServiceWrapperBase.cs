@@ -39,7 +39,8 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
         private void SetHeaders(HttpResponseMessage result)
         {
             var action = GetActionWrapper(Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault().FirstOrDefault());
-            result.Headers.Add(RestWrapper.ActionIdName, Request.ActionId());
+           var actionId= Request.ActionId();
+            result.Headers.Add(RestWrapper.ActionIdName, actionId);
             foreach (var customHandler in action.CustomHandlers)
             {
                 customHandler.SetServiceHeaders(result.Headers);

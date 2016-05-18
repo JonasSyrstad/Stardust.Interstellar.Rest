@@ -141,7 +141,9 @@ namespace Stardust.Interstellar.Rest
 
         public static string ActionId(this HttpRequestMessage request)
         {
+            if(request.Headers.Contains(RestWrapper.ActionIdName))
             return request.Headers.GetValues(RestWrapper.ActionIdName).FirstOrDefault();
+            return null;
         }
     }
 }

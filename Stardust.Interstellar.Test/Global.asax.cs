@@ -12,6 +12,7 @@ using Stardust.Core.Service.Web;
 using Stardust.Interstellar.Rest.Legacy;
 using Stardust.Interstellar.Rest.ServiceWrapper;
 using Stardust.Interstellar.Rest.Test;
+using Stardust.Particles;
 
 namespace Stardust.Interstellar.Test
 {
@@ -30,6 +31,12 @@ namespace Stardust.Interstellar.Test
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+        }
+
+        protected void Application_Error(object sender, EventArgs e)
+        {
+            
+            Logging.Exception(Server.GetLastError());
         }
     }
 

@@ -27,22 +27,22 @@ namespace Stardust.Interstellar.Rest.Test
 
         public void GetHeader(HttpWebResponse response)
         {
-            
+
         }
 
         public void SetServiceHeaders(WebHeaderCollection headers)
         {
-            
+
         }
 
         public void GetServiceHeader(HttpRequestHeaders headers)
         {
-           
+
         }
 
         public void SetServiceHeaders(HttpResponseHeaders headers)
         {
-            throw new NotImplementedException();
+            
         }
     }
 
@@ -78,6 +78,32 @@ namespace Stardust.Interstellar.Rest.Test
             {
                 throw;
             }
+        }
+
+        [Fact]
+        public async Task GeneratorPerfTest()
+        {
+            for (int i = 0; i < 1000; i++)
+            {
+                var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/",
+                    extras =>
+                        {
+                            foreach (var extra in extras)
+                            {
+                                output.WriteLine($"{extra.Key}:{extra.Value}");
+                            }
+                        });
+                try
+                {
+                    var res = await service.ApplyAsync(i.ToString(), "Stardust", "Hello", "World");
+                    output.WriteLine(res.Value);
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                } 
+            }
+           
         }
 
         [Fact]

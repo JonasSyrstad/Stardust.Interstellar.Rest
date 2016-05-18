@@ -94,7 +94,9 @@
     <None Include="app.config" />
     <None Include="nugetdeploy.config" />
     <None Include="packages.config" />
-    <None Include="Stardust.Interstellar.Rest.nuspec" />
+    <None Include="Stardust.Interstellar.Rest.nuspec">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
