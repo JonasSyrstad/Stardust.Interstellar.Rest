@@ -59,12 +59,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionWrapper.cs" />
+    <Compile Include="Annotations\PerformanceHeadersAttribute.cs" />
     <Compile Include="AuthenticationInspectorAttributeBase.cs" />
     <Compile Include="ExtensionsFactory.cs" />
+    <Compile Include="Extensions\StatefullHeaderHandlerBase.cs" />
+    <Compile Include="HeaderHandlerFactory.cs" />
     <Compile Include="HeaderInspectorAttributeBase.cs" />
     <Compile Include="IAuthenticationHandler.cs" />
     <Compile Include="IAuthenticationInspector.cs" />
     <Compile Include="IHeaderHandler.cs" />
+    <Compile Include="IHeaderHandlerFactory.cs" />
     <Compile Include="IHeaderInspector.cs" />
     <Compile Include="InAttribute.cs" />
     <Compile Include="InclutionTypes.cs" />
@@ -72,9 +76,11 @@
     <Compile Include="IServiceLocator.cs" />
     <Compile Include="IServiceParameterResolver.cs" />
     <Compile Include="IWebMethodConverter.cs" />
+    <Compile Include="NullAuthHandler.cs" />
     <Compile Include="ParameterWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyBuilder.cs" />
+    <Compile Include="ProxyFactory.cs" />
     <Compile Include="RestWrapper.cs" />
     <Compile Include="RestWrapperException.cs" />
     <Compile Include="ResultWrapper.cs" />

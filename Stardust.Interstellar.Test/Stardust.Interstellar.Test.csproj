@@ -17,7 +17,7 @@
     <AssemblyName>Stardust.Interstellar.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -408,6 +408,10 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Legacy\Stardust.Interstellar.Rest.WcfAdapter.csproj">
+      <Project>{928518E9-D24D-4C42-A9D8-C6876C8720A4}</Project>
+      <Name>Stardust.Interstellar.Rest.WcfAdapter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stardust.Interstellar.Rest.Test\Stardust.Interstellar.Rest.Test.csproj">
       <Project>{39AC377A-13A3-452F-9ACD-7BABC67A8DD8}</Project>
       <Name>Stardust.Interstellar.Rest.Test</Name>
@@ -435,7 +439,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>57178</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost/Stardust.Interstellar.Test</IISUrl>
+          <IISUrl>http://localhost:57178/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

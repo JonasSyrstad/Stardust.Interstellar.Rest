@@ -9,6 +9,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using Stardust.Core.Service.Web;
+using Stardust.Interstellar.Rest.Legacy;
 using Stardust.Interstellar.Rest.ServiceWrapper;
 using Stardust.Interstellar.Rest.Test;
 
@@ -18,6 +19,7 @@ namespace Stardust.Interstellar.Test
     {
         protected void Application_Start()
         {
+            WcfServiceProvider.RegisterWcfAdapters();   
             ServiceFactory.CreateServiceImplementationForAllInCotainingAssembly<ITestApi>();
             ServiceFactory.FinalizeRegistration();
 
@@ -38,6 +40,20 @@ namespace Stardust.Interstellar.Test
         {
             base.DoCustomBindings();
             Configurator.Bind<ITestApi>().To<TestApiImp>().SetTransientScope();
+            Configurator.Bind<IWcfWrapper>().To<WcfWrapper>().SetTransientScope();
+        }
+    }
+
+    public class WcfWrapper : IWcfWrapper
+    {
+        public StringWrapper TestImplementationGet(string wrapper)
+        {
+            return new StringWrapper {Value = $"Hello {wrapper}" };
+        }
+
+        public StringWrapper TestImplementationPut(string id, StringWrapper wrapper)
+        {
+           return new StringWrapper { Value = $"{id}: {wrapper.Value}" };
         }
     }
 

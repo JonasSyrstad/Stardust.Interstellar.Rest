@@ -61,149 +61,35 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
             }
         }
 
-
+        public MethodBuilder InternalMethodBuilder(TypeBuilder type, MethodInfo implementationMethod, Func<MethodInfo, MethodBuilder, Type[], List<ParameterWrapper>, MethodBuilder> bodyBuilder)
+        {
+            List<ParameterWrapper> methodParams;
+            Type[] pTypes;
+            var method = DefineMethod(type, implementationMethod, out methodParams, out pTypes);
+            return bodyBuilder(implementationMethod, method, pTypes, methodParams);
+        }
 
         public MethodBuilder BuildMethod(TypeBuilder type, MethodInfo implementationMethod)
         {
-            // Declaring method builder
-            // Method attributes
-            const MethodAttributes methodAttributes = MethodAttributes.Public
-                                                      | MethodAttributes.Virtual
-                                                      | MethodAttributes.Final
-                                                      | MethodAttributes.HideBySig
-                                                      | MethodAttributes.NewSlot;
-            var method = type.DefineMethod(implementationMethod.Name, methodAttributes);
-            // Preparing Reflection instances
-            #region MyRegion
-            ConstructorInfo route = typeof(RouteAttribute).GetConstructor(
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                    null,
-                    new Type[]{
-                              typeof(String)
-                              },
-                    null
-                    );
-            ConstructorInfo httpGet = httpMethodAttribute(implementationMethod);
-            ConstructorInfo uriAttrib = typeof(FromUriAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
-            ConstructorInfo bodyAttrib = typeof(FromBodyAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
-            MethodInfo gatherParams = typeof(Stardust.Interstellar.Rest.ServiceWrapper.ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
-                "GatherParameters",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                              typeof(String),
-                              typeof(Object[])
-                          },
-                null
-                );
+            return InternalMethodBuilder(type, implementationMethod, BodyImplementer);
+        }
+
+        private static MethodBuilder BodyImplementer(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams)
+        {
+            MethodInfo gatherParams = typeof(Stardust.Interstellar.Rest.ServiceWrapper.ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType)
+                .GetMethod("GatherParameters", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(String), typeof(Object[]) }, null);
             var baseType = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType);
             var implementation = baseType.GetRuntimeFields().Single(f => f.Name == "implementation");
-            MethodInfo getValue = typeof(ParameterWrapper).GetMethod(
-                "get_value",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
+            MethodInfo getValue = typeof(ParameterWrapper).GetMethod("get_value", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             MethodInfo createResponse = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod("CreateResponse", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (implementationMethod.ReturnType == typeof(void))
-                createResponse = createResponse.MakeGenericMethod(typeof(object));
-            else
-                createResponse = createResponse.MakeGenericMethod(implementationMethod.ReturnType);
-            MethodInfo method9 = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
-                "CreateErrorResponse",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                              typeof(Exception)
-                          },
-                null
-                );
-            #endregion
+            if (implementationMethod.ReturnType == typeof(void)) createResponse = createResponse.MakeGenericMethod(typeof(object));
+            else createResponse = createResponse.MakeGenericMethod(implementationMethod.ReturnType);
+            MethodInfo method9 = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType)
+                .GetMethod("CreateErrorResponse", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(Exception) }, null);
+
+
 
             // Setting return type
-            method.SetReturnType(typeof(HttpResponseMessage));
-            // Adding parameters
-            var methodParams = new List<ParameterWrapper>();
-            foreach (var parameterInfo in implementationMethod.GetParameters())
-            {
-                var @in = parameterInfo.GetCustomAttribute<InAttribute>(true);
-                if (@in == null)
-                {
-                    var fromBody = parameterInfo.GetCustomAttribute<FromBodyAttribute>(true);
-                    if (fromBody != null)
-                        @in = new InAttribute(InclutionTypes.Body);
-                    if (@in == null)
-                    {
-                        var fromUri = parameterInfo.GetCustomAttribute<FromUriAttribute>(true);
-                        if (fromUri != null)
-                            @in = new InAttribute(InclutionTypes.Path);
-                    }
-                }
-                if (@in.InclutionType != InclutionTypes.Header)
-                    methodParams.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
-            }
-            var pTypes = methodParams.Select(p => p.Type).ToArray();
-            method.SetParameters(pTypes.ToArray());
-            // Parameter id
-            int pid = 1;
-            foreach (var parameterWrapper in methodParams)
-            {
-
-                try
-                {
-                    var p = method.DefineParameter(pid, ParameterAttributes.None, parameterWrapper.Name);
-                    if (parameterWrapper.In == InclutionTypes.Path)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(uriAttrib, new Type[] { }));
-                    else if (parameterWrapper.In == InclutionTypes.Body)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(bodyAttrib, new Type[] { }));
-                    pid++;
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-            }
-            // Adding custom attributes to method
-            // [RouteAttribute]
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    route,
-                    new[]{
-                             implementationMethod.GetCustomAttribute<RouteAttribute>().Template
-                         }
-                    )
-                );
-            // [HttpGetAttribute]
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    httpGet,
-                    new Type[] { }
-                    )
-                );
-            ConstructorInfo ctor5 = typeof(ResponseTypeAttribute).GetConstructor(
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-        null,
-        new Type[]{
-            typeof(Type)
-            },
-        null
-        );
-            method.SetCustomAttribute(new CustomAttributeBuilder(ctor5, new object[] { implementationMethod.ReturnType }));
 
             ILGenerator gen = method.GetILGenerator();
             // Preparing locals
@@ -232,7 +118,6 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
                     gen.Emit(OpCodes.Box, paramType);
                 }
                 gen.Emit(OpCodes.Stelem_Ref);
-
             }
             gen.Emit(OpCodes.Stloc_0);
             gen.Emit(OpCodes.Ldarg_0);
@@ -246,21 +131,18 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
             foreach (var parameterWrapper in methodParams)
             {
                 gen.Emit(OpCodes.Ldloc_1);
-                EmitHelpers.EmitInt32(gen, iii);//gen.Emit(OpCodes.Ldc_I4_0);
+                EmitHelpers.EmitInt32(gen, iii);
                 gen.Emit(OpCodes.Ldelem_Ref);
                 gen.Emit(OpCodes.Callvirt, getValue);
-                if (parameterWrapper.Type.IsValueType)
-                    gen.Emit(OpCodes.Unbox_Any, parameterWrapper.Type);
-                else
-                    gen.Emit(OpCodes.Castclass, parameterWrapper.Type);
+                if (parameterWrapper.Type.IsValueType) gen.Emit(OpCodes.Unbox_Any, parameterWrapper.Type);
+                else gen.Emit(OpCodes.Castclass, parameterWrapper.Type);
                 iii++;
             }
             gen.Emit(OpCodes.Callvirt, implementationMethod);
             gen.Emit(OpCodes.Stloc_2);
             gen.Emit(OpCodes.Ldarg_0);
             gen.Emit(OpCodes.Ldc_I4, 200);
-            if (implementationMethod.ReturnType != typeof(void))
-                gen.Emit(OpCodes.Ldloc_2);
+            if (implementationMethod.ReturnType != typeof(void)) gen.Emit(OpCodes.Ldloc_2);
             gen.Emit(OpCodes.Call, createResponse);
             gen.Emit(OpCodes.Stloc_3);
             gen.Emit(OpCodes.Leave_S, label97);
@@ -280,41 +162,86 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
             return method;
         }
 
-        public MethodBuilder BuildVoidMethod(TypeBuilder type, MethodInfo implementationMethod)
+        private static MethodBuilder DefineMethod(TypeBuilder type, MethodInfo implementationMethod, out List<ParameterWrapper> methodParams, out Type[] pTypes)
         {
             // Declaring method builder
             // Method attributes
-            const MethodAttributes methodAttributes = MethodAttributes.Public
-                                                      | MethodAttributes.Virtual
-                                                      | MethodAttributes.Final
-                                                      | MethodAttributes.HideBySig
-                                                      | MethodAttributes.NewSlot;
+            const MethodAttributes methodAttributes = MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.NewSlot;
             var method = type.DefineMethod(implementationMethod.Name, methodAttributes);
             // Preparing Reflection instances
-            #region MyRegion
-            ConstructorInfo route = typeof(RouteAttribute).GetConstructor(
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                    null,
-                    new Type[]{
-                              typeof(String)
-                              },
-                    null
-                    );
+
+
+            var route = typeof(RouteAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(String) }, null);
             var httpGet = httpMethodAttribute(implementationMethod);
-            ConstructorInfo uriAttrib = typeof(FromUriAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
-            ConstructorInfo bodyAttrib = typeof(FromBodyAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
+            var uriAttrib = typeof(FromUriAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+            var bodyAttrib = typeof(FromBodyAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+            if (typeof(Task).IsAssignableFrom(implementationMethod.ReturnType))
+                method.SetReturnType(typeof(Task<HttpResponseMessage>));
+            else method.SetReturnType(typeof(HttpResponseMessage));
+            // Adding parameters
+            methodParams = GetMethodParams(implementationMethod);
+            pTypes = methodParams.Where(p => p.In != InclutionTypes.Header).Select(p => p.Type).ToArray();
+            method.SetParameters(pTypes.ToArray());
+            // Parameter id
+            int pid = 1;
+            foreach (var parameterWrapper in methodParams.Where(p => p.In != InclutionTypes.Header))
+            {
+                try
+                {
+                    var p = method.DefineParameter(pid, ParameterAttributes.None, parameterWrapper.Name);
+                    if (parameterWrapper.In == InclutionTypes.Path) p.SetCustomAttribute(new CustomAttributeBuilder(uriAttrib, new Type[] { }));
+                    else if (parameterWrapper.In == InclutionTypes.Body) p.SetCustomAttribute(new CustomAttributeBuilder(bodyAttrib, new Type[] { }));
+                    pid++;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
+            // Adding custom attributes to method
+            // [RouteAttribute]
+            var template = implementationMethod.GetCustomAttribute<RouteAttribute>()?.Template;
+            if (template == null) template = ExtensionsFactory.GetServiceTemplate(implementationMethod);
+            method.SetCustomAttribute(new CustomAttributeBuilder(route, new[] { template }));
+            // [HttpGetAttribute]
+            method.SetCustomAttribute(new CustomAttributeBuilder(httpGet, new Type[] { }));
+            ConstructorInfo ctor5 = typeof(ResponseTypeAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(Type) }, null);
+            method.SetCustomAttribute(new CustomAttributeBuilder(ctor5, new object[] { implementationMethod.ReturnType }));
+            return method;
+        }
+
+        private static List<ParameterWrapper> GetMethodParams(MethodInfo implementationMethod)
+        {
+            var resolver = ExtensionsFactory.GetService<IServiceParameterResolver>();
+            var resolvedParams = resolver?.ResolveParameters(implementationMethod);
+            if (resolvedParams != null && resolvedParams.Count() == implementationMethod.GetParameters().Length) return resolvedParams.ToList();
+            var methodParams = new List<ParameterWrapper>();
+            foreach (var parameterInfo in implementationMethod.GetParameters())
+            {
+                var @in = parameterInfo.GetCustomAttribute<InAttribute>(true);
+                if (@in == null)
+                {
+                    var fromBody = parameterInfo.GetCustomAttribute<FromBodyAttribute>(true);
+                    if (fromBody != null) @in = new InAttribute(InclutionTypes.Body);
+                    if (@in == null)
+                    {
+                        var fromUri = parameterInfo.GetCustomAttribute<FromUriAttribute>(true);
+                        if (fromUri != null) @in = new InAttribute(InclutionTypes.Path);
+                    }
+                }
+                methodParams.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
+            }
+            return methodParams;
+        }
+
+        public MethodBuilder BuildVoidMethod(TypeBuilder type, MethodInfo implementationMethod)
+        {
+
+            return InternalMethodBuilder(type, implementationMethod, VoidMethodBuilder);
+        }
+
+        private MethodBuilder VoidMethodBuilder(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams)
+        {
             MethodInfo gatherParams = typeof(Stardust.Interstellar.Rest.ServiceWrapper.ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
                 "GatherParameters",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -348,69 +275,6 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
                               typeof(Exception)
                           },
                 null
-                );
-            #endregion
-
-            // Setting return type
-            method.SetReturnType(typeof(HttpResponseMessage));
-            // Adding parameters
-            var methodParams = new List<ParameterWrapper>();
-            foreach (var parameterInfo in implementationMethod.GetParameters())
-            {
-                var @in = parameterInfo.GetCustomAttribute<InAttribute>(true);
-                if (@in == null)
-                {
-                    var fromBody = parameterInfo.GetCustomAttribute<FromBodyAttribute>(true);
-                    if (fromBody != null)
-                        @in = new InAttribute(InclutionTypes.Body);
-                    if (@in == null)
-                    {
-                        var fromUri = parameterInfo.GetCustomAttribute<FromUriAttribute>(true);
-                        if (fromUri != null)
-                            @in = new InAttribute(InclutionTypes.Path);
-                    }
-                }
-                if (@in.InclutionType != InclutionTypes.Header)
-                    methodParams.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
-            }
-            var pTypes = methodParams.Select(p => p.Type).ToArray();
-            method.SetParameters(pTypes.ToArray());
-            // Parameter id
-            int pid = 1;
-            foreach (var parameterWrapper in methodParams)
-            {
-
-                try
-                {
-                    var p = method.DefineParameter(pid, ParameterAttributes.None, parameterWrapper.Name);
-                    if (parameterWrapper.In == InclutionTypes.Path)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(uriAttrib, new Type[] { }));
-                    else if (parameterWrapper.In == InclutionTypes.Body)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(bodyAttrib, new Type[] { }));
-                    pid++;
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-            }
-            // Adding custom attributes to method
-            // [RouteAttribute]
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    route,
-                    new[]{
-                             implementationMethod.GetCustomAttribute<RouteAttribute>().Template
-                         }
-                    )
-                );
-            // [HttpGetAttribute]
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    httpGet,
-                    new Type[] { }
-                    )
                 );
             ILGenerator gen = method.GetILGenerator();
             // Preparing locals
@@ -489,7 +353,24 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
 
         private static ConstructorInfo httpMethodAttribute(MethodInfo implementationMethod)
         {
-            var attribs = implementationMethod.GetCustomAttributes();
+            var httpMethod = ExtensionsFactory.GetService<IWebMethodConverter>()?.GetHttpMethods(implementationMethod);
+            if (httpMethod != null&&httpMethod.Any())
+            {
+                switch (httpMethod.First().Method.ToUpper())
+                {
+                    case "Get":
+                        return typeof(HttpGetAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+                    case "POST":
+                        return typeof(HttpPostAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+                    case "PUT":
+                        return typeof(HttpPutAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+                    case "DELETE":
+                        return typeof(HttpDeleteAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+                }
+            }
+            var attribs = implementationMethod.GetCustomAttributes().ToList();
+            
+            
             if (attribs.Any(p => p is HttpGetAttribute))
                 return typeof(HttpGetAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             if (attribs.Any(p => p is HttpPostAttribute))
@@ -504,49 +385,21 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
 
         public MethodBuilder BuildAsyncMethod(TypeBuilder type, MethodInfo implementationMethod)
         {
-            // Declaring method builder
-            // Method attributes
-            const MethodAttributes methodAttributes = MethodAttributes.Public
-                                                      | MethodAttributes.Virtual
-                                                      | MethodAttributes.Final
-                                                      | MethodAttributes.HideBySig
-                                                      | MethodAttributes.NewSlot;
-            var method = type.DefineMethod(implementationMethod.Name, methodAttributes);
-            // Preparing Reflection instances
-            #region MyRegion
-            ConstructorInfo route = typeof(RouteAttribute).GetConstructor(
+            return InternalMethodBuilder(type, implementationMethod, BuildAsyncMethodBody);
+        }
+
+        private MethodBuilder BuildAsyncMethodBody(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams)
+        {
+            MethodInfo gatherParams = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
+                    "GatherParameters",
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                     null,
                     new Type[]{
-                              typeof(String)
+                                  typeof(string),
+                                  typeof(object[])
                               },
                     null
                     );
-            ConstructorInfo httpGet = httpMethodAttribute(implementationMethod);
-            ConstructorInfo uriAttrib = typeof(FromUriAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
-            ConstructorInfo bodyAttrib = typeof(FromBodyAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
-            MethodInfo gatherParams = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
-                "GatherParameters",
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                              typeof(string),
-                              typeof(object[])
-                          },
-                null
-                );
             var baseType = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType);
             var implementation = baseType.GetRuntimeFields().Single(f => f.Name == "implementation");
             MethodInfo getValue = typeof(ParameterWrapper).GetMethod(
@@ -564,85 +417,11 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                 null,
                 new Type[]{
-                              typeof(Exception)
+                                  typeof(Exception)
                           },
                 null
                 );
             MethodInfo fromResult = typeof(Task).GetMethod("FromResult").MakeGenericMethod(typeof(HttpResponseMessage));
-
-            #endregion
-
-            // Setting return type
-            method.SetReturnType(typeof(Task<HttpResponseMessage>));
-            // Adding parameters
-            var methodParams = new List<ParameterWrapper>();
-            foreach (var parameterInfo in implementationMethod.GetParameters())
-            {
-                var @in = parameterInfo.GetCustomAttribute<InAttribute>(true);
-                if (@in == null)
-                {
-                    var fromBody = parameterInfo.GetCustomAttribute<FromBodyAttribute>(true);
-                    if (fromBody != null)
-                        @in = new InAttribute(InclutionTypes.Body);
-                    if (@in == null)
-                    {
-                        var fromUri = parameterInfo.GetCustomAttribute<FromUriAttribute>(true);
-                        if (fromUri != null)
-                            @in = new InAttribute(InclutionTypes.Path);
-                    }
-                }
-                if (@in.InclutionType != InclutionTypes.Header)
-                    methodParams.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
-            }
-            var pTypes = methodParams.Select(p => p.Type).ToArray();
-            method.SetParameters(pTypes.ToArray());
-            // Parameter id
-            int pid = 1;
-            foreach (var parameterWrapper in methodParams)
-            {
-
-                try
-                {
-                    var p = method.DefineParameter(pid, ParameterAttributes.None, parameterWrapper.Name);
-                    if (parameterWrapper.In == InclutionTypes.Path)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(uriAttrib, new Type[] { }));
-                    else if (parameterWrapper.In == InclutionTypes.Body)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(bodyAttrib, new Type[] { }));
-                    pid++;
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-            }
-            // Adding custom attributes to method
-            // [RouteAttribute]
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    route,
-                    new[]{
-                             implementationMethod.GetCustomAttribute<RouteAttribute>().Template
-                         }
-                    )
-                );
-            // [HttpGetAttribute]
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    httpGet,
-                    new Type[] { }
-                    )
-                );
-            ConstructorInfo ctor5 = typeof(ResponseTypeAttribute).GetConstructor(
-        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-        null,
-        new Type[]{
-            typeof(Type)
-            },
-        null
-        );
-            method.SetCustomAttribute(new CustomAttributeBuilder(ctor5, new object[] { implementationMethod.ReturnType.GetGenericArguments()[0] }));
-
             ILGenerator gen = method.GetILGenerator();
             // Preparing locals
             LocalBuilder parameters = gen.DeclareLocal(typeof(Object[]));
@@ -721,39 +500,11 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
 
         public MethodBuilder BuildAsyncVoidMethod(TypeBuilder type, MethodInfo implementationMethod)
         {
-            // Declaring method builder
-            // Method attributes
-            const MethodAttributes methodAttributes = MethodAttributes.Public
-                                                      | MethodAttributes.Virtual
-                                                      | MethodAttributes.Final
-                                                      | MethodAttributes.HideBySig
-                                                      | MethodAttributes.NewSlot;
-            var method = type.DefineMethod(implementationMethod.Name, methodAttributes);
-            // Preparing Reflection instances
-            #region MyRegion
-            ConstructorInfo route = typeof(RouteAttribute).GetConstructor(
-                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                    null,
-                    new Type[]{
-                              typeof(String)
-                              },
-                    null
-                    );
-            ConstructorInfo httpGet = httpMethodAttribute(implementationMethod);
-            ConstructorInfo uriAttrib = typeof(FromUriAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
-            ConstructorInfo bodyAttrib = typeof(FromBodyAttribute).GetConstructor(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                null,
-                new Type[]{
-                          },
-                null
-                );
+            return InternalMethodBuilder(type, implementationMethod, BuildAsyncVoidMethodBody);
+        }
+
+        private MethodBuilder BuildAsyncVoidMethodBody(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams)
+        {
             MethodInfo gatherParams = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
                 "GatherParameters",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -785,69 +536,6 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
                 null
                 );
             MethodInfo fromResult = typeof(Task).GetMethod("FromResult").MakeGenericMethod(typeof(HttpResponseMessage));
-
-            #endregion
-
-            // Setting return type
-            method.SetReturnType(typeof(Task<HttpResponseMessage>));
-            // Adding parameters
-            var methodParams = new List<ParameterWrapper>();
-            foreach (var parameterInfo in implementationMethod.GetParameters())
-            {
-                var @in = parameterInfo.GetCustomAttribute<InAttribute>(true);
-                if (@in == null)
-                {
-                    var fromBody = parameterInfo.GetCustomAttribute<FromBodyAttribute>(true);
-                    if (fromBody != null)
-                        @in = new InAttribute(InclutionTypes.Body);
-                    if (@in == null)
-                    {
-                        var fromUri = parameterInfo.GetCustomAttribute<FromUriAttribute>(true);
-                        if (fromUri != null)
-                            @in = new InAttribute(InclutionTypes.Path);
-                    }
-                }
-                if (@in.InclutionType != InclutionTypes.Header)
-                    methodParams.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
-            }
-            var pTypes = methodParams.Select(p => p.Type).ToArray();
-            method.SetParameters(pTypes.ToArray());
-            // Parameter id
-            int pid = 1;
-            foreach (var parameterWrapper in methodParams)
-            {
-
-                try
-                {
-                    var p = method.DefineParameter(pid, ParameterAttributes.None, parameterWrapper.Name);
-                    if (parameterWrapper.In == InclutionTypes.Path)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(uriAttrib, new Type[] { }));
-                    else if (parameterWrapper.In == InclutionTypes.Body)
-                        p.SetCustomAttribute(new CustomAttributeBuilder(bodyAttrib, new Type[] { }));
-                    pid++;
-                }
-                catch (Exception)
-                {
-
-                    throw;
-                }
-            }
-            // Adding custom attributes to method
-            // [RouteAttribute]
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    route,
-                    new[]{
-                             implementationMethod.GetCustomAttribute<RouteAttribute>().Template
-                         }
-                    )
-                );
-            method.SetCustomAttribute(
-                new CustomAttributeBuilder(
-                    httpGet,
-                    new Type[] { }
-                    )
-                );
             ILGenerator gen = method.GetILGenerator();
             // Preparing locals
             LocalBuilder parameters = gen.DeclareLocal(typeof(Object[]));

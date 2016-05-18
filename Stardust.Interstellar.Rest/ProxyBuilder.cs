@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.Remoting.Messaging;
@@ -10,75 +7,6 @@ using System.Threading.Tasks;
 
 namespace Stardust.Interstellar.Rest
 {
-    public static class ProxyFactory
-    {
-       static ConcurrentDictionary<Type,Type> proxyTypeCache=new ConcurrentDictionary<Type, Type>();
-        public static Type CreateProxy<T>()
-        {
-            Type type;
-            if (proxyTypeCache.TryGetValue(typeof(T), out type)) return type;
-            var builder = new ProxyBuilder<T>();
-            var newType= builder.Build();
-            if (proxyTypeCache.TryGetValue(typeof(T), out type)) return type;
-            proxyTypeCache.TryAdd(typeof(T), newType);
-            return newType;
-        }
-
-        public static T CreateInstance<T>(string baseUrl)
-        {
-            var t = CreateProxy<T>();
-            var auth = typeof(T).GetCustomAttributes().SingleOrDefault(a => a is IAuthenticationInspector) as IAuthenticationInspector;
-            var authHandler = GetAuthenticationHandler<T>(auth);
-            var instance = Activator.CreateInstance(t, authHandler, new HeaderHandlerFactory(typeof(T)), TypeWrapper.Create<T>());
-            var i = (RestWrapper)instance;
-            i.SetBaseUrl(baseUrl);
-            return (T)instance;
-        }
-
-        private static IAuthenticationHandler GetAuthenticationHandler<T>(IAuthenticationInspector auth)
-        {
-            IAuthenticationHandler authHandler;
-            if (auth == null) authHandler = new NullAuthHandler();
-            else
-            {
-                authHandler = auth.GetHandler();
-            }
-            return authHandler;
-        }
-    }
-    public interface IHeaderHandlerFactory
-    {
-        IEnumerable<IHeaderHandler> GetHandlers();
-    }
-    public class HeaderHandlerFactory : IHeaderHandlerFactory
-    {
-        private readonly Type type;
-
-        public HeaderHandlerFactory(Type type)
-        {
-            this.type = type;
-        }
-
-        public IEnumerable<IHeaderHandler> GetHandlers()
-        {
-            var inspectors = type.GetCustomAttributes().OfType<IHeaderInspector>();
-            var handlers = new List<IHeaderHandler>();
-            foreach (var inspector in inspectors)
-            {
-                handlers.AddRange(inspector.GetHandlers());
-            }
-            return handlers;
-        }
-    }
-
-    public class NullAuthHandler : IAuthenticationHandler
-    {
-        public void Apply(HttpWebRequest req)
-        {
-
-        }
-    }
-
     internal class ProxyBuilder<T>
     {
         private AssemblyBuilder myAssemblyBuilder;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.ServiceModel;
 using System.ServiceModel.Web;
 
 namespace Stardust.Interstellar.Rest.Legacy
@@ -50,9 +51,10 @@ namespace Stardust.Interstellar.Rest.Legacy
 
         public IEnumerable<ParameterWrapper> ResolveParameters(MethodInfo methodInfo)
         {
-            if (GetHttpMethods(methodInfo).First() == HttpMethod.Get) methodInfo.GetParameters().Select(p => new ParameterWrapper { Type = p.ParameterType, In = InclutionTypes.Path, Name = p.Name }).ToArray();
-            var others = methodInfo.GetParameters().Select(p => new ParameterWrapper { Type = p.ParameterType, In = InclutionTypes.Path, Name = p.Name }).ToArray();
-            others.Last().In = InclutionTypes.Body;
+            if (methodInfo.GetCustomAttribute<OperationContractAttribute>() == null) return null;
+            var route = GetTemplate(methodInfo);
+            if (GetHttpMethods(methodInfo).First() == HttpMethod.Get) return methodInfo.GetParameters().Select(p => new ParameterWrapper { Type = p.ParameterType, In = InclutionTypes.Path, Name = p.Name }).ToArray();
+            var others = methodInfo.GetParameters().Select(p => new ParameterWrapper { Type = p.ParameterType, In = route.Contains("{"+p.Name+"}")?InclutionTypes.Path:InclutionTypes.Body, Name = p.Name }).ToArray();
             return others;
         }
     }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
@@ -10,6 +11,17 @@ namespace Stardust.Interstellar.Rest
 {
     public static class ExtensionsFactory
     {
+
+        public static string ActionId(this HttpWebRequest request)
+        {
+            return request.Headers[RestWrapper.ActionIdName];
+        }
+
+        public static string ActionId(this HttpWebResponse response)
+        {
+            return response.Headers[RestWrapper.ActionIdName];
+        }
+
         private static IServiceLocator locator;
 
         public static void SetServiceLocator(IServiceLocator serviceLocator)
@@ -55,7 +67,12 @@ namespace Stardust.Interstellar.Rest
             var parameterHandler = GetService<IServiceParameterResolver>();
             if (parameterHandler != null)
             {
-                action.Parameters.AddRange(parameterHandler.ResolveParameters(methodInfo));
+                var parameters = parameterHandler.ResolveParameters(methodInfo);
+                if(parameters!=null && parameters.Any())
+                {
+                    action.Parameters.AddRange(parameters);
+                    return;
+                }
             }
             foreach (var parameterInfo in methodInfo.GetParameters())
             {
@@ -100,6 +117,11 @@ namespace Stardust.Interstellar.Rest
             }
             if (methods.Count == 0) methods.Add(HttpMethod.Get);
             return methods;
+        }
+
+        public static string ActionId(this HttpRequestMessage request)
+        {
+            return request.Headers.GetValues(RestWrapper.ActionIdName).FirstOrDefault();
         }
     }
 }

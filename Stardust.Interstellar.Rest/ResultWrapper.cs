@@ -16,5 +16,7 @@ namespace Stardust.Interstellar.Rest
         public string StatusMessage { get; set; }
 
         public Exception Error { get; set; }
+
+        internal string ActionId { get; set; }
     }
 }

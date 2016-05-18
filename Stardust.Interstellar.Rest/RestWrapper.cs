@@ -6,16 +6,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Newtonsoft.Json;
+using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest
 {
     public class RestWrapper
     {
+        internal const string ActionIdName = "sd-ActionId";
+
         private readonly IAuthenticationHandler authenticationHandler;
 
         private readonly IEnumerable<IHeaderHandler> headerHandlers;
@@ -79,6 +81,7 @@ namespace Stardust.Interstellar.Rest
         {
             HttpWebRequest req;
             var action = CreateActionRequest(name, parameters, out req);
+            ResultWrapper errorResult;
             try
             {
                 var response = req.GetResponse() as HttpWebResponse;
@@ -86,12 +89,14 @@ namespace Stardust.Interstellar.Rest
             }
             catch (WebException webError)
             {
-                return HandleWebException(webError, action);
+                errorResult = HandleWebException(webError, action);
             }
             catch (Exception ex)
             {
-                return HandleGenericException(ex);
+                errorResult= HandleGenericException(ex);
             }
+            errorResult.ActionId = req.ActionId();
+            return errorResult;
         }
 
         private static ResultWrapper HandleGenericException(Exception ex)
@@ -140,14 +145,14 @@ namespace Stardust.Interstellar.Rest
             var type = typeof(Task).IsAssignableFrom(action.ReturnType) ? action.ReturnType.GetGenericArguments().First() : action.ReturnType;
             if (type == typeof(void))
             {
-                return new ResultWrapper { Type = typeof(void), IsVoid = true, Value = null, Status = response.StatusCode, StatusMessage = response.StatusDescription };
+                return new ResultWrapper { Type = typeof(void), IsVoid = true, Value = null, Status = response.StatusCode, StatusMessage = response.StatusDescription,ActionId = response.ActionId()};
             }
             using (var reader = new JsonTextReader(new StreamReader(response.GetResponseStream())))
             {
 
                 var serializer = new JsonSerializer();
                 var result = serializer.Deserialize(reader, type);
-                return new ResultWrapper { Type = type, IsVoid = false, Value = result, Status = response.StatusCode, StatusMessage = response.StatusDescription };
+                return new ResultWrapper { Type = type, IsVoid = false, Value = result, Status = response.StatusCode, StatusMessage = response.StatusDescription, ActionId = response.ActionId() };
             }
         }
 
@@ -173,12 +178,17 @@ namespace Stardust.Interstellar.Rest
             }
             if (queryStrings.Any()) path = path + "?" + string.Join("&", queryStrings);
             req = CreateRequest(path);
+            StatefullHeaderHandlerBase.InitializeState(req);
+            req.Headers.Add(ActionIdName,Guid.NewGuid().ToString());
             req.Method = action.Actions.First().ToString();
             AppendHeaders(parameters, req, action);
             AppendBody(parameters, req);
             if (authenticationHandler != null) authenticationHandler.Apply(req);
             return action;
         }
+
+        
+
 
         private HttpWebRequest CreateRequest(string path)
         {
@@ -241,6 +251,7 @@ namespace Stardust.Interstellar.Rest
         {
             HttpWebRequest req;
             var action = CreateActionRequest(name, parameters, out req);
+            ResultWrapper errorResult;
             try
             {
                 var response = await req.GetResponseAsync() as HttpWebResponse;
@@ -248,17 +259,20 @@ namespace Stardust.Interstellar.Rest
             }
             catch (WebException webError)
             {
-                return HandleWebException(webError, action);
+                errorResult= HandleWebException(webError, action);
             }
             catch (Exception ex)
             {
-                return HandleGenericException(ex);
+                errorResult= HandleGenericException(ex);
             }
+            errorResult.ActionId = req.ActionId();
+            return errorResult;  
         }
 
         public T Invoke<T>(string name, ParameterWrapper[] parameters)
         {
             var result = Execute(name, parameters);
+            StatefullHeaderHandlerBase.EndState(result);
             if (result.Error == null)
                 return (T)result.Value;
             if (result.Value != null)
@@ -309,44 +323,5 @@ namespace Stardust.Interstellar.Rest
             }
             return wrappers.ToArray();
         }
-    }
-
-    public class RestWrapperException : Exception
-    {
-        public RestWrapperException()
-        {
-        }
-
-        public RestWrapperException(string message)
-            : base(message)
-        {
-        }
-
-        public RestWrapperException(string message, Exception innerException) :
-            base(message, innerException)
-        {
-        }
-
-        protected RestWrapperException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-
-        public RestWrapperException(string message, HttpStatusCode httpStatus, object response, Exception innerException)
-            : base(message, innerException)
-        {
-            this.HttpStatus = httpStatus;
-            this.Response = response;
-        }
-
-        public RestWrapperException(string message, HttpStatusCode status, Exception innerException)
-            : this(message, status, null, innerException)
-        {
-            this.HttpStatus = status;
-        }
-
-        public HttpStatusCode HttpStatus { get; }
-
-        public object Response { get; }
     }
 }

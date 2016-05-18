@@ -41,6 +41,8 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\Stardust.Interstellar.Rest\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
       <Private>True</Private>
@@ -73,15 +75,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="StringWrapper.cs" />
+    <Compile Include="ITestApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyGeneratorTest.cs" />
+    <Compile Include="TestApi.cs" />
+    <Compile Include="TestClient.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Legacy\Stardust.Interstellar.Rest.WcfAdapter.csproj">
+      <Project>{928518E9-D24D-4C42-A9D8-C6876C8720A4}</Project>
+      <Name>Stardust.Interstellar.Rest.WcfAdapter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stardust.Interstellar.Rest\Stardust.Interstellar.Rest.csproj">
       <Project>{5EE819E3-B588-431F-B5DA-3EBC0557242B}</Project>
       <Name>Stardust.Interstellar.Rest</Name>
