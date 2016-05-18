@@ -17,16 +17,14 @@ namespace Stardust.Interstellar.Rest
         /// <param name="response"></param>
         void GetHeader(HttpWebResponse response);
 
-        /// <summary>
-        /// Set custom header values before sending the response from the service
-        /// </summary>
-        /// <param name="headers"></param>
-        void SetServiceHeaders(WebHeaderCollection headers);
+        
 
         /// <summary>
         /// Get custom header values received from the client 
         /// </summary>
         /// <param name="headers"></param>
         void GetServiceHeader(HttpRequestHeaders headers);
+
+        void SetServiceHeaders(HttpResponseHeaders headers);
     }
 }

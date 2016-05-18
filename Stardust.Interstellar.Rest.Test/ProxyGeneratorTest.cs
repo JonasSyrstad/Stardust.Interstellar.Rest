@@ -39,6 +39,11 @@ namespace Stardust.Interstellar.Rest.Test
         {
            
         }
+
+        public void SetServiceHeaders(HttpResponseHeaders headers)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class ProxyGeneratorTest
@@ -87,7 +92,14 @@ namespace Stardust.Interstellar.Rest.Test
         [Fact]
         public async Task WcfWrapperTest()
         {
-            var testProxy = ProxyFactory.CreateInstance<IWcfWrapper>("http://localhost/Stardust.Interstellar.Test/");
+            var testProxy = ProxyFactory.CreateInstance<IWcfWrapper>("http://localhost/Stardust.Interstellar.Test/",
+                extras =>
+                    {
+                        foreach (var extra in extras)
+                        {
+                            output.WriteLine($"{extra.Key}:{extra.Value}");
+                        }
+                    });
             var getRes = testProxy.TestImplementationGet("test");
             output.WriteLine(getRes.Value);
             var putRes = testProxy.TestImplementationPut("hello", new StringWrapper { Value = "hell" });

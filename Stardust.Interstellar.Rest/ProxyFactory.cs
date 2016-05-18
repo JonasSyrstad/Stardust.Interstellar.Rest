@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -19,12 +20,18 @@ namespace Stardust.Interstellar.Rest
             return newType;
         }
 
-        public static T CreateInstance<T>(string baseUrl)
+        public static T CreateInstance<T>(string baseUrl )
+        {
+            return CreateInstance<T>(baseUrl, null);
+        }
+
+        public static T CreateInstance<T>(string baseUrl,Action<Dictionary<string,object>> extrasCollector )
         {
             var t = CreateProxy<T>();
             var auth = typeof(T).GetCustomAttributes().SingleOrDefault(a => a is IAuthenticationInspector) as IAuthenticationInspector;
             var authHandler = GetAuthenticationHandler<T>(auth);
             var instance = Activator.CreateInstance(t, authHandler, new HeaderHandlerFactory(typeof(T)), TypeWrapper.Create<T>());
+            ((RestWrapper)instance).Extras = extrasCollector;
             var i = (RestWrapper)instance;
             i.SetBaseUrl(baseUrl);
             return (T)instance;

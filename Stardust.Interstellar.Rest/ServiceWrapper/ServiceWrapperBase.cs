@@ -23,14 +23,27 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
         protected HttpResponseMessage CreateResponse<TMessage>(HttpStatusCode statusCode, TMessage message = default(TMessage))
         {
             HttpResponseMessage result;
+            
             if (message == null)
             {
                 result = Request.CreateResponse(HttpStatusCode.NoContent);
             }
             else
                 result = Request.CreateResponse(statusCode, message);
-            StatefullHeaderHandlerBase.EndState(Request);
+            SetHeaders(result);
+            Request.EndState();
+            
             return result;
+        }
+
+        private void SetHeaders(HttpResponseMessage result)
+        {
+            var action = GetActionWrapper(Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault().FirstOrDefault());
+            result.Headers.Add(RestWrapper.ActionIdName, Request.ActionId());
+            foreach (var customHandler in action.CustomHandlers)
+            {
+                customHandler.SetServiceHeaders(result.Headers);
+            }
         }
 
         protected async Task<HttpResponseMessage> CreateResponseAsync<TMessage>(HttpStatusCode statusCode, Task<TMessage> messageTask = null)
@@ -41,7 +54,8 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
                 var message = await messageTask;
                 if (message == null) result= Request.CreateResponse(HttpStatusCode.NoContent);
                 else result=Request.CreateResponse(statusCode, message);
-                StatefullHeaderHandlerBase.EndState(Request);
+                SetHeaders(result);
+                Request.EndState();
                 return result;
             }
             catch (Exception ex)
@@ -58,15 +72,14 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
             {
                 await messageTask;
                 result = Request.CreateResponse(HttpStatusCode.NoContent);
-                StatefullHeaderHandlerBase.EndState(Request);
+                SetHeaders(result);
+                Request.EndState();
             }
             catch (Exception ex)
             {
-
                 result = CreateErrorResponse(ex);
             }
-           
-            return result;
+           return result;
         }
         
 
@@ -76,20 +89,9 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
             //TODO: add more exception conventions..
             if (ex is UnauthorizedAccessException) result = Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ex.Message);
             else result = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
-            StatefullHeaderHandlerBase.EndState(Request);
+            SetHeaders(result);
+            Request.EndState();
             return result;
-        }
-
-        private void SetOutHeaders(HttpWebResponse response)
-        {
-            ConcurrentDictionary<string, ActionWrapper> item;
-            if (!cache.TryGetValue(typeof(T), out item)) throw new InvalidOperationException("Invalid interface type");
-            ActionWrapper action;
-            if (!item.TryGetValue(Request.Headers.GetValues(ActionWrapperName).First(), out action)) throw new InvalidOperationException("Invalid action");
-            foreach (var customHandler in action.CustomHandlers)
-            {
-                customHandler.SetServiceHeaders(response.Headers);
-            }
         }
 
         private static ConcurrentDictionary<Type, ConcurrentDictionary<string, ActionWrapper>> cache = new ConcurrentDictionary<Type, ConcurrentDictionary<string, ActionWrapper>>();
@@ -105,11 +107,8 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
             try
             {
 
-                StatefullHeaderHandlerBase.InitializeState(Request);
-                ConcurrentDictionary<string, ActionWrapper> item;
-                if (!cache.TryGetValue(typeof(T), out item)) throw new InvalidOperationException("Invalid interface type");
-                ActionWrapper action;
-                if (!item.TryGetValue(GetActionName(name), out action)) throw new InvalidOperationException("Invalid action");
+                Request.InitializeState();
+                var action = GetAction(name);
                 var i = 0;
                 var wrappers = new List<ParameterWrapper>();
                 foreach (var parameter in action.Parameters)
@@ -131,6 +130,21 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
                 throw new ParameterReflectionException(string.Format("Unable to gather parameters for {0}", name), ex);
             }
 
+        }
+
+        private static ActionWrapper GetAction(string name)
+        {
+            var actionName = GetActionName(name);
+            return GetActionWrapper(actionName);
+        }
+
+        private static ActionWrapper GetActionWrapper(string actionName)
+        {
+            ConcurrentDictionary<string, ActionWrapper> item;
+            if (!cache.TryGetValue(typeof(T), out item)) throw new InvalidOperationException("Invalid interface type");
+            ActionWrapper action;
+            if (!item.TryGetValue(actionName, out action)) throw new InvalidOperationException("Invalid action");
+            return action;
         }
 
         private object GetFromHeaders(ParameterWrapper parameter)

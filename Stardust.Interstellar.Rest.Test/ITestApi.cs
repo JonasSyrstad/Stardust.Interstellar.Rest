@@ -3,10 +3,12 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Stardust.Interstellar.Rest.Annotations;
 
 namespace Stardust.Interstellar.Rest.Test
 {
     [ServiceContract]
+    [PerformanceHeaders]
     public interface IWcfWrapper
     {
         [OperationContract]
@@ -21,6 +23,7 @@ namespace Stardust.Interstellar.Rest.Test
 
     [IRoutePrefix("api")]
     [CallingMachineName]
+    [PerformanceHeaders]
     public interface ITestApi
     {
         [Route("test/{id}")]

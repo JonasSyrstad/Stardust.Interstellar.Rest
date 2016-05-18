@@ -63,6 +63,7 @@
     <Compile Include="AuthenticationInspectorAttributeBase.cs" />
     <Compile Include="ExtensionsFactory.cs" />
     <Compile Include="Extensions\StatefullHeaderHandlerBase.cs" />
+    <Compile Include="Extensions\StateHelper.cs" />
     <Compile Include="HeaderHandlerFactory.cs" />
     <Compile Include="HeaderInspectorAttributeBase.cs" />
     <Compile Include="IAuthenticationHandler.cs" />

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -20,6 +21,21 @@ namespace Stardust.Interstellar.Rest
         public static string ActionId(this HttpWebResponse response)
         {
             return response.Headers[RestWrapper.ActionIdName];
+        }
+
+        public static string ActionId(this WebHeaderCollection headers)
+        {
+            return headers[RestWrapper.ActionIdName];
+        }
+
+        public static string ActionId(this HttpRequestHeaders headers)
+        {
+            return headers.Where(h => h.Key == RestWrapper.ActionIdName).Select(h=>h.Value).FirstOrDefault().FirstOrDefault();
+        }
+
+        public static string ActionId(this HttpResponseHeaders headers)
+        {
+            return headers.Where(h => h.Key == RestWrapper.ActionIdName).Select(h => h.Value).FirstOrDefault().FirstOrDefault();
         }
 
         private static IServiceLocator locator;
@@ -96,6 +112,10 @@ namespace Stardust.Interstellar.Rest
         internal static List<IHeaderHandler> GetHeaderInspectors(MethodInfo methodInfo)
         {
             var inspectors = methodInfo.GetCustomAttributes().OfType<IHeaderInspector>().ToList();
+            var typeInspectors=methodInfo.DeclaringType.GetCustomAttributes().OfType<IHeaderInspector>();
+            var enumerable = typeInspectors as IHeaderInspector[] ?? typeInspectors.ToArray();
+            if(enumerable.Any())
+                inspectors.AddRange(enumerable);
             var headerInspectors = ExtensionsFactory.GetServices<IHeaderHandler>();
             var handlers = new List<IHeaderHandler>();
             if (headerInspectors != null) handlers.AddRange(headerInspectors);

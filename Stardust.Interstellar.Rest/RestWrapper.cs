@@ -33,6 +33,8 @@ namespace Stardust.Interstellar.Rest
             baseUri = url;
         }
 
+        public  Action<Dictionary<string,object>> Extras { get; internal set; }
+
         protected RestWrapper(IAuthenticationHandler authenticationHandler, IHeaderHandlerFactory headerHandlers, TypeWrapper interfaceType)
         {
             this.authenticationHandler = authenticationHandler;
@@ -85,10 +87,12 @@ namespace Stardust.Interstellar.Rest
             try
             {
                 var response = req.GetResponse() as HttpWebResponse;
+                GetHeaderValues(action,response);
                 return CreateResult(action, response);
             }
             catch (WebException webError)
             {
+                GetHeaderValues(action, webError.Response as HttpWebResponse);
                 errorResult = HandleWebException(webError, action);
             }
             catch (Exception ex)
@@ -97,6 +101,15 @@ namespace Stardust.Interstellar.Rest
             }
             errorResult.ActionId = req.ActionId();
             return errorResult;
+        }
+
+        private static void GetHeaderValues(ActionWrapper action, HttpWebResponse response)
+        {
+            foreach (var customHandler in action.CustomHandlers)
+            {
+                
+                if (response != null) customHandler.GetHeader(response);
+            }
         }
 
         private static ResultWrapper HandleGenericException(Exception ex)
@@ -178,8 +191,8 @@ namespace Stardust.Interstellar.Rest
             }
             if (queryStrings.Any()) path = path + "?" + string.Join("&", queryStrings);
             req = CreateRequest(path);
-            StatefullHeaderHandlerBase.InitializeState(req);
             req.Headers.Add(ActionIdName,Guid.NewGuid().ToString());
+            req.InitializeState();
             req.Method = action.Actions.First().ToString();
             AppendHeaders(parameters, req, action);
             AppendBody(parameters, req);
@@ -255,10 +268,12 @@ namespace Stardust.Interstellar.Rest
             try
             {
                 var response = await req.GetResponseAsync() as HttpWebResponse;
+                GetHeaderValues(action,response);
                 return CreateResult(action, response);
             }
             catch (WebException webError)
             {
+                GetHeaderValues(action,webError.Response as HttpWebResponse);
                 errorResult= HandleWebException(webError, action);
             }
             catch (Exception ex)
@@ -272,7 +287,9 @@ namespace Stardust.Interstellar.Rest
         public T Invoke<T>(string name, ParameterWrapper[] parameters)
         {
             var result = Execute(name, parameters);
-            StatefullHeaderHandlerBase.EndState(result);
+            Extras?.Invoke(result.GetExtras());
+            result.EndState();
+            
             if (result.Error == null)
                 return (T)result.Value;
             if (result.Value != null)
@@ -283,6 +300,8 @@ namespace Stardust.Interstellar.Rest
         public async Task<T> InvokeAsync<T>(string name, ParameterWrapper[] parameters)
         {
             var result = await ExecuteAsync(GetActionName(name), parameters);
+            Extras?.Invoke(StateHelper.GetExtras(result));
+            StateHelper.EndState(result);
             if (typeof(T) == typeof(void)) return default(T);
             if (result.Error == null)
                 return (T)result.Value;
