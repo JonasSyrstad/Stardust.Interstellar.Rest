@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Controllers;
-using System.Web.Http.Dependencies;
 using System.Web.Http.Dispatcher;
 
-namespace Stardust.Interstellar.Rest.ServiceWrapper
+namespace Stardust.Interstellar.Rest.Service
 {
     public static class ServiceFactory
     {

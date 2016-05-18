@@ -4,6 +4,9 @@ using System.Net.Http;
 using System.Reflection;
 using System.ServiceModel;
 using System.ServiceModel.Web;
+using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Common;
+using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Legacy
 {

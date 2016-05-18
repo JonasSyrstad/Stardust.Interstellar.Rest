@@ -7,35 +7,37 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Extensions;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Common
 {
     public static class ExtensionsFactory
     {
 
         public static string ActionId(this HttpWebRequest request)
         {
-            return request.Headers[RestWrapper.ActionIdName];
+            return request.Headers[ActionIdName];
         }
 
         public static string ActionId(this HttpWebResponse response)
         {
-            return response.Headers[RestWrapper.ActionIdName];
+            return response.Headers[ActionIdName];
         }
 
         public static string ActionId(this WebHeaderCollection headers)
         {
-            return headers[RestWrapper.ActionIdName];
+            return headers[ActionIdName];
         }
 
         public static string ActionId(this HttpRequestHeaders headers)
         {
-            return headers.Where(h => h.Key == RestWrapper.ActionIdName).Select(h=>h.Value).FirstOrDefault().FirstOrDefault();
+            return headers.Where(h => h.Key == ActionIdName).Select(h=>h.Value).FirstOrDefault().FirstOrDefault();
         }
 
         public static string ActionId(this HttpResponseHeaders headers)
         {
-            return headers.Where(h => h.Key == RestWrapper.ActionIdName).Select(h => h.Value).FirstOrDefault().FirstOrDefault();
+            return headers.Where(h => h.Key == ActionIdName).Select(h => h.Value).FirstOrDefault().FirstOrDefault();
         }
 
         private static IServiceLocator locator;
@@ -63,7 +65,7 @@ namespace Stardust.Interstellar.Rest
         internal static string GetServiceTemplate(MethodInfo methodInfo)
         {
             var template = GetService<IRouteTemplateResolver>()?.GetTemplate(methodInfo);
-            if (!string.IsNullOrWhiteSpace(template)) return template;
+            if (!String.IsNullOrWhiteSpace(template)) return template;
             var templateAttrib = methodInfo.GetCustomAttribute<RouteAttribute>();
             template = templateAttrib.Template;
             return template;
@@ -111,12 +113,8 @@ namespace Stardust.Interstellar.Rest
 
         internal static List<IHeaderHandler> GetHeaderInspectors(MethodInfo methodInfo)
         {
-            var inspectors = methodInfo.GetCustomAttributes().OfType<IHeaderInspector>().ToList();
-            var typeInspectors=methodInfo.DeclaringType.GetCustomAttributes().OfType<IHeaderInspector>();
-            var enumerable = typeInspectors as IHeaderInspector[] ?? typeInspectors.ToArray();
-            if(enumerable.Any())
-                inspectors.AddRange(enumerable);
-            var headerInspectors = ExtensionsFactory.GetServices<IHeaderHandler>();
+            var inspectors = GetInspectors(methodInfo);
+            var headerInspectors = GetServices<IHeaderHandler>();
             var handlers = new List<IHeaderHandler>();
             if (headerInspectors != null) handlers.AddRange(headerInspectors);
             foreach (var inspector in inspectors)
@@ -126,9 +124,20 @@ namespace Stardust.Interstellar.Rest
             return handlers;
         }
 
+        private static List<IHeaderInspector> GetInspectors(MethodInfo methodInfo)
+        {
+            var inspectors = methodInfo.GetCustomAttributes().OfType<IHeaderInspector>().ToList();
+            var typeInspectors = methodInfo.DeclaringType.GetCustomAttributes().OfType<IHeaderInspector>();
+            var enumerable = typeInspectors as IHeaderInspector[] ?? typeInspectors.Where(i => inspectors.All(x => x.GetType() != i.GetType())).ToArray();
+            if (enumerable.Any()) inspectors.AddRange(enumerable);
+            var assemblyInstpctors = methodInfo.DeclaringType.Assembly.GetCustomAttributes().OfType<IHeaderInspector>().Where(i => inspectors.All(x => x.GetType() != i.GetType())).ToArray();
+            if (assemblyInstpctors.Any()) inspectors.AddRange(assemblyInstpctors);
+            return inspectors;
+        }
+
         internal static List<HttpMethod> GetHttpMethods(List<IActionHttpMethodProvider> actions, MethodInfo method)
         {
-            var methodResolver = ExtensionsFactory.GetService<IWebMethodConverter>();
+            var methodResolver = GetService<IWebMethodConverter>();
             var methods = new List<HttpMethod>();
             if (methodResolver != null) methods.AddRange(methodResolver.GetHttpMethods(method));
             foreach (var actionHttpMethodProvider in actions)
@@ -141,9 +150,11 @@ namespace Stardust.Interstellar.Rest
 
         public static string ActionId(this HttpRequestMessage request)
         {
-            if(request.Headers.Contains(RestWrapper.ActionIdName))
-            return request.Headers.GetValues(RestWrapper.ActionIdName).FirstOrDefault();
+            if(request.Headers.Contains(ActionIdName))
+            return request.Headers.GetValues(ActionIdName).FirstOrDefault();
             return null;
         }
+
+        internal const string ActionIdName = "sd-ActionId";
     }
 }

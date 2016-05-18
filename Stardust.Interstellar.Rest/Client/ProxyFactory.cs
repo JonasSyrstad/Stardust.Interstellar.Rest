@@ -3,8 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Stardust.Interstellar.Rest.Extensions;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Client
 {
     public static class ProxyFactory
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Annotations
 {
 
     [AttributeUsage(AttributeTargets.Interface)]

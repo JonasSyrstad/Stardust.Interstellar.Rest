@@ -6,13 +6,14 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
 
-namespace Stardust.Interstellar.Rest.ServiceWrapper
+namespace Stardust.Interstellar.Rest.Service
 {
     public abstract class ServiceWrapperBase<T> : ApiController
     {
@@ -40,7 +41,7 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
         {
             var action = GetActionWrapper(Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault().FirstOrDefault());
            var actionId= Request.ActionId();
-            result.Headers.Add(RestWrapper.ActionIdName, actionId);
+            result.Headers.Add(ExtensionsFactory.ActionIdName, actionId);
             foreach (var customHandler in action.CustomHandlers)
             {
                 customHandler.SetServiceHeaders(result.Headers);

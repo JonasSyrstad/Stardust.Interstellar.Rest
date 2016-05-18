@@ -21,7 +21,7 @@ namespace Stardust.Interstellar.Rest.Extensions
         }
 
 
-        protected abstract void DoSetHeader(Dictionary<string, object> state, HttpWebRequest req);
+        protected abstract void DoSetHeader(StateDictionary state, HttpWebRequest req);
 
         /// <summary>
         /// Get header values form a service response
@@ -35,10 +35,10 @@ namespace Stardust.Interstellar.Rest.Extensions
 
        
 
-        protected abstract void DoGetHeader(Dictionary<string, object> state, HttpWebResponse response);
+        protected abstract void DoGetHeader(StateDictionary state, HttpWebResponse response);
         
 
-        protected abstract void DoSetServiceHeaders(Dictionary<string, object> state, HttpResponseHeaders headers);
+        protected abstract void DoSetServiceHeaders(StateDictionary state, HttpResponseHeaders headers);
 
         /// <summary>
         /// Get custom header values received from the client 
@@ -55,7 +55,8 @@ namespace Stardust.Interstellar.Rest.Extensions
             var state = headers.GetState();
             DoSetServiceHeaders(state, headers);
         }
+        
 
-        protected abstract void DoGetServiceHeader(Dictionary<string, object> state, HttpRequestHeaders headers);
+        protected abstract void DoGetServiceHeader(StateDictionary state, HttpRequestHeaders headers);
     }
 }

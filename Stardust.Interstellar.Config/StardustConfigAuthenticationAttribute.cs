@@ -1,4 +1,6 @@
 using System;
+using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest
 {

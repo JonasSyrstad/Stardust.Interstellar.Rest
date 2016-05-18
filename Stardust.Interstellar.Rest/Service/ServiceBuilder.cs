@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Common;
 
-namespace Stardust.Interstellar.Rest.ServiceWrapper
+namespace Stardust.Interstellar.Rest.Service
 {
     class ServiceBuilder
     {
@@ -33,32 +34,25 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
 
         public Type CreateServiceImplementation(Type interfaceType)
         {
-            try
+            var type = CreateServiceType(interfaceType);
+            ctor(type, interfaceType);
+            foreach (var methodInfo in interfaceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
             {
-                var type = CreateServiceType(interfaceType);
-                ctor(type, interfaceType);
-                foreach (var methodInfo in interfaceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+                if (typeof(Task).IsAssignableFrom(methodInfo.ReturnType))
                 {
-                    if (typeof(Task).IsAssignableFrom(methodInfo.ReturnType))
+                    if (methodInfo.ReturnType.GetGenericArguments().Length == 0)
                     {
-                        if (methodInfo.ReturnType.GetGenericArguments().Length == 0)
-                        {
-                            BuildAsyncVoidMethod(type, methodInfo);
-                        }
-                        else BuildAsyncMethod(type, methodInfo);
+                        BuildAsyncVoidMethod(type, methodInfo);
                     }
-                    else
-                    {
-                        if (methodInfo.ReturnType == typeof(void)) BuildVoidMethod(type, methodInfo);
-                        else BuildMethod(type, methodInfo);
-                    }
+                    else BuildAsyncMethod(type, methodInfo);
                 }
-                return type.CreateType();
+                else
+                {
+                    if (methodInfo.ReturnType == typeof(void)) BuildVoidMethod(type, methodInfo);
+                    else BuildMethod(type, methodInfo);
+                }
             }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            return type.CreateType();
         }
 
         public MethodBuilder InternalMethodBuilder(TypeBuilder type, MethodInfo implementationMethod, Func<MethodInfo, MethodBuilder, Type[], List<ParameterWrapper>, MethodBuilder> bodyBuilder)
@@ -76,7 +70,7 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
 
         private static MethodBuilder BodyImplementer(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams)
         {
-            MethodInfo gatherParams = typeof(Stardust.Interstellar.Rest.ServiceWrapper.ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType)
+            MethodInfo gatherParams = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType)
                 .GetMethod("GatherParameters", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(String), typeof(Object[]) }, null);
             var baseType = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType);
             var implementation = baseType.GetRuntimeFields().Single(f => f.Name == "implementation");
@@ -242,7 +236,7 @@ namespace Stardust.Interstellar.Rest.ServiceWrapper
 
         private MethodBuilder VoidMethodBuilder(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams)
         {
-            MethodInfo gatherParams = typeof(Stardust.Interstellar.Rest.ServiceWrapper.ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
+            MethodInfo gatherParams = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
                 "GatherParameters",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                 null,

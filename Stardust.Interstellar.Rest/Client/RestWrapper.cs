@@ -4,20 +4,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Newtonsoft.Json;
+using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Client
 {
     public class RestWrapper
     {
-        internal const string ActionIdName = "sd-ActionId";
-
         private readonly IAuthenticationHandler authenticationHandler;
 
         private readonly IEnumerable<IHeaderHandler> headerHandlers;
@@ -28,12 +27,14 @@ namespace Stardust.Interstellar.Rest
 
         private string baseUri;
 
+        private readonly CookieContainer cookieContainer;
+
         public void SetBaseUrl(string url)
         {
             baseUri = url;
         }
 
-        public  Action<Dictionary<string,object>> Extras { get; internal set; }
+        public Action<Dictionary<string, object>> Extras { get; internal set; }
 
         protected RestWrapper(IAuthenticationHandler authenticationHandler, IHeaderHandlerFactory headerHandlers, TypeWrapper interfaceType)
         {
@@ -41,6 +42,7 @@ namespace Stardust.Interstellar.Rest
             this.headerHandlers = headerHandlers.GetHandlers();
             this.interfaceType = interfaceType.Type;
             InitializeClient(this.interfaceType);
+            cookieContainer = new CookieContainer();
         }
 
         public void InitializeClient(Type interfaceType)
@@ -53,9 +55,9 @@ namespace Stardust.Interstellar.Rest
             {
                 var template = methodInfo.GetCustomAttribute<RouteAttribute>();
                 var actionName = GetActionName(methodInfo);
-                var action = new ActionWrapper { Name = actionName, ReturnType = methodInfo.ReturnType, RouteTemplate = ExtensionsFactory.GetRouteTemplate(templatePrefix, template,methodInfo), Parameters = new List<ParameterWrapper>() };
+                var action = new ActionWrapper { Name = actionName, ReturnType = methodInfo.ReturnType, RouteTemplate = ExtensionsFactory.GetRouteTemplate(templatePrefix, template, methodInfo), Parameters = new List<ParameterWrapper>() };
                 var actions = methodInfo.GetCustomAttributes(true).OfType<IActionHttpMethodProvider>().ToList();
-                var methods = ExtensionsFactory.GetHttpMethods(actions,methodInfo);
+                var methods = ExtensionsFactory.GetHttpMethods(actions, methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
                 action.CustomHandlers = handlers;
                 action.Actions = methods;
@@ -87,7 +89,7 @@ namespace Stardust.Interstellar.Rest
             try
             {
                 var response = req.GetResponse() as HttpWebResponse;
-                GetHeaderValues(action,response);
+                GetHeaderValues(action, response);
                 return CreateResult(action, response);
             }
             catch (WebException webError)
@@ -97,18 +99,21 @@ namespace Stardust.Interstellar.Rest
             }
             catch (Exception ex)
             {
-                errorResult= HandleGenericException(ex);
+                errorResult = HandleGenericException(ex);
             }
             errorResult.ActionId = req.ActionId();
             return errorResult;
         }
 
-        private static void GetHeaderValues(ActionWrapper action, HttpWebResponse response)
+        private void GetHeaderValues(ActionWrapper action, HttpWebResponse response)
         {
+            if (response == null) return;
+            if (response.Cookies != null && response.Cookies.Count > 0)
+                cookieContainer.Add(response.Cookies);
             foreach (var customHandler in action.CustomHandlers)
             {
-                
-                if (response != null) customHandler.GetHeader(response);
+
+                customHandler.GetHeader(response);
             }
         }
 
@@ -158,7 +163,7 @@ namespace Stardust.Interstellar.Rest
             var type = typeof(Task).IsAssignableFrom(action.ReturnType) ? action.ReturnType.GetGenericArguments().First() : action.ReturnType;
             if (type == typeof(void))
             {
-                return new ResultWrapper { Type = typeof(void), IsVoid = true, Value = null, Status = response.StatusCode, StatusMessage = response.StatusDescription,ActionId = response.ActionId()};
+                return new ResultWrapper { Type = typeof(void), IsVoid = true, Value = null, Status = response.StatusCode, StatusMessage = response.StatusDescription, ActionId = response.ActionId() };
             }
             using (var reader = new JsonTextReader(new StreamReader(response.GetResponseStream())))
             {
@@ -191,7 +196,7 @@ namespace Stardust.Interstellar.Rest
             }
             if (queryStrings.Any()) path = path + "?" + string.Join("&", queryStrings);
             req = CreateRequest(path);
-            req.Headers.Add(ActionIdName,Guid.NewGuid().ToString());
+            req.Headers.Add(ExtensionsFactory.ActionIdName, Guid.NewGuid().ToString());
             req.InitializeState();
             req.Method = action.Actions.First().ToString();
             AppendHeaders(parameters, req, action);
@@ -200,7 +205,7 @@ namespace Stardust.Interstellar.Rest
             return action;
         }
 
-        
+
 
 
         private HttpWebRequest CreateRequest(string path)
@@ -212,6 +217,7 @@ namespace Stardust.Interstellar.Rest
             req.Headers.Add("Accept-Language", "en-us");
             req.UserAgent = "stardust/1.0";
             req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
+            req.CookieContainer = cookieContainer;
             return req;
         }
 
@@ -268,28 +274,28 @@ namespace Stardust.Interstellar.Rest
             try
             {
                 var response = await req.GetResponseAsync() as HttpWebResponse;
-                GetHeaderValues(action,response);
+                GetHeaderValues(action, response);
                 return CreateResult(action, response);
             }
             catch (WebException webError)
             {
-                GetHeaderValues(action,webError.Response as HttpWebResponse);
-                errorResult= HandleWebException(webError, action);
+                GetHeaderValues(action, webError.Response as HttpWebResponse);
+                errorResult = HandleWebException(webError, action);
             }
             catch (Exception ex)
             {
-                errorResult= HandleGenericException(ex);
+                errorResult = HandleGenericException(ex);
             }
             errorResult.ActionId = req.ActionId();
-            return errorResult;  
+            return errorResult;
         }
 
         public T Invoke<T>(string name, ParameterWrapper[] parameters)
         {
             var result = Execute(name, parameters);
-            Extras?.Invoke(result.GetExtras());
+            Extras?.Invoke(result.GetState().Extras);
             result.EndState();
-            
+
             if (result.Error == null)
                 return (T)result.Value;
             if (result.Value != null)
@@ -300,7 +306,7 @@ namespace Stardust.Interstellar.Rest
         public async Task<T> InvokeAsync<T>(string name, ParameterWrapper[] parameters)
         {
             var result = await ExecuteAsync(GetActionName(name), parameters);
-            Extras?.Invoke(StateHelper.GetExtras(result));
+            Extras?.Invoke(result.GetState().Extras);
             StateHelper.EndState(result);
             if (typeof(T) == typeof(void)) return default(T);
             if (result.Error == null)

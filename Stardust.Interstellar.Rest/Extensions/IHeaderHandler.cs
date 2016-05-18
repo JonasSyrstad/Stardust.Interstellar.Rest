@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Extensions
 {
     public interface IHeaderHandler
     {

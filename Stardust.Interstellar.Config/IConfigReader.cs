@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Stardust.Interstellar.Rest;
+using Stardust.Interstellar.Rest.Annotations;
 
 namespace Stardust.Interstellar.Config
 {

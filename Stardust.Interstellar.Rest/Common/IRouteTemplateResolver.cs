@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Common
 {
     public interface IRouteTemplateResolver
     {

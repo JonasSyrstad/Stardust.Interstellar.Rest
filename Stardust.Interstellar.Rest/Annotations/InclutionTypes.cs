@@ -1,4 +1,4 @@
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Annotations
 {
     public enum InclutionTypes
     {

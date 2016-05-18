@@ -1,5 +1,7 @@
 using System;
 using System.Threading.Tasks;
+using Stardust.Interstellar.Rest.Client;
+using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Test
 {

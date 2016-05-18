@@ -1,51 +1,14 @@
 ﻿using System;
-using System.Net;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Legacy;
+using Stardust.Interstellar.Rest.Service;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Stardust.Interstellar.Rest.Test
 {
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface)]
-    public sealed class CallingMachineNameAttribute : HeaderInspectorAttributeBase
-    {
-        public override IHeaderHandler[] GetHandlers()
-        {
-            return new IHeaderHandler[] { new CallingMachineNameHandler() };
-        }
-    }
-
-    public class CallingMachineNameHandler : IHeaderHandler
-    {
-        public void SetHeader(HttpWebRequest req)
-        {
-            req.Headers.Add("x-callingMachine", Environment.MachineName);
-        }
-
-        public void GetHeader(HttpWebResponse response)
-        {
-
-        }
-
-        public void SetServiceHeaders(WebHeaderCollection headers)
-        {
-
-        }
-
-        public void GetServiceHeader(HttpRequestHeaders headers)
-        {
-
-        }
-
-        public void SetServiceHeaders(HttpResponseHeaders headers)
-        {
-            
-        }
-    }
-
     public class ProxyGeneratorTest
     {
         private readonly ITestOutputHelper output;
@@ -60,24 +23,10 @@ namespace Stardust.Interstellar.Rest.Test
 
         {
             var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
-            try
-            {
-                var res = await service.ApplyAsync("101", "Stardust", "Hello", "World");
-                output.WriteLine(res.Value);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-            try
-            {
-                await service.PutAsync("test", DateTime.Today);
-                output.WriteLine("Put was successfull");
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
+            var res = await service.ApplyAsync("101", "Stardust", "Hello", "World");
+            output.WriteLine(res.Value);
+            await service.PutAsync("test", DateTime.Today);
+            output.WriteLine("Put was successfull");
         }
 
         [Fact]
@@ -109,10 +58,10 @@ namespace Stardust.Interstellar.Rest.Test
         [Fact]
         public void ImplementationBuilderTest()
         {
-            var testType = ServiceWrapper.ServiceFactory.CreateServiceImplementation<ITestApi>();
-            ServiceWrapper.ServiceFactory.FinalizeRegistration();
+            var testType = ServiceFactory.CreateServiceImplementation<ITestApi>();
+            ServiceFactory.FinalizeRegistration();
             Assert.NotNull(testType);
-            Assert.True(typeof(ServiceWrapper.ServiceWrapperBase<ITestApi>).IsAssignableFrom(testType));
+            Assert.True(typeof(ServiceWrapperBase<ITestApi>).IsAssignableFrom(testType));
         }
 
         [Fact]

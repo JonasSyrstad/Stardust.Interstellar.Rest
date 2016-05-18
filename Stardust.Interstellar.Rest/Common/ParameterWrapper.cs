@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using Stardust.Interstellar.Rest.Annotations;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Common
 {
     public class ParameterWrapper
     {

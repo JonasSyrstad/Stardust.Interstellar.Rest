@@ -2,8 +2,9 @@ using System;
 using System.Net;
 using System.Runtime.Serialization;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Client
 {
+    [Serializable]
     public class RestWrapperException : Exception
     {
         public RestWrapperException()

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Stardust.Interstellar.Rest.Extensions;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Common
 {
     internal class ActionWrapper
     {

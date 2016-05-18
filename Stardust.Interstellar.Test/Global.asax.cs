@@ -10,7 +10,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using Stardust.Core.Service.Web;
 using Stardust.Interstellar.Rest.Legacy;
-using Stardust.Interstellar.Rest.ServiceWrapper;
+using Stardust.Interstellar.Rest.Service;
 using Stardust.Interstellar.Rest.Test;
 using Stardust.Particles;
 

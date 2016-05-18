@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Extensions
 {
     public interface IHeaderHandlerFactory
     {

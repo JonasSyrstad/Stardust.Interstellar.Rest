@@ -2,6 +2,7 @@ using System;
 using System.Configuration;
 using System.Net;
 using System.Text;
+using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest
 {

@@ -2,6 +2,7 @@ using System;
 using System.Configuration;
 using System.Linq;
 using Stardust.Interstellar.Rest;
+using Stardust.Interstellar.Rest.Client;
 
 namespace Stardust.Interstellar.Config
 {

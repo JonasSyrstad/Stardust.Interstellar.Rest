@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Extensions
 {
     public class NullAuthHandler : IAuthenticationHandler
     {

@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace Stardust.Interstellar.Rest
+namespace Stardust.Interstellar.Rest.Client
 {
     public class ResultWrapper
     {
