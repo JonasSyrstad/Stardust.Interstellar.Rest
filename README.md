@@ -120,3 +120,21 @@ Creating client extensions
         }
     }
 ```
+
+To wrap existing wcf services as WebApi services:
+``` 
+protected void Application_Start()
+        {
+            WcfServiceProvider.RegisterWcfAdapters();   //Adds the wcf adapter package to the generator
+            ServiceFactory.CreateServiceImplementationForAllInCotainingAssembly<ITestApi>(); //Same as before
+            ServiceFactory.FinalizeRegistration();
+
+            this.LoadBindingConfiguration<TestBlueprint>();
+           
+            AreaRegistration.RegisterAllAreas();
+            GlobalConfiguration.Configure(WebApiConfig.Register);
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            BundleConfig.RegisterBundles(BundleTable.Bundles);
+        }
+``` 
