@@ -32,7 +32,14 @@ Sample service definition interface
 ```
 Creating a service proxy
 ```
-        var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
+        var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/",
+                    extras =>
+                        {
+                            foreach (var extra in extras)
+                            {
+                                output.WriteLine($"{extra.Key}:{extra.Value}");
+                            }
+                        });
         try
         {
             var res =await service.ApplyAsync("101", "SampleService", "Hello", "Sample");
@@ -139,19 +146,19 @@ Statefull extesions can be created like this:
 
         protected override void DoSetHeader(StateDictionary state, HttpWebRequest req)
         {
-            state.SetState(StardustTimerKey, Stopwatch.StartNew());
+            state.SetState(StardustTimerKey, Stopwatch.StartNew());//add to state container
         }
 
         protected override void DoGetHeader(StateDictionary state, HttpWebResponse response)
         {
-            var sw = state.GetState<Stopwatch>(StardustTimerKey);
+            var sw = state.GetState<Stopwatch>(StardustTimerKey);//get from state container
             sw.Stop();
             var server = response.Headers[StardustTimerKey];
             if (!string.IsNullOrWhiteSpace(server))
             {
                 var serverTime = long.Parse(server);
                 var latency = sw.ElapsedMilliseconds - serverTime;
-                state.Extras.Add("latency",latency);
+                state.Extras.Add("latency",latency);//add to client output
                 state.Extras.Add("serverTime",serverTime);
                 state.Extras.Add("totalTime",sw.ElapsedMilliseconds);
             }
