@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Legacy;
@@ -32,7 +31,7 @@ namespace Stardust.Interstellar.Rest.Test
         [Fact]
         public async Task GeneratorPerfTest()
         {
-            for (int i = 0; i < 1000; i++)
+            for (var i = 0; i < 1000; i++)
             {
                 var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/",
                     extras =>
