@@ -68,5 +68,10 @@ namespace Stardust.Interstellar.Rest.Test
             var result = InvokeAsync<int>(apply, parameters);
             return result;
         }
+
+        public Task FailingAction(string id, string timestamp)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

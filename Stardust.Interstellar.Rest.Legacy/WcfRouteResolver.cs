@@ -10,9 +10,24 @@ using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Legacy
 {
-    class WcfRouteResolver : IRouteTemplateResolver, IWebMethodConverter, IServiceLocator, IServiceParameterResolver
-    {
 
+    public class WcfRouteResolver : IServiceLocator, IRouteTemplateResolver, IWebMethodConverter, IServiceParameterResolver
+    {
+        public T GetService<T>()
+        {
+            if (typeof(T).IsAssignableFrom(GetType())) return (T)GetService();
+            return default(T);
+        }
+
+        private static object GetService()
+        {
+            return new WcfRouteResolver();
+        }
+
+        public IEnumerable<T> GetServices<T>()
+        {
+            return null;
+        }
         public string GetTemplate(MethodInfo methodInfo)
         {
             var getAttrib = methodInfo.GetCustomAttribute<WebGetAttribute>();
@@ -36,21 +51,7 @@ namespace Stardust.Interstellar.Rest.Legacy
             return methods;
         }
 
-        public T GetService<T>()
-        {
-            if (typeof(T).IsAssignableFrom(GetType())) return (T)GetService();
-            return default(T);
-        }
-
-        private static object GetService()
-        {
-            return new WcfRouteResolver();
-        }
-
-        public IEnumerable<T> GetServices<T>()
-        {
-            return null;
-        }
+        
 
         public IEnumerable<ParameterWrapper> ResolveParameters(MethodInfo methodInfo)
         {

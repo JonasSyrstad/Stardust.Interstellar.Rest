@@ -1,13 +1,19 @@
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Client;
+using Stardust.Interstellar.Rest.Service;
 
 namespace Stardust.Interstellar.Rest.Test
 {
     [IRoutePrefix("api")]
     [CallingMachineName]
     [PerformanceHeaders]
+    [ErrorHandler(typeof(TestHandler))]
     public interface ITestApi
     {
         [Route("test/{id}")]
@@ -33,5 +39,57 @@ namespace Stardust.Interstellar.Rest.Test
         [Route("put2/{id}")]
         [HttpPut]
         Task PutAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] DateTime timestamp);
+
+        [Route("failure/{id}")]
+        [HttpPut]
+        Task FailingAction([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] string timestamp);
+    }
+
+    public class TestHandler : IErrorHandler
+    {
+        /// <summary>
+        /// Provide additional excption type to http status code mappings mappings 
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public HttpResponseMessage ConvertToErrorResponse(Exception exception, HttpRequestMessage request)
+        {
+            if (exception is NotImplementedException)
+            {
+                var resp= request.CreateResponse(HttpStatusCode.BadGateway,DateTime.Now);
+                return resp;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Set to true if this handles all exception types 
+        /// </summary>
+        public bool OverrideDefaults
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public Exception ProduceClientException(string statusMessage, HttpStatusCode status, Exception error, string value)
+        {
+            DateTime? msg=null;
+            try
+            {
+
+                if (string.IsNullOrWhiteSpace(value)) msg = null;
+                else
+                msg = JsonConvert.DeserializeObject<DateTime>(value);
+            }
+            catch (Exception)
+            {
+
+            }
+            return new RestWrapperException(statusMessage,status,msg,error);
+        }
     }
 }

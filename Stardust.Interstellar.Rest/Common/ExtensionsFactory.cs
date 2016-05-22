@@ -65,8 +65,9 @@ namespace Stardust.Interstellar.Rest.Common
         internal static string GetServiceTemplate(MethodInfo methodInfo)
         {
             var template = GetService<IRouteTemplateResolver>()?.GetTemplate(methodInfo);
-            if (!String.IsNullOrWhiteSpace(template)) return template;
+            if (!string.IsNullOrWhiteSpace(template)) return template;
             var templateAttrib = methodInfo.GetCustomAttribute<RouteAttribute>();
+            if (templateAttrib == null) return template;
             template = templateAttrib.Template;
             return template;
         }

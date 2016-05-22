@@ -95,5 +95,10 @@ namespace Stardust.Interstellar.Test
         {
             return Task.FromResult(2);
         }
+
+        public Task FailingAction(string id, string timestamp)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

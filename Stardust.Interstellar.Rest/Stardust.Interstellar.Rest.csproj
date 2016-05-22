@@ -31,6 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.JScript" />
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -88,6 +89,10 @@
     <Compile Include="Client\RestWrapper.cs" />
     <Compile Include="Client\RestWrapperException.cs" />
     <Compile Include="Client\ResultWrapper.cs" />
+    <Compile Include="Service\AggregateHandler.cs" />
+    <Compile Include="Service\ErrorHandlerAttribute.cs" />
+    <Compile Include="Service\IErrorHandler.cs" />
+    <Compile Include="Service\ParameterReflectionException.cs" />
     <Compile Include="Service\ServiceBuilder.cs" />
     <Compile Include="Service\ServiceFactory.cs" />
     <Compile Include="Service\ServiceWrapperBase.cs" />

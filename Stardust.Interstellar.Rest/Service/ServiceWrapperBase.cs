@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -24,7 +23,7 @@ namespace Stardust.Interstellar.Rest.Service
         protected HttpResponseMessage CreateResponse<TMessage>(HttpStatusCode statusCode, TMessage message = default(TMessage))
         {
             HttpResponseMessage result;
-            
+
             if (message == null)
             {
                 result = Request.CreateResponse(HttpStatusCode.NoContent);
@@ -33,14 +32,14 @@ namespace Stardust.Interstellar.Rest.Service
                 result = Request.CreateResponse(statusCode, message);
             SetHeaders(result);
             Request.EndState();
-            
+
             return result;
         }
 
         private void SetHeaders(HttpResponseMessage result)
         {
             var action = GetActionWrapper(Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault().FirstOrDefault());
-           var actionId= Request.ActionId();
+            var actionId = Request.ActionId();
             result.Headers.Add(ExtensionsFactory.ActionIdName, actionId);
             foreach (var customHandler in action.CustomHandlers)
             {
@@ -54,8 +53,8 @@ namespace Stardust.Interstellar.Rest.Service
             try
             {
                 var message = await messageTask;
-                if (message == null) result= Request.CreateResponse(HttpStatusCode.NoContent);
-                else result=Request.CreateResponse(statusCode, message);
+                if (message == null) result = Request.CreateResponse(HttpStatusCode.NoContent);
+                else result = Request.CreateResponse(statusCode, message);
                 SetHeaders(result);
                 Request.EndState();
                 return result;
@@ -81,22 +80,48 @@ namespace Stardust.Interstellar.Rest.Service
             {
                 result = CreateErrorResponse(ex);
             }
-           return result;
+            return result;
         }
-        
 
         protected HttpResponseMessage CreateErrorResponse(Exception ex)
         {
-            HttpResponseMessage result;
-            //TODO: add more exception conventions..
-            if (ex is UnauthorizedAccessException) result = Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ex.Message);
-            else result = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
+            var errorHandler = GetErrorHandler();
+            HttpResponseMessage result = null;
+            result = ConvertExceptionToErrorResult(ex, result, errorHandler);
+            if (result == null) result = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             SetHeaders(result);
             Request.EndState();
             return result;
         }
 
+        private  IErrorHandler GetErrorHandler()
+        {
+
+            var errorHandler = ExtensionsFactory.GetService<IErrorHandler>();
+            if (errorHandler == null) return errorInterceptor;
+            if (errorInterceptor != null) return new AggregateHandler(errorHandler, errorInterceptor);
+
+            return errorHandler;
+        }
+
+        private HttpResponseMessage ConvertExceptionToErrorResult(Exception ex, HttpResponseMessage result, IErrorHandler errorHandler)
+        {
+            if (errorHandler != null && errorHandler.OverrideDefaults)
+            {
+                result= errorHandler.ConvertToErrorResponse(ex, Request);
+
+                if (result != null) return result;
+            }
+            if (ex is UnauthorizedAccessException) result = Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ex.Message);
+            else if (ex is IndexOutOfRangeException) result = Request.CreateErrorResponse(HttpStatusCode.NotFound, ex.Message);
+            else if (ex is NotImplementedException) result = Request.CreateErrorResponse(HttpStatusCode.NotImplemented, ex.Message);
+            else if (errorHandler != null) result = errorHandler.ConvertToErrorResponse(ex,Request);
+            return result;
+        }
+
         private static ConcurrentDictionary<Type, ConcurrentDictionary<string, ActionWrapper>> cache = new ConcurrentDictionary<Type, ConcurrentDictionary<string, ActionWrapper>>();
+
+        private IErrorHandler errorInterceptor;
 
         protected ServiceWrapperBase(T implementation)
         {
@@ -119,7 +144,7 @@ namespace Stardust.Interstellar.Rest.Service
                     wrappers.Add(parameter.Create(val));
                     i++;
                 }
-                this.Request.Headers.Add(ActionWrapperName,GetActionName(name));
+                this.Request.Headers.Add(ActionWrapperName, GetActionName(name));
                 foreach (var headerHandler in action.CustomHandlers)
                 {
                     headerHandler.GetServiceHeader(Request.Headers);
@@ -162,7 +187,8 @@ namespace Stardust.Interstellar.Rest.Service
             ConcurrentDictionary<string, ActionWrapper> wrapper;
             if (cache.TryGetValue(interfaceType, out wrapper)) return;
             var newWrapper = new ConcurrentDictionary<string, ActionWrapper>();
-
+            var errorHanderInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
+            if (errorHanderInterceptor != null) errorInterceptor = errorHanderInterceptor.ErrorHandler;
             foreach (var methodInfo in interfaceType.GetMethods())
             {
 
@@ -236,23 +262,6 @@ namespace Stardust.Interstellar.Rest.Service
                 }
                 action.Parameters.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
             }
-        }
-    }
-
-    public class ParameterReflectionException : Exception
-    {
-
-        public ParameterReflectionException(string message) : base(message)
-        {
-        }
-
-        public ParameterReflectionException(string message, Exception innerException) : base(message, innerException)
-        {
-
-        }
-
-        protected ParameterReflectionException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
         }
     }
 }

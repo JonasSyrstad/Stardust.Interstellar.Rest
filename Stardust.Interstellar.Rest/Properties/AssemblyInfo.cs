@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Stardust.Interstellar.Rest")]
-[assembly: AssemblyDescription("Create rest services and clients based on decorated interfaces.")]
+[assembly: AssemblyDescription("Create rest services and clients based on decorated interfaces. Extend both service and client bahavior by adding Attributes for error, header and authentication handling.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Stardust")]
 [assembly: AssemblyProduct("Stardust.Interstellar.Rest")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.3.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

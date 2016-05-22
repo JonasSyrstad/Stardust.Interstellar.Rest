@@ -29,6 +29,23 @@ namespace Stardust.Interstellar.Rest.Test
         }
 
         [Fact]
+        public async void ErrorHandlerTest()
+        {
+            var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
+            try
+            {
+                await service.FailingAction("1", DateTime.Now.ToString());
+            }
+            catch (RestWrapperException ex)
+            {
+                var error = ex.Message;
+                output.WriteLine(error);
+                Assert.True(error== "Bad Gateway");
+            }
+
+        }
+
+        [Fact]
         public async Task GeneratorPerfTest()
         {
             for (var i = 0; i < 1000; i++)

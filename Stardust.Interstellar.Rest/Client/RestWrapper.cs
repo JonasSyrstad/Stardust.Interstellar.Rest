@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Annotations;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
+using Stardust.Interstellar.Rest.Service;
 
 namespace Stardust.Interstellar.Rest.Client
 {
@@ -28,6 +29,8 @@ namespace Stardust.Interstellar.Rest.Client
         private string baseUri;
 
         private readonly CookieContainer cookieContainer;
+
+        private ErrorHandlerAttribute errorInterceptor;
 
         public void SetBaseUrl(string url)
         {
@@ -51,6 +54,7 @@ namespace Stardust.Interstellar.Rest.Client
             if (cache.TryGetValue(interfaceType, out wrapper)) return;
             var newWrapper = new ConcurrentDictionary<string, ActionWrapper>();
             var templatePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>();
+            errorInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
             foreach (var methodInfo in interfaceType.GetMethods())
             {
                 var template = methodInfo.GetCustomAttribute<RouteAttribute>();
@@ -140,22 +144,20 @@ namespace Stardust.Interstellar.Rest.Client
             return new ResultWrapper { Status = HttpStatusCode.BadGateway, StatusMessage = webError.Message, Error = webError };
         }
 
-        private static object TryGetErrorBody(ActionWrapper action, HttpWebResponse resp)
+        private static string TryGetErrorBody(ActionWrapper action, HttpWebResponse resp)
         {
-            object result = null;
             try
             {
-                using (var reader = new JsonTextReader(new StreamReader(resp.GetResponseStream())))
+                using (var reader =new StreamReader(resp.GetResponseStream()))
                 {
-                    var serializer = new JsonSerializer();
-                    result = serializer.Deserialize(reader, action.ReturnType);
+                    return reader.ReadToEnd();
                 }
             }
             catch
             {
                 // ignored
             }
-            return result;
+            return null;
         }
 
         private static ResultWrapper CreateResult(ActionWrapper action, HttpWebResponse response)
@@ -176,11 +178,7 @@ namespace Stardust.Interstellar.Rest.Client
 
         private ActionWrapper CreateActionRequest(string name, ParameterWrapper[] parameters, out HttpWebRequest req)
         {
-            ConcurrentDictionary<string, ActionWrapper> @interface;
-            if (!cache.TryGetValue(interfaceType, out @interface)) throw new InvalidOperationException("Unknown interface type");
-
-            ActionWrapper action;
-            if (!@interface.TryGetValue(GetActionName(name), out action)) throw new InvalidOperationException("Unknown method");
+            var action = GetAction(name);
             var path = action.RouteTemplate;
             List<string> queryStrings = new List<string>();
             foreach (var source in parameters.Where(p => p.In == InclutionTypes.Path))
@@ -205,8 +203,15 @@ namespace Stardust.Interstellar.Rest.Client
             return action;
         }
 
+        private ActionWrapper GetAction(string name)
+        {
+            ConcurrentDictionary<string, ActionWrapper> @interface;
+            if (!cache.TryGetValue(interfaceType, out @interface)) throw new InvalidOperationException("Unknown interface type");
 
-
+            ActionWrapper action;
+            if (!@interface.TryGetValue(GetActionName(name), out action)) throw new InvalidOperationException("Unknown method");
+            return action;
+        }
 
         private HttpWebRequest CreateRequest(string path)
         {
@@ -298,9 +303,8 @@ namespace Stardust.Interstellar.Rest.Client
 
             if (result.Error == null)
                 return (T)result.Value;
-            if (result.Value != null)
-                throw new RestWrapperException<T>(result.StatusMessage, result.Status, result.Value, result.Error);
-            throw new RestWrapperException(result.StatusMessage, result.Status, result.Error);
+            CreateException(name,result);
+            return default(T);
         }
 
         public async Task<T> InvokeAsync<T>(string name, ParameterWrapper[] parameters)
@@ -311,9 +315,37 @@ namespace Stardust.Interstellar.Rest.Client
             if (typeof(T) == typeof(void)) return default(T);
             if (result.Error == null)
                 return (T)result.Value;
-            if (result.Value != null)
-                throw new RestWrapperException<T>(result.StatusMessage, result.Status, result.Value, result.Error);
+            CreateException(name,result);
+            return default(T);
+        }
+
+        private  void CreateException(string name, ResultWrapper result)
+        {
+            var action = GetAction(name);
+            var handler = GetErrorHandler();
+            if (handler != null) throw handler.ProduceClientException(result.StatusMessage, result.Status, result.Error, result.Value as string);
+            if (result.Value != null) throw new RestWrapperException(result.StatusMessage, result.Status, result.Value, result.Error);
             throw new RestWrapperException(result.StatusMessage, result.Status, result.Error);
+        }
+
+        private IErrorHandler GetErrorHandler()
+        {
+            IErrorHandler handler;
+            var globalErrorHandler = ExtensionsFactory.GetService<IErrorHandler>();
+            var errorHandler = errorInterceptor?.ErrorHandler;
+            if (globalErrorHandler != null && errorHandler != null)
+            {
+                handler = new AggregateHandler(globalErrorHandler, errorHandler);
+            }
+            else if (globalErrorHandler != null)
+            {
+                handler = globalErrorHandler;
+            }
+            else
+            {
+                handler = errorHandler;
+            }
+            return handler;
         }
 
         public async Task InvokeVoidAsync(string name, ParameterWrapper[] parameters)
@@ -321,7 +353,7 @@ namespace Stardust.Interstellar.Rest.Client
             var result = await ExecuteAsync(GetActionName(name), parameters);
             if (result.Error == null)
                 return;
-            throw new RestWrapperException(result.StatusMessage, result.Status, result.Error);
+            CreateException(name, result);
         }
 
         public void InvokeVoid(string name, ParameterWrapper[] parameters)
@@ -329,7 +361,7 @@ namespace Stardust.Interstellar.Rest.Client
             var result = Execute(name, parameters);
             if (result.Error == null)
                 return;
-            throw new RestWrapperException(result.StatusMessage, result.Status, result.Error);
+            CreateException(name, result);
         }
 
         protected ParameterWrapper[] GetParameters(string name, params object[] parameters)
