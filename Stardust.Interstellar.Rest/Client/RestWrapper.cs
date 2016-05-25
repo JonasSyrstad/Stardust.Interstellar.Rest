@@ -53,9 +53,10 @@ namespace Stardust.Interstellar.Rest.Client
             ConcurrentDictionary<string, ActionWrapper> wrapper;
             if (cache.TryGetValue(interfaceType, out wrapper)) return;
             var newWrapper = new ConcurrentDictionary<string, ActionWrapper>();
-            var templatePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>();
+            var templatePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>()
+                ?? interfaceType.GetInterfaces().FirstOrDefault()?.GetCustomAttribute<IRoutePrefixAttribute>();
             errorInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
-            foreach (var methodInfo in interfaceType.GetMethods())
+            foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
             {
                 var template = methodInfo.GetCustomAttribute<RouteAttribute>();
                 var actionName = GetActionName(methodInfo);
@@ -162,8 +163,8 @@ namespace Stardust.Interstellar.Rest.Client
 
         private static ResultWrapper CreateResult(ActionWrapper action, HttpWebResponse response)
         {
-            var type = typeof(Task).IsAssignableFrom(action.ReturnType) ? action.ReturnType.GetGenericArguments().First() : action.ReturnType;
-            if (type == typeof(void))
+            var type = typeof(Task).IsAssignableFrom(action.ReturnType) ? action.ReturnType.GetGenericArguments().FirstOrDefault() : action.ReturnType;
+            if (type == typeof(void)||type==null)
             {
                 return new ResultWrapper { Type = typeof(void), IsVoid = true, Value = null, Status = response.StatusCode, StatusMessage = response.StatusDescription, ActionId = response.ActionId() };
             }

@@ -34,25 +34,32 @@ namespace Stardust.Interstellar.Rest.Service
 
         public Type CreateServiceImplementation(Type interfaceType)
         {
-            var type = CreateServiceType(interfaceType);
-            ctor(type, interfaceType);
-            foreach (var methodInfo in interfaceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
+            try
             {
-                if (typeof(Task).IsAssignableFrom(methodInfo.ReturnType))
+                var type = CreateServiceType(interfaceType);
+                ctor(type, interfaceType);
+                foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
                 {
-                    if (methodInfo.ReturnType.GetGenericArguments().Length == 0)
+                    if (typeof(Task).IsAssignableFrom(methodInfo.ReturnType))
                     {
-                        BuildAsyncVoidMethod(type, methodInfo);
+                        if (methodInfo.ReturnType.GetGenericArguments().Length == 0)
+                        {
+                            BuildAsyncVoidMethod(type, methodInfo);
+                        }
+                        else BuildAsyncMethod(type, methodInfo);
                     }
-                    else BuildAsyncMethod(type, methodInfo);
+                    else
+                    {
+                        if (methodInfo.ReturnType == typeof(void)) BuildVoidMethod(type, methodInfo);
+                        else BuildMethod(type, methodInfo);
+                    }
                 }
-                else
-                {
-                    if (methodInfo.ReturnType == typeof(void)) BuildVoidMethod(type, methodInfo);
-                    else BuildMethod(type, methodInfo);
-                }
+                return type.CreateType();
             }
-            return type.CreateType();
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         public MethodBuilder InternalMethodBuilder(TypeBuilder type, MethodInfo implementationMethod, Func<MethodInfo, MethodBuilder, Type[], List<ParameterWrapper>, MethodBuilder> bodyBuilder)
@@ -624,20 +631,24 @@ namespace Stardust.Interstellar.Rest.Service
 
         private TypeBuilder CreateServiceType(Type interfaceType)
         {
-            var routePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>();
+            var routePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>() 
+                ?? interfaceType.GetInterfaces().FirstOrDefault()?.GetCustomAttribute<IRoutePrefixAttribute>();
             var type = myModuleBuilder.DefineType("TempModule.Controllers." + interfaceType.Name.Remove(0, 1) + "Controller", TypeAttributes.Public | TypeAttributes.Class, typeof(ServiceWrapperBase<>).MakeGenericType(interfaceType));
+            
             if (routePrefix != null)
             {
+                var prefix = routePrefix.Prefix;
+                if (routePrefix.IncludeTypeName) prefix = prefix + "/" + (interfaceType.GetGenericArguments().Any()? interfaceType.GetGenericArguments().FirstOrDefault()?.Name.ToLower(): interfaceType.GetInterfaces().FirstOrDefault()?.GetGenericArguments().First().Name.ToLower());
                 var routePrefixCtor = typeof(RoutePrefixAttribute).GetConstructor(
                            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                            null,
                            new Type[]{
-                        typeof(String)
+                        typeof(string)
                                },
                            null
                            );
 
-                type.SetCustomAttribute(new CustomAttributeBuilder(routePrefixCtor, new object[] { routePrefix.Prefix }));
+                type.SetCustomAttribute(new CustomAttributeBuilder(routePrefixCtor, new object[] { prefix }));
             }
             return type;
         }

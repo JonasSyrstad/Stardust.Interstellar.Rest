@@ -74,11 +74,19 @@ namespace Stardust.Interstellar.Rest.Common
 
         internal static string GetRouteTemplate(IRoutePrefixAttribute templatePrefix, RouteAttribute template, MethodInfo methodInfo)
         {
+            var interfaceType = methodInfo.DeclaringType;
             var templateResolver = 
                 GetService<IRouteTemplateResolver>();
             var route = templateResolver?.GetTemplate(methodInfo);
             if (!String.IsNullOrWhiteSpace(route)) return route;
-            return templatePrefix == null ? "" : (templatePrefix.Prefix + "/") + template.Template;
+            string prefix="";
+            if(templatePrefix!=null)
+            {
+                prefix = templatePrefix.Prefix;
+                if (templatePrefix.IncludeTypeName) prefix = prefix + "/" + (interfaceType.GetGenericArguments().Any() ? interfaceType.GetGenericArguments().FirstOrDefault()?.Name.ToLower() : interfaceType.GetInterfaces().FirstOrDefault()?.GetGenericArguments().First().Name.ToLower());
+                
+            }
+            return templatePrefix == null ? "" : (prefix + "/") + template.Template;
         }
 
         internal static void BuildParameterInfo(MethodInfo methodInfo, ActionWrapper action)

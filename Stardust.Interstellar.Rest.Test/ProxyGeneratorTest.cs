@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Legacy;
 using Stardust.Interstellar.Rest.Service;
+using Stardust.Nucleus;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -16,6 +17,7 @@ namespace Stardust.Interstellar.Rest.Test
         {
             this.output = output;
             WcfServiceProvider.RegisterWcfAdapters();
+            Resolver.LoadModuleConfiguration<TestBlueprint>();
         }
         [Fact]
         public async Task GeneratorTest()
@@ -97,5 +99,9 @@ namespace Stardust.Interstellar.Rest.Test
             output.WriteLine(putRes.Value);
 
         }
+    }
+
+    public class TestBlueprint:Blueprint
+    {
     }
 }

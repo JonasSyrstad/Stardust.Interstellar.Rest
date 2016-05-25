@@ -60,6 +60,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Annotations\IRoutePrefixAttribute.cs" />
+    <Compile Include="Client\Graph\GraphBase.cs" />
+    <Compile Include="Client\Graph\GraphQuery.cs" />
+    <Compile Include="Client\Graph\GraphQueryPart.cs" />
+    <Compile Include="Client\Graph\NavigationAttribute.cs" />
+    <Compile Include="Client\Graph\GraphCollection.cs" />
+    <Compile Include="Client\Graph\GraphContext.cs" />
+    <Compile Include="Client\Graph\GraphItem.cs" />
+    <Compile Include="Client\Graph\IGraphCollection.cs" />
+    <Compile Include="Client\Graph\IGraphCollectionService.cs" />
+    <Compile Include="Client\Graph\IGraphItem.cs" />
+    <Compile Include="Client\Graph\IInternalGraphHelper.cs" />
     <Compile Include="Common\EmitHelpers.cs" />
     <Compile Include="Common\ActionWrapper.cs" />
     <Compile Include="Annotations\PerformanceHeadersAttribute.cs" />

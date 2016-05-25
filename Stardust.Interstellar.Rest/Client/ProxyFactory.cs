@@ -12,12 +12,18 @@ namespace Stardust.Interstellar.Rest.Client
         static ConcurrentDictionary<Type,Type> proxyTypeCache=new ConcurrentDictionary<Type, Type>();
         public static Type CreateProxy<T>()
         {
+            var interfaceType = typeof(T);
+            return CreateProxy(interfaceType);
+        }
+
+        public static Type CreateProxy(Type interfaceType)
+        {
             Type type;
-            if (proxyTypeCache.TryGetValue(typeof(T), out type)) return type;
-            var builder = new ProxyBuilder<T>();
-            var newType= builder.Build();
-            if (proxyTypeCache.TryGetValue(typeof(T), out type)) return type;
-            proxyTypeCache.TryAdd(typeof(T), newType);
+            if (proxyTypeCache.TryGetValue(interfaceType, out type)) return type;
+            var builder = new ProxyBuilder(interfaceType);
+            var newType = builder.Build();
+            if (proxyTypeCache.TryGetValue(interfaceType, out type)) return type;
+            proxyTypeCache.TryAdd(interfaceType, newType);
             return newType;
         }
 
@@ -28,17 +34,26 @@ namespace Stardust.Interstellar.Rest.Client
 
         public static T CreateInstance<T>(string baseUrl,Action<Dictionary<string,object>> extrasCollector )
         {
-            var t = CreateProxy<T>();
-            var auth = typeof(T).GetCustomAttributes().SingleOrDefault(a => a is IAuthenticationInspector) as IAuthenticationInspector;
-            var authHandler = GetAuthenticationHandler<T>(auth);
-            var instance = Activator.CreateInstance(t, authHandler, new HeaderHandlerFactory(typeof(T)), TypeWrapper.Create<T>());
+            return (T)CreateInstance(typeof(T),baseUrl, extrasCollector);
+        }
+
+        public static object CreateInstance(Type interfaceType, string baseUrl)
+        {
+            return CreateInstance(interfaceType, baseUrl,null);
+        }
+        public static object CreateInstance(Type interfaceType,string baseUrl, Action<Dictionary<string, object>> extrasCollector)
+        {
+            var t = CreateProxy(interfaceType);
+            var auth = interfaceType.GetCustomAttributes().SingleOrDefault(a => a is IAuthenticationInspector) as IAuthenticationInspector;
+            var authHandler = GetAuthenticationHandler(auth);
+            var instance = Activator.CreateInstance(t, authHandler, new HeaderHandlerFactory(interfaceType), TypeWrapper.Create(interfaceType));
             ((RestWrapper)instance).Extras = extrasCollector;
             var i = (RestWrapper)instance;
             i.SetBaseUrl(baseUrl);
-            return (T)instance;
+            return instance;
         }
 
-        private static IAuthenticationHandler GetAuthenticationHandler<T>(IAuthenticationInspector auth)
+        private static object GetAuthenticationHandler(IAuthenticationInspector auth)
         {
             IAuthenticationHandler authHandler;
             if (auth == null) authHandler = new NullAuthHandler();
@@ -48,5 +63,6 @@ namespace Stardust.Interstellar.Rest.Client
             }
             return authHandler;
         }
+        
     }
 }
