@@ -48,8 +48,7 @@ namespace Stardust.Interstellar.Rest.Client
             }
             catch (Exception)
             {
-
-                throw;
+                
             }
             return result;
         }

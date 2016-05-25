@@ -58,6 +58,8 @@ namespace Stardust.Interstellar
 
         public IServiceContainer<T> SetServiceRoot(string serviceRootUrl)
         {
+
+             this.serviceRoot = serviceRootUrl;
             return this;
         }
 
