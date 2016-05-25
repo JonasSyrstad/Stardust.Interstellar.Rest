@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Annotations;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Service;
+using Stardust.Particles;
 
 namespace Stardust.Interstellar.Rest.Test
 {
@@ -55,10 +56,19 @@ namespace Stardust.Interstellar.Rest.Test
         /// <returns></returns>
         public HttpResponseMessage ConvertToErrorResponse(Exception exception, HttpRequestMessage request)
         {
+            Logging.DebugMessage(exception.GetType().FullName);
             if (exception is NotImplementedException)
             {
                 var resp= request.CreateResponse(HttpStatusCode.BadGateway,DateTime.Now);
                 return resp;
+            }
+            if (!(exception is AggregateException)) return null;
+            {
+                if (!((exception as AggregateException).InnerExceptions is NotImplementedException))
+                {
+                    var resp = request.CreateResponse(HttpStatusCode.BadGateway, DateTime.Now);
+                    return resp;
+                }
             }
 
             return null;

@@ -13,5 +13,13 @@ namespace Stardust.Interstellar.Rest.Client
                            Type = typeof(T)
                        };
         }
+
+        public static TypeWrapper Create(Type interfaceType)
+        {
+            return new TypeWrapper
+            {
+                Type = interfaceType
+            };
+        }
     }
 }

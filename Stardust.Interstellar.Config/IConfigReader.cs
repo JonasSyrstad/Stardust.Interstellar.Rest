@@ -14,6 +14,6 @@ namespace Stardust.Interstellar.Config
         [HttpGet]
         [Route("api/ConfigReader/{id}")]
         
-        ConfigurationSet Get([In(InclutionTypes.Header)] string id, [In(InclutionTypes.Header)]string env = null, [In(InclutionTypes.Header)]string updKey = null);
+        ConfigurationSet Get([FromUri] string id, [In(InclutionTypes.Path)]string env = null, [In(InclutionTypes.Path)]string updKey = null);
     }
 }

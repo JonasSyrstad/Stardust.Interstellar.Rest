@@ -94,7 +94,7 @@ namespace Stardust.Interstellar.Rest.Service
             return result;
         }
 
-        private  IErrorHandler GetErrorHandler()
+        private IErrorHandler GetErrorHandler()
         {
 
             var errorHandler = ExtensionsFactory.GetService<IErrorHandler>();
@@ -108,14 +108,14 @@ namespace Stardust.Interstellar.Rest.Service
         {
             if (errorHandler != null && errorHandler.OverrideDefaults)
             {
-                result= errorHandler.ConvertToErrorResponse(ex, Request);
+                result = errorHandler.ConvertToErrorResponse(ex, Request);
 
                 if (result != null) return result;
             }
             if (ex is UnauthorizedAccessException) result = Request.CreateErrorResponse(HttpStatusCode.Unauthorized, ex.Message);
-            else if (ex is IndexOutOfRangeException) result = Request.CreateErrorResponse(HttpStatusCode.NotFound, ex.Message);
+            else if (ex is IndexOutOfRangeException || ex is KeyNotFoundException) result = Request.CreateErrorResponse(HttpStatusCode.NotFound, ex.Message);
             else if (ex is NotImplementedException) result = Request.CreateErrorResponse(HttpStatusCode.NotImplemented, ex.Message);
-            else if (errorHandler != null) result = errorHandler.ConvertToErrorResponse(ex,Request);
+            else if (errorHandler != null) result = errorHandler.ConvertToErrorResponse(ex, Request);
             return result;
         }
 
@@ -136,6 +136,9 @@ namespace Stardust.Interstellar.Rest.Service
 
                 Request.InitializeState();
                 var action = GetAction(name);
+                Request.GetState().SetState("controller", this);
+                Request.GetState().SetState("controllerName", typeof(T).FullName);
+                Request.GetState().SetState("action", action.Name);
                 var i = 0;
                 var wrappers = new List<ParameterWrapper>();
                 foreach (var parameter in action.Parameters)
@@ -182,16 +185,16 @@ namespace Stardust.Interstellar.Rest.Service
             throw new InvalidCastException("Not currently able to deal with collections...");
         }
 
+        private static ConcurrentDictionary<Type, ErrorHandlerAttribute> errorhanderCache = new ConcurrentDictionary<Type, ErrorHandlerAttribute>();
         protected void InitializeServiceApi(Type interfaceType)
         {
+            GetErrorInterceptor(interfaceType);
             ConcurrentDictionary<string, ActionWrapper> wrapper;
             if (cache.TryGetValue(interfaceType, out wrapper)) return;
             var newWrapper = new ConcurrentDictionary<string, ActionWrapper>();
-            var errorHanderInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
-            if (errorHanderInterceptor != null) errorInterceptor = errorHanderInterceptor.ErrorHandler;
-            foreach (var methodInfo in interfaceType.GetMethods())
-            {
 
+            foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
+            {
                 var template = ExtensionsFactory.GetServiceTemplate(methodInfo);
                 var actionName = GetActionName(methodInfo);
                 var action = new ActionWrapper { Name = actionName, ReturnType = methodInfo.ReturnType, RouteTemplate = template, Parameters = new List<ParameterWrapper>() };
@@ -207,7 +210,16 @@ namespace Stardust.Interstellar.Rest.Service
             cache.TryAdd(interfaceType, newWrapper);
         }
 
-
+        private void GetErrorInterceptor(Type interfaceType)
+        {
+            ErrorHandlerAttribute errorHanderInterceptor;
+            if (!errorhanderCache.TryGetValue(interfaceType, out errorHanderInterceptor))
+            {
+                errorHanderInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
+                errorhanderCache.TryAdd(interfaceType, errorHanderInterceptor);
+            }
+            if (errorHanderInterceptor != null) errorInterceptor = errorHanderInterceptor.ErrorHandler;
+        }
 
         private static List<IHeaderHandler> GetHeaderInspectors(MethodInfo methodInfo)
         {

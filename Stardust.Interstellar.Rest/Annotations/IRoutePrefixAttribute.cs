@@ -7,9 +7,17 @@ namespace Stardust.Interstellar.Rest.Annotations
     {
         private readonly string prefix;
 
+        private readonly bool includeTypeName;
+
         public IRoutePrefixAttribute(string prefix)
         {
             this.prefix = prefix;
+        }
+
+        public IRoutePrefixAttribute(string prefix, bool includeTypeName)
+        {
+            this.prefix = prefix;
+            this.includeTypeName = includeTypeName;
         }
 
         public string Prefix
@@ -17,6 +25,14 @@ namespace Stardust.Interstellar.Rest.Annotations
             get
             {
                 return prefix;
+            }
+        }
+
+        public bool IncludeTypeName
+        {
+            get
+            {
+                return includeTypeName;
             }
         }
     }

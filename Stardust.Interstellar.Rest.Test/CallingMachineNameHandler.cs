@@ -17,11 +17,6 @@ namespace Stardust.Interstellar.Rest.Test
 
         }
 
-        public void SetServiceHeaders(WebHeaderCollection headers)
-        {
-
-        }
-
         public void GetServiceHeader(HttpRequestHeaders headers)
         {
 

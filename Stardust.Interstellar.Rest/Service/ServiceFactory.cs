@@ -16,6 +16,7 @@ namespace Stardust.Interstellar.Rest.Service
         public static Type CreateServiceImplementation<T>()
         {
             var type= Builder.CreateServiceImplementation<T>();
+            if(type!=null)
             ServiceTypes.Add(type);
             return type;
         }
@@ -29,7 +30,7 @@ namespace Stardust.Interstellar.Rest.Service
         public static IEnumerable<Type> CreateServiceImplementations(Assembly assembly)
         {
             var types= assembly.GetTypes().Where(t => t.IsInterface).Select(item => Builder.CreateServiceImplementation(item));
-            ServiceTypes.AddRange(types);
+            ServiceTypes.AddRange(types.Where( i=>i!=null));
             return types;
         }
 

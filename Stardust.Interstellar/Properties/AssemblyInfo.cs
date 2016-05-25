@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Stardust.Interstellar.Config")]
-[assembly: AssemblyDescription("A lightweight configuration reader for the Stardust configuration system (Stardust Nexus) Download the web deploy packages for the config tool from http://stardustframework.com/nexus")]
+[assembly: AssemblyTitle("Stardust.Interstellar")]
+[assembly: AssemblyDescription("Stardust servicecontainer implementation of the rest api generator.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Stardust")]
-[assembly: AssemblyProduct("Stardust.Interstellar.Config")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2016")]
+[assembly: AssemblyProduct("Stardust.Interstellar")]
+[assembly: AssemblyCopyright("Copyright © Stardust 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d2917d5f-dbec-48b4-a44d-38a2b26f36aa")]
+[assembly: Guid("76d64b5e-b138-493b-a332-b54090c96f41")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.2")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.5.0")]
+[assembly: AssemblyFileVersion("1.0.5.0")]

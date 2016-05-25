@@ -8,8 +8,17 @@ using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Client
 {
-    internal class ProxyBuilder<T>
+    
+    internal class ProxyBuilder
     {
+        private readonly Type interfaceType;
+
+        /// <summary>Initializes a new instance of the <see cref="T:System.Object" /> class.</summary>
+        public ProxyBuilder(Type interfaceType)
+        {
+            this.interfaceType = interfaceType;
+        }
+
         private AssemblyBuilder myAssemblyBuilder;
 
         /// <summary>Initializes a new instance of the <see cref="T:System.Object" /> class.</summary>
@@ -20,9 +29,9 @@ namespace Stardust.Interstellar.Rest.Client
             myAssemblyName.Name = Guid.NewGuid().ToString().Replace("-", "") + "_RestWrapper";
             myAssemblyBuilder = myCurrentDomain.DefineDynamicAssembly(myAssemblyName, AssemblyBuilderAccess.RunAndSave);
             var myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("TempModule", "dyn.dll");
-            var type = ReflectionTypeBuilder(myModuleBuilder, typeof(T).Name + "_dynimp");
+            var type = ReflectionTypeBuilder(myModuleBuilder, interfaceType.Name + "_dynimp");
             ctor(type);
-            foreach (var methodInfo in typeof(T).GetMethods())
+            foreach (var methodInfo in interfaceType.GetMethods().Length==0? interfaceType.GetInterfaces().First().GetMethods(): interfaceType.GetMethods())
             {
                 if (typeof(Task).IsAssignableFrom(methodInfo.ReturnType))
                     BuildMethodAsync(type, methodInfo);
@@ -33,7 +42,15 @@ namespace Stardust.Interstellar.Rest.Client
             }
 
             var result = type.CreateType();
-            myAssemblyBuilder.Save("dyn.dll");
+            try
+            {
+                myAssemblyBuilder.Save("dyn.dll");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
             return result;
         }
 
@@ -319,7 +336,7 @@ namespace Stardust.Interstellar.Rest.Client
             var type = module.DefineType("TempModule." + typeName,
                 TypeAttributes.Public | TypeAttributes.Class,
                 typeof(RestWrapper),
-                new[] { typeof(T) }
+                new[] { interfaceType}
                 );
             return type;
         }
