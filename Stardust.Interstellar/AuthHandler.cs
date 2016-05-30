@@ -19,7 +19,8 @@ namespace Stardust.Interstellar
             else
             {
                 var tokenManager = Resolver.Activate<IOAuthTokenProvider>();
-                bearerToken = tokenManager?.GetBearerToken();
+                bearerToken = tokenManager?.GetBearerToken(req.RequestUri.ToString());
+                req.Headers.Add("Authorization", "Bearer " + bearerToken);
             }
         }
 

@@ -16,6 +16,8 @@ namespace Stardust.Interstellar.Rest.Client.Graph
 
         private string baseUrl;
 
+        private string navigationPropertyName;
+
         internal GraphCollection(NavigationAttribute navigation)
         {
             baseUrl = ConfigurationManager.AppSettings[navigation.ServiceRootKey];
@@ -98,6 +100,11 @@ namespace Stardust.Interstellar.Rest.Client.Graph
             this.parent = parent;
             service = ProxyFactory.CreateInstance(typeof(IGraphCollectionService<T>), ((IInternalGraphHelper)parent).BaseUrl, null);
             return this;
+        }
+
+        public void SetFilter(string navigationNodeName)
+        {
+            navigationPropertyName = navigationNodeName;
         }
     }
 }

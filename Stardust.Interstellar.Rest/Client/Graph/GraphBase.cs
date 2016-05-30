@@ -18,6 +18,15 @@
             return collection;
         }
 
+        protected IGraphCollection<TChild> CreateGraphCollection<TChild>(string navigationNodeName)
+        {
+            var collection = new GraphCollection<TChild>();
+            collection.Initialize(this);
+            collection.SetFilter(navigationNodeName);   
+            return collection;
+        }
+
+
         string IInternalGraphHelper.BaseUrl
         {
             get

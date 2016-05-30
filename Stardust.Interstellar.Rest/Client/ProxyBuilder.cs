@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -8,7 +9,7 @@ using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Client
 {
-    
+
     internal class ProxyBuilder
     {
         private readonly Type interfaceType;
@@ -31,7 +32,7 @@ namespace Stardust.Interstellar.Rest.Client
             var myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("TempModule", "dyn.dll");
             var type = ReflectionTypeBuilder(myModuleBuilder, interfaceType.Name + "_dynimp");
             ctor(type);
-            foreach (var methodInfo in interfaceType.GetMethods().Length==0? interfaceType.GetInterfaces().First().GetMethods(): interfaceType.GetMethods())
+            foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
             {
                 if (typeof(Task).IsAssignableFrom(methodInfo.ReturnType))
                     BuildMethodAsync(type, methodInfo);
@@ -44,11 +45,12 @@ namespace Stardust.Interstellar.Rest.Client
             var result = type.CreateType();
             try
             {
-                myAssemblyBuilder.Save("dyn.dll");
+                if (ConfigurationManager.AppSettings["stardust.saveGeneratedAssemblies"] == "true")
+                    myAssemblyBuilder.Save("dyn.dll");
             }
             catch (Exception)
             {
-                
+
             }
             return result;
         }
@@ -301,7 +303,7 @@ namespace Stardust.Interstellar.Rest.Client
             return method;
         }
 
-        
+
 
         public ConstructorBuilder ctor(TypeBuilder type)
         {
@@ -335,7 +337,7 @@ namespace Stardust.Interstellar.Rest.Client
             var type = module.DefineType("TempModule." + typeName,
                 TypeAttributes.Public | TypeAttributes.Class,
                 typeof(RestWrapper),
-                new[] { interfaceType}
+                new[] { interfaceType }
                 );
             return type;
         }

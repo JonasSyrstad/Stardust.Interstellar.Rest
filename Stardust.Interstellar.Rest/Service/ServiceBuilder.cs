@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -355,7 +356,7 @@ namespace Stardust.Interstellar.Rest.Service
         private static ConstructorInfo httpMethodAttribute(MethodInfo implementationMethod)
         {
             var httpMethod = ExtensionsFactory.GetService<IWebMethodConverter>()?.GetHttpMethods(implementationMethod);
-            if (httpMethod != null&&httpMethod.Any())
+            if (httpMethod != null && httpMethod.Any())
             {
                 switch (httpMethod.First().Method.ToUpper())
                 {
@@ -370,8 +371,8 @@ namespace Stardust.Interstellar.Rest.Service
                 }
             }
             var attribs = implementationMethod.GetCustomAttributes().ToList();
-            
-            
+
+
             if (attribs.Any(p => p is HttpGetAttribute))
                 return typeof(HttpGetAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             if (attribs.Any(p => p is HttpPostAttribute))
@@ -631,14 +632,14 @@ namespace Stardust.Interstellar.Rest.Service
 
         private TypeBuilder CreateServiceType(Type interfaceType)
         {
-            var routePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>() 
+            var routePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>()
                 ?? interfaceType.GetInterfaces().FirstOrDefault()?.GetCustomAttribute<IRoutePrefixAttribute>();
             var type = myModuleBuilder.DefineType("TempModule.Controllers." + interfaceType.Name.Remove(0, 1) + "Controller", TypeAttributes.Public | TypeAttributes.Class, typeof(ServiceWrapperBase<>).MakeGenericType(interfaceType));
-            
+
             if (routePrefix != null)
             {
                 var prefix = routePrefix.Prefix;
-                if (routePrefix.IncludeTypeName) prefix = prefix + "/" + (interfaceType.GetGenericArguments().Any()? interfaceType.GetGenericArguments().FirstOrDefault()?.Name.ToLower(): interfaceType.GetInterfaces().FirstOrDefault()?.GetGenericArguments().First().Name.ToLower());
+                if (routePrefix.IncludeTypeName) prefix = prefix + "/" + (interfaceType.GetGenericArguments().Any() ? interfaceType.GetGenericArguments().FirstOrDefault()?.Name.ToLower() : interfaceType.GetInterfaces().FirstOrDefault()?.GetGenericArguments().First().Name.ToLower());
                 var routePrefixCtor = typeof(RoutePrefixAttribute).GetConstructor(
                            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                            null,
@@ -655,7 +656,8 @@ namespace Stardust.Interstellar.Rest.Service
 
         public void Save()
         {
-            myAssemblyBuilder.Save("service.dll");
+            if (ConfigurationManager.AppSettings["stardust.saveGeneratedAssemblies"] == "true")
+                myAssemblyBuilder.Save("service.dll");
         }
 
         public Assembly GetCustomAssembly()

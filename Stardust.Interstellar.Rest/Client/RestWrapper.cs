@@ -18,7 +18,7 @@ namespace Stardust.Interstellar.Rest.Client
 {
     public class RestWrapper
     {
-        private readonly IAuthenticationHandler authenticationHandler;
+        private IAuthenticationHandler authenticationHandler;
 
         private readonly IEnumerable<IHeaderHandler> headerHandlers;
 
@@ -200,7 +200,10 @@ namespace Stardust.Interstellar.Rest.Client
             req.Method = action.Actions.First().ToString();
             AppendHeaders(parameters, req, action);
             AppendBody(parameters, req);
-            if (authenticationHandler != null) authenticationHandler.Apply(req);
+
+
+            if (authenticationHandler == null) authenticationHandler = ExtensionsFactory.GetService<IAuthenticationHandler>();
+                if (authenticationHandler != null) authenticationHandler.Apply(req);
             return action;
         }
 

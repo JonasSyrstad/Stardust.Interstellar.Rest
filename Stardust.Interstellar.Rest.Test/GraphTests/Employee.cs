@@ -1,12 +1,26 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Client.Graph;
 
 namespace Stardust.Interstellar.Rest.Test
 {
-    public class Employee
+    public class Employee:GraphBase
     {
-        public string Name { get; set; }
+        private string name;
+
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                
+                name = value;
+            }
+        }
 
         public string Email { get; set; }
 
@@ -24,6 +38,19 @@ namespace Stardust.Interstellar.Rest.Test
             return await new GraphCollection<Employee>(typeof(IEmployeeService)).GetAsync(ManagerId);
         }
 
+        public IGraphCollection<Employee> Colleagues
+        {
+            get
+            {
+                return CreateGraphCollection<Employee>("colleagues");
+            }
+        }
+
         public string ManagerId { get; set; }
+
+        public override IGraphItem Initialize(IGraphItem parent)
+        {
+            return this;
+        }
     }
 }

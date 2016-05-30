@@ -29,8 +29,15 @@ namespace Stardust.Interstellar.Rest.Extensions
         /// <param name="response"></param>
         public void GetHeader(HttpWebResponse response)
         {
-            var state = response.GetState();
-            DoGetHeader(state, response);
+            try
+            {
+                var state = response.GetState();
+                DoGetHeader(state, response);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
         }
 
        

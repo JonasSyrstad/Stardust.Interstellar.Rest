@@ -36,9 +36,10 @@ namespace Stardust.Interstellar.Test
 
         protected void Application_Error(object sender, EventArgs e)
         {
-            
-            Logging.Exception(Server.GetLastError());
+            var error = Server.GetLastError();
+            Logging.Exception(error, "Unhandled exception....");
         }
+    
     }
 
     public class TestBlueprint:Blueprint
@@ -97,6 +98,11 @@ namespace Stardust.Interstellar.Test
             employees.Add(item.Email,item);
             return Task.FromResult(1);
         }
+
+        public Task<IEnumerable<Employee>> GetGraphNodesAsync(string id, string graphNodes)
+        {
+            return Task.FromResult(employees.Where(e => !string.IsNullOrWhiteSpace(e.Value.ManagerId)).Select(e => e.Value));
+        }
     }
 
     public class WcfWrapper : IWcfWrapper
@@ -144,9 +150,17 @@ namespace Stardust.Interstellar.Test
             return Task.FromResult(2);
         }
 
-        public Task FailingAction(string id, string timestamp)
+        public async Task FailingAction(string id, string timestamp)
         {
-            throw new NotImplementedException();
+            try
+            {
+                throw new NotImplementedException();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

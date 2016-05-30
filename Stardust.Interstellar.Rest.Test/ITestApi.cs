@@ -59,7 +59,7 @@ namespace Stardust.Interstellar.Rest.Test
             Logging.DebugMessage(exception.GetType().FullName);
             if (exception is NotImplementedException)
             {
-                var resp= request.CreateResponse(HttpStatusCode.BadGateway,DateTime.Now);
+                var resp= request.CreateResponse(HttpStatusCode.InternalServerError,DateTime.Now);
                 return resp;
             }
             if (!(exception is AggregateException)) return null;

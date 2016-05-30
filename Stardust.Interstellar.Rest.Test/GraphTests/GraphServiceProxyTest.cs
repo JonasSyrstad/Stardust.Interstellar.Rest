@@ -59,6 +59,16 @@ namespace Stardust.Interstellar.Rest.Test
         }
 
         [Fact]
+        public async Task GetMyColleagues()
+        {
+            var graphService = new GraphTestApi("http://localhost/Stardust.Interstellar.Test/");
+            var me =  graphService.Me;
+            Assert.NotNull(me);
+            var myColleagues = (await me.GetAsync()).Colleagues.ToList();
+            Assert.Equal(2, myColleagues.Count);
+        }
+
+        [Fact]
         public async Task AddDeleteEmployeeManager()
         {
             var graphService = new GraphTestApi("http://localhost/Stardust.Interstellar.Test/");

@@ -49,36 +49,70 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected async Task<HttpResponseMessage> CreateResponseAsync<TMessage>(HttpStatusCode statusCode, Task<TMessage> messageTask = null)
         {
-            HttpResponseMessage result;
+            HttpResponseMessage result = null;
             try
             {
-                var message = await messageTask;
-                if (message == null) result = Request.CreateResponse(HttpStatusCode.NoContent);
-                else result = Request.CreateResponse(statusCode, message);
+                await messageTask.ContinueWith(r => r.Exception.Flatten().Handle(e =>
+                {
+                    result = CreateErrorResponse(e);
+                    return true;
+                }), TaskContinuationOptions.OnlyOnFaulted);
+                if (result == null)
+                {
+                    var message = messageTask.Result;
+                    result = CreateResponseMessage(statusCode, message, result);
+                }
                 SetHeaders(result);
                 Request.EndState();
                 return result;
             }
             catch (Exception ex)
             {
-                result = CreateErrorResponse(ex);
+                if (messageTask.Status == TaskStatus.RanToCompletion)
+                {
+                    var message = messageTask.Result;
+                    result = CreateResponseMessage(statusCode, message, result);
+                    SetHeaders(result);
+                    Request.EndState();
+                }
+                else
+                    result = CreateErrorResponse(ex);
                 return result;
             }
         }
 
+        private HttpResponseMessage CreateResponseMessage<TMessage>(HttpStatusCode statusCode, TMessage message, HttpResponseMessage result)
+        {
+            if (message == null) result = Request.CreateResponse(HttpStatusCode.NoContent);
+            else result = Request.CreateResponse(statusCode, message);
+            return result;
+        }
+
         protected async Task<HttpResponseMessage> CreateResponseVoidAsync(HttpStatusCode statusCode, Task messageTask)
         {
-            HttpResponseMessage result;
+            HttpResponseMessage result = null;
             try
             {
-                await messageTask;
-                result = Request.CreateResponse(HttpStatusCode.NoContent);
+                await messageTask.ContinueWith(r => r.Exception.Flatten().Handle(e =>
+                {
+                    result = CreateErrorResponse(e);
+                    return true;
+                }), TaskContinuationOptions.OnlyOnFaulted);
+                if (result != null)
+                    result = Request.CreateResponse(HttpStatusCode.NoContent);
                 SetHeaders(result);
                 Request.EndState();
             }
             catch (Exception ex)
             {
-                result = CreateErrorResponse(ex);
+                if (messageTask.Status == TaskStatus.RanToCompletion)
+                {
+                    result = Request.CreateResponse(HttpStatusCode.NoContent);
+                    SetHeaders(result);
+                    Request.EndState();
+                }
+                else
+                    result = CreateErrorResponse(ex);
             }
             return result;
         }
