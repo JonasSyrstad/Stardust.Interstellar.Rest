@@ -82,7 +82,12 @@ namespace Stardust.Interstellar.Rest.Client.Graph
             }
         }
 
-        public abstract IGraphItem Initialize(IGraphItem parent);
+        public virtual IGraphItem Initialize(IGraphItem parent)
+        {
+            this.parent = parent;
+            this.InternalBaseUrl = ((IInternalGraphHelper)parent).BaseUrl;
+            return this;
+        }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

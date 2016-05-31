@@ -17,7 +17,6 @@ namespace Stardust.Interstellar.Rest.Test
             }
             set
             {
-
                 name = value;
             }
         }
@@ -49,12 +48,5 @@ namespace Stardust.Interstellar.Rest.Test
         }
 
         public string ManagerId { get; set; }
-
-        public override IGraphItem Initialize(IGraphItem parent)
-        {
-            base.parent = parent;
-            base.InternalBaseUrl = ((IInternalGraphHelper)parent).BaseUrl;
-            return this;
-        }
     }
 }

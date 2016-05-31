@@ -5,12 +5,12 @@ using Stardust.Interstellar.Rest.Client.Graph;
 
 namespace Stardust.Interstellar.Rest.Test
 {
-    public class GraphTestApi:GraphContext<Employee>
+    public class GraphTestApi : GraphContext<Employee>
     {
-        public GraphTestApi(string baseUrl)
+        public GraphTestApi(string baseUrl) : base(baseUrl)
         {
             Id = "jonassyrstad@outlook.com";
-            this.InternalBaseUrl = baseUrl;
+
         }
         public IGraphCollection<Employee> Employees
         {
