@@ -203,10 +203,9 @@ The graph context:
 ```CS
 public class GraphTestApi:GraphContext<Employee>
     {
-        public GraphTestApi(string baseUrl)
+        public GraphTestApi(string baseUrl) : base(baseUrl)
         {
             Id = "grabUserIdFromIdentity";
-            this.InternalBaseUrl = baseUrl;
         }
         public IGraphCollection<Employee> Employees
         {
