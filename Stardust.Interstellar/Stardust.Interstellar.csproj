@@ -115,8 +115,8 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.153\lib\net45\Stardust.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardust.Core.Service.Web, Version=2.0.1.232, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Core.Service.Web.2.0.1.232\lib\net45\Stardust.Core.Service.Web.dll</HintPath>
+    <Reference Include="Stardust.Core.Service.Web, Version=2.0.1.233, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Core.Service.Web.2.0.1.233\lib\net45\Stardust.Core.Service.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Stardust.Interstellar.Rest, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
