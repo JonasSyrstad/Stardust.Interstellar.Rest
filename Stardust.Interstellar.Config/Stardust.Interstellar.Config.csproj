@@ -81,6 +81,10 @@
     <None Include="Stardust.Interstellar.Config.nuspec" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Annotations\Stardust.Interstellar.Rest.Annotations.csproj">
+      <Project>{fb9f29e3-83d5-4751-bafc-ccb64e40f220}</Project>
+      <Name>Stardust.Interstellar.Rest.Annotations</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stardust.Interstellar.Rest\Stardust.Interstellar.Rest.csproj">
       <Project>{5EE819E3-B588-431F-B5DA-3EBC0557242B}</Project>
       <Name>Stardust.Interstellar.Rest</Name>

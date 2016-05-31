@@ -60,7 +60,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Annotations\IRoutePrefixAttribute.cs" />
     <Compile Include="Client\Graph\GraphBase.cs" />
     <Compile Include="Client\Graph\GraphQuery.cs" />
     <Compile Include="Client\Graph\GraphQueryPart.cs" />
@@ -74,23 +73,10 @@
     <Compile Include="Client\Graph\IInternalGraphHelper.cs" />
     <Compile Include="Common\EmitHelpers.cs" />
     <Compile Include="Common\ActionWrapper.cs" />
-    <Compile Include="Annotations\PerformanceHeadersAttribute.cs" />
-    <Compile Include="Annotations\AuthenticationInspectorAttributeBase.cs" />
     <Compile Include="Common\ExtensionsFactory.cs" />
-    <Compile Include="Extensions\StateDictionary.cs" />
-    <Compile Include="Extensions\StatefullHeaderHandlerBase.cs" />
-    <Compile Include="Extensions\StateHelper.cs" />
     <Compile Include="Extensions\HeaderHandlerFactory.cs" />
-    <Compile Include="Annotations\HeaderInspectorAttributeBase.cs" />
-    <Compile Include="Extensions\IAuthenticationHandler.cs" />
-    <Compile Include="Extensions\IAuthenticationInspector.cs" />
-    <Compile Include="Extensions\IHeaderHandler.cs" />
     <Compile Include="Extensions\IHeaderHandlerFactory.cs" />
-    <Compile Include="Extensions\IHeaderInspector.cs" />
-    <Compile Include="Annotations\InAttribute.cs" />
-    <Compile Include="Annotations\InclutionTypes.cs" />
     <Compile Include="Common\IRouteTemplateResolver.cs" />
-    <Compile Include="Extensions\IServiceLocator.cs" />
     <Compile Include="Common\IServiceParameterResolver.cs" />
     <Compile Include="Common\IWebMethodConverter.cs" />
     <Compile Include="Extensions\NullAuthHandler.cs" />
@@ -117,6 +103,15 @@
     <None Include="Stardust.Interstellar.Rest.nuspec">
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Annotations\Stardust.Interstellar.Rest.Annotations.csproj">
+      <Project>{fb9f29e3-83d5-4751-bafc-ccb64e40f220}</Project>
+      <Name>Stardust.Interstellar.Rest.Annotations</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Annotations\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

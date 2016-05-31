@@ -117,6 +117,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Annotations\Stardust.Interstellar.Rest.Annotations.csproj">
+      <Project>{fb9f29e3-83d5-4751-bafc-ccb64e40f220}</Project>
+      <Name>Stardust.Interstellar.Rest.Annotations</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stardust.Interstellar.Rest.Legacy\Stardust.Interstellar.Rest.WcfAdapter.csproj">
       <Project>{928518E9-D24D-4C42-A9D8-C6876C8720A4}</Project>
       <Name>Stardust.Interstellar.Rest.WcfAdapter</Name>

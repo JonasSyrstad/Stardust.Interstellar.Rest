@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Client
 {
@@ -18,5 +19,10 @@ namespace Stardust.Interstellar.Rest.Client
         public Exception Error { get; set; }
 
         internal string ActionId { get; set; }
+
+        public void EndState()
+        {
+            StateHelper.EndState(ActionId);
+        }
     }
 }

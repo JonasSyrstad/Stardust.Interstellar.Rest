@@ -315,7 +315,7 @@ namespace Stardust.Interstellar.Rest.Client
         {
             var result = await ExecuteAsync(GetActionName(name), parameters);
             Extras?.Invoke(result.GetState().Extras);
-            StateHelper.EndState(result);
+            StateHelper.EndState(result.ActionId);
             if (typeof(T) == typeof(void)) return default(T);
             if (result.Error == null)
                 return (T)result.Value;

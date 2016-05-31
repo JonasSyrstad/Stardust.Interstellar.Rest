@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Common
@@ -15,30 +16,14 @@ namespace Stardust.Interstellar.Rest.Common
     public static class ExtensionsFactory
     {
 
-        public static string ActionId(this HttpWebRequest request)
-        {
-            return request.Headers[ActionIdName];
-        }
+        
 
-        public static string ActionId(this HttpWebResponse response)
+        internal static StateDictionary GetState(this ResultWrapper result)
         {
-            return response.Headers[ActionIdName];
+            var actionId = result.ActionId;
+            return StateHelper.InitializeState(actionId);
         }
-
-        public static string ActionId(this WebHeaderCollection headers)
-        {
-            return headers[ActionIdName];
-        }
-
-        public static string ActionId(this HttpRequestHeaders headers)
-        {
-            return headers.Where(h => h.Key == ActionIdName).Select(h=>h.Value).FirstOrDefault().FirstOrDefault();
-        }
-
-        public static string ActionId(this HttpResponseHeaders headers)
-        {
-            return headers.Where(h => h.Key == ActionIdName).Select(h => h.Value).FirstOrDefault().FirstOrDefault();
-        }
+        
 
         private static IServiceLocator locator;
 
@@ -65,7 +50,7 @@ namespace Stardust.Interstellar.Rest.Common
         internal static string GetServiceTemplate(MethodInfo methodInfo)
         {
             var template = GetService<IRouteTemplateResolver>()?.GetTemplate(methodInfo);
-            if (!string.IsNullOrWhiteSpace(template)) return template;
+            if (!String.IsNullOrWhiteSpace(template)) return template;
             var templateAttrib = methodInfo.GetCustomAttribute<RouteAttribute>();
             if (templateAttrib == null) return template;
             template = templateAttrib.Template;
@@ -156,13 +141,7 @@ namespace Stardust.Interstellar.Rest.Common
             if (methods.Count == 0) methods.Add(HttpMethod.Get);
             return methods;
         }
-
-        public static string ActionId(this HttpRequestMessage request)
-        {
-            if(request.Headers.Contains(ActionIdName))
-            return request.Headers.GetValues(ActionIdName).FirstOrDefault();
-            return null;
-        }
+        
 
         internal const string ActionIdName = "sd-ActionId";
     }
