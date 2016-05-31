@@ -31,76 +31,85 @@ namespace Stardust.Interstellar
         protected override void DoSetHeader(StateDictionary state, HttpWebRequest req)
         {
             var tracer = TracerFactory.StartTracer(this, req.RequestUri.ToString());
-            state.Add("tracer",tracer);
+            state.Add("tracer", tracer);
             var respHeader = new RequestHeader
-                                 {
-                                     ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
-                                     RuntimeInstance = runtime.InstanceId.ToString(),
-                                     MessageId = state.GetState<Guid>("messageId").ToString(),
-                                     ServerIdentity = Environment.MachineName,
-                                     SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
-                                     TimeStamp = DateTime.UtcNow,
-                                     Environment = runtime.Environment,
-                                     ConfigSet = Utilities.Utilities.GetConfigSetName(),
-                                     MethodName = req.RequestUri.ToString(),
-                                     ServiceName = Utilities.Utilities.GetServiceName()
-                                 };
-            req.Headers.Add("x-stardustMeta", Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
+            {
+                ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
+                RuntimeInstance = runtime.InstanceId.ToString(),
+                MessageId = state.GetState<Guid>("messageId").ToString(),
+                ServerIdentity = Environment.MachineName,
+                SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
+                TimeStamp = DateTime.UtcNow,
+                Environment = runtime.Environment,
+                ConfigSet = Utilities.Utilities.GetConfigSetName(),
+                MethodName = req.RequestUri.ToString(),
+                ServiceName = Utilities.Utilities.GetServiceName()
+            };
+            var supportCode = runtime.RequestContext?.RequestHeader?.SupportCode;
+            if (supportCode.IsNullOrWhiteSpace())
+                runtime.GetStateStorageContainer().TryGetItem<string>("supportCode", out supportCode);
+            if (supportCode.ContainsCharacters())
+                req.Headers.Set(SupportCodeHeaderName, supportCode);
+            req.Headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
         }
 
         protected override void DoGetHeader(StateDictionary state, HttpWebResponse response)
         {
-            var meta = response.Headers["x-stardustMeta"];
-            if (meta!=null)
+            var meta = response.Headers[StardustMetadataName];
+            if (meta != null)
             {
                 var item = JsonConvert.DeserializeObject<ResponseHeader>(Convert.FromBase64String(meta).GetStringFromArray());
-                state.Extras.SetState("x-stardustMeta",item);
-                if(state.GetState<ITracer>("tracer").GetCallstack().CallStack==null) state.GetState<ITracer>("tracer").GetCallstack().CallStack=new List<CallStackItem>();
+                state.Extras.SetState(StardustMetadataName, item);
+                if (state.GetState<ITracer>("tracer").GetCallstack().CallStack == null) state.GetState<ITracer>("tracer").GetCallstack().CallStack = new List<CallStackItem>();
                 state.GetState<ITracer>("tracer").GetCallstack().CallStack.Add(item.CallStack);
             }
             state.GetState<ITracer>("tracer").TryDispose();
-            
+
         }
 
         protected override void DoSetServiceHeaders(StateDictionary state, HttpResponseHeaders headers)
         {
             runtime.TearDown("");
             var respHeader = new ResponseHeader
-                                 {
-                                     ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
-                                     OriginalRuntimeInstance = runtime.RequestContext?.RequestHeader?.RuntimeInstance,
-                                     RuntimeInstance = runtime.InstanceId.ToString(),
-                                     CallStack = runtime.CallStack,
-                                     ExecutionTime = (long)(runtime.CallStack.ExecutionTime.HasValue ? runtime.CallStack.ExecutionTime.Value : -1),
-                                     MessageId = state.GetState<Guid>("messageId").ToString(),
-                                     ServerIdentity = Environment.MachineName,
-                                     SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
-                                     TimeStamp = DateTime.UtcNow
+            {
+                ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
+                OriginalRuntimeInstance = runtime.RequestContext?.RequestHeader?.RuntimeInstance,
+                RuntimeInstance = runtime.InstanceId.ToString(),
+                CallStack = runtime.CallStack,
+                ExecutionTime = (long)(runtime.CallStack.ExecutionTime.HasValue ? runtime.CallStack.ExecutionTime.Value : -1),
+                MessageId = state.GetState<Guid>("messageId").ToString(),
+                ServerIdentity = Environment.MachineName,
+                SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
+                TimeStamp = DateTime.UtcNow
 
-                                 };
-            headers.Add("x-stardustMeta", Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
-            headers.Add(SupportCodeHeaderName,state.GetState<string>(SupportCodeHeaderName));
+            };
+            headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
+            headers.Add(SupportCodeHeaderName, state.GetState<string>(SupportCodeHeaderName));
         }
 
         protected override void DoGetServiceHeader(StateDictionary state, HttpRequestHeaders headers)
         {
-            InitializeStardustRuntime(headers,state);
-            if (headers.Contains("x-stardustMeta"))
+            InitializeStardustRuntime(headers, state);
+
+            if (headers.Contains(StardustMetadataName))
             {
-                var item = JsonConvert.DeserializeObject<RequestHeader>(Convert.FromBase64String(headers.GetValues("x-stardustMeta").First()).GetStringFromArray());
-                state.Add("RequestHeadder", item);
+                var item = JsonConvert.DeserializeObject<RequestHeader>(Convert.FromBase64String(headers.GetValues(StardustMetadataName).First()).GetStringFromArray());
+                state.Add("RequestHeader", item);
                 runtime.InitializeWithMessageContext(new RequestItem(item));
             }
+            if (string.IsNullOrWhiteSpace(runtime.RequestContext?.RequestHeader?.SupportCode)) return;
+            if (headers.Contains(SupportCodeHeaderName))
+                runtime.TrySetSupportCode(headers.GetValues(SupportCodeHeaderName).First());
         }
 
         private void InitializeStardustRuntime(HttpRequestHeaders headers, StateDictionary state)
         {
             runtime.SetEnvironment(Utilities.Utilities.GetEnvironment());
-            var tracer= runtime.SetServiceName(state.GetState<ApiController>("controller"), Utilities.Utilities.GetServiceName(), state.GetState<string>("action"));
+            var tracer = runtime.SetServiceName(state.GetState<ApiController>("controller"), Utilities.Utilities.GetServiceName(), state.GetState<string>("action"));
             tracer.GetCallstack().Name = state.GetState<string>("controllerName");
             runtime.SetCurrentPrincipal(HttpContext.Current.User);
             var supportCode = CreateSupportCode();
-            state.SetState(SupportCodeHeaderName,supportCode);
+            state.SetState(SupportCodeHeaderName, supportCode);
             runtime.TrySetSupportCode(supportCode);
             runtime.GetStateStorageContainer().TryAddStorageItem(HttpContext.Current, "httpContext");
         }
@@ -137,10 +146,13 @@ namespace Stardust.Interstellar
                 return null;
             }
         }
-        internal const string SupportCodeHeaderName = "x-supportCode";
+
+        private const string SupportCodeHeaderName = "x-supportCode";
+
+        private const string StardustMetadataName = "x-stardustMeta";
     }
 
-    
+
 
     public class RequestItem : IRequestBase
     {

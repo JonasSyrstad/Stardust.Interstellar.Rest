@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Stardust.Interstellar.Rest.Client.Graph
 {
-    public abstract class GraphBase : IGraphItem, IInternalGraphHelper, IValidatableObject
+    public abstract class GraphBase : IGraphItem, IInternalGraphHelper
     {
         protected string baseUrl;
 
