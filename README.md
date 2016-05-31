@@ -1,6 +1,6 @@
 # Stardust.Interstellar.Rest
 Sample service definition interface
-``` 
+```CS
     [IRoutePrefix("api")]
     [CallingMachineName]
     public interface ITestApi
@@ -31,7 +31,7 @@ Sample service definition interface
     }
 ```
 Creating a service proxy
-```
+```CS
         var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/",
                     extras =>
                         {
@@ -53,7 +53,7 @@ Creating a service proxy
 ```
 
 Creating the service implementation (just implement it as you implement any other interface):
-```
+```CS
     public class TestApiImp : ITestApi
     {
         public string Apply1(string id, string name)
@@ -89,7 +89,7 @@ Creating the service implementation (just implement it as you implement any othe
 ```
 
 Creating the WebApi controller
-```
+```CS
     public class WebApiApplication : System.Web.HttpApplication
     {
         protected void Application_Start()
@@ -109,7 +109,7 @@ Creating the WebApi controller
 ```
 
 Creating client extensions
-```
+```CS
     [AttributeUsage(AttributeTargets.Method|AttributeTargets.Interface)]
     public sealed class CallingMachineNameAttribute:HeaderInspectorAttributeBase
     {
@@ -128,7 +128,7 @@ Creating client extensions
     }
 ```
 Statefull extesions can be created like this:
-```
+```CS
 [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method)]
     public class PerformanceHeadersAttribute : HeaderInspectorAttributeBase
     {
@@ -180,7 +180,7 @@ Statefull extesions can be created like this:
 ```
 
 To wrap existing wcf services as WebApi services:
-``` 
+```CS
 protected void Application_Start()
         {
             WcfServiceProvider.RegisterWcfAdapters();   //Adds the wcf adapter package to the generator
