@@ -196,3 +196,80 @@ protected void Application_Start()
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 ``` 
+
+Creating a graph api and client
+
+The graph context:
+```CS
+public class GraphTestApi:GraphContext<Employee>
+    {
+        public GraphTestApi(string baseUrl)
+        {
+            Id = "grabUserIdFromIdentity";
+            this.InternalBaseUrl = baseUrl;
+        }
+        public IGraphCollection<Employee> Employees
+        {
+            get
+            {
+                return CreateGraphCollection<Employee>();
+            }
+        }
+
+        public IGraphItem<Employee> Me
+        {
+            get
+            {
+                return CreateGraphItem<Employee>(Id);
+            }
+        }
+    }
+```
+and the Employee data type:
+
+```CS
+public class Employee : GraphBase
+    {
+        private string name;
+
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+            set
+            {
+                name = value;
+            }
+        }
+
+        public string Email { get; set; }
+
+        [JsonIgnore]
+        public Employee Manager
+        {
+            get
+            {
+                return CreateGraphItem<Employee>(ManagerId).Value;
+            }
+        }
+
+        public async Task<Employee> GetManagerAsync()
+        {
+            return await CreateGraphItem<Employee>(ManagerId).GetAsync();
+        }
+
+        [JsonIgnore]
+        public IGraphCollection<Employee> Colleagues
+        {
+            get
+            {
+                
+                return CreateGraphCollection<Employee>("colleagues", name);
+            }
+        }
+
+        public string ManagerId { get; set; }
+    }
+```
