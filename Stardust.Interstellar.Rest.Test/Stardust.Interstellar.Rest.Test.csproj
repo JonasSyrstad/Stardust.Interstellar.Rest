@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Excel.4.5, Version=2.1.0.0, Culture=neutral, PublicKeyToken=93517dbe6a4012fa, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.148\lib\net45\Excel.4.5.dll</HintPath>
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.153\lib\net45\Excel.4.5.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -46,11 +46,12 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardust, Version=2.1.1.146, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.148\lib\net45\Stardust.dll</HintPath>
+    <Reference Include="Stardust, Version=2.1.1.153, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.153\lib\net45\Stardust.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\Stardust.Interstellar.Rest\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>

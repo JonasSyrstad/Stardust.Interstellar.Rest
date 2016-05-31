@@ -32,6 +32,7 @@ namespace Stardust.Interstellar.Rest.Client.Graph
         public override IGraphItem Initialize(IGraphItem parent)
         {
             this.parent = parent;
+            InternalBaseUrl = ((IInternalGraphHelper)parent).BaseUrl;
             service = ProxyFactory.CreateInstance(typeof(IGraphCollectionService<T>), ((IInternalGraphHelper)parent).BaseUrl, null);
             return this;
         }
@@ -39,7 +40,12 @@ namespace Stardust.Interstellar.Rest.Client.Graph
         public async Task<T> GetAsync()
         {
             if (localCopy == null)
+            {
                 localCopy = await (Task<T>)service.GetType().InvokeMember("GetAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { Id });
+                var gb = localCopy as GraphBase;
+                gb?.Initialize(this);
+            }
+
             return localCopy;
         }
 
@@ -59,16 +65,10 @@ namespace Stardust.Interstellar.Rest.Client.Graph
             get
             {
                 Task.Run(async () => { await GetAsync(); }).Wait();
+                
                 return localCopy;
             }
         }
-
-        protected IGraphItem<TChild> CreateGraphItem<TChild>(string id)
-        {
-            var graphItem = (GraphItem<TChild>)CreateGraphItem<TChild>();
-            graphItem.Id = id;
-            return graphItem;
-
-        }
+        
     }
 }

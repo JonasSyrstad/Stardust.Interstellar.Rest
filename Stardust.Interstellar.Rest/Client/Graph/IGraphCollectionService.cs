@@ -34,7 +34,7 @@ namespace Stardust.Interstellar.Rest.Client.Graph
 
         [HttpGet]
         [Route("{id}/{graphNodes}")]
-        Task<IEnumerable<T>> GetGraphNodesAsync(string id, string graphNodes);
+        Task<IEnumerable<T>> GetGraphNodesAsync([In(InclutionTypes.Path)]string id, [In(InclutionTypes.Path)]string graphNodes);
 
     }
 }

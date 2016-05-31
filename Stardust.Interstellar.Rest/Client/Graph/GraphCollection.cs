@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -44,8 +45,26 @@ namespace Stardust.Interstellar.Rest.Client.Graph
         /// <returns>An enumerator that can be used to iterate through the collection.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            var result = (Task<IEnumerable<T>>)service.GetType().InvokeMember("GetAllAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { });
-            return Task.Run(async () => await result).Result.GetEnumerator();
+            Task<IEnumerable<T>> result;
+            if(string.IsNullOrWhiteSpace(navigationPropertyName))
+            result = (Task<IEnumerable<T>>)service.GetType().InvokeMember("GetAllAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { });
+            else
+            {
+                result = (Task<IEnumerable<T>>)service.GetType().InvokeMember("GetGraphNodesAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] {Id,navigationPropertyName });
+            }
+            return Task.Run(async () => await result).Result.Select(
+                i =>
+                    {
+                        SetParent(i);
+                        return i;
+                    }).GetEnumerator();
+        }
+
+        private T SetParent(T i)
+        {
+            var gi = i as GraphBase;
+            gi?.Initialize(this);
+            return i;
         }
 
         /// <summary>Returns an enumerator that iterates through a collection.</summary>
@@ -60,10 +79,13 @@ namespace Stardust.Interstellar.Rest.Client.Graph
             get
             {
                 var res = (Task<T>)service.GetType().InvokeMember("GetAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { id });
-                return Task.Run(async () => await res).Result;
+                var item= Task.Run(async () => await res).Result;
+                SetParent(item);
+                return item;
             }
             set
             {
+                SetParent(value);
                 var task = (Task)service.GetType().InvokeMember("GetAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { id });
                 Task.Run(async () => await task).Wait();
             }
@@ -71,6 +93,7 @@ namespace Stardust.Interstellar.Rest.Client.Graph
 
         public async Task AddAsync(T item)
         {
+            SetParent(item);
             await (Task)service.GetType().InvokeMember("AddAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { item });
         }
 
@@ -82,29 +105,36 @@ namespace Stardust.Interstellar.Rest.Client.Graph
 
         public async Task<T> GetAsync(string id)
         {
-            return await (Task<T>)service.GetType().InvokeMember("GetAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { id });
+            var item= await (Task<T>)service.GetType().InvokeMember("GetAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { id });
+            return SetParent(item);
         }
 
         public async Task UpdateAsync(string id, T item)
         {
+            SetParent(item);
             await (Task)service.GetType().InvokeMember("UpdateAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { id, item });
         }
 
         public async Task<IEnumerable<T>> QueryAsync(GraphQuery query)
         {
-             return await (Task<IEnumerable<T>>)service.GetType().InvokeMember("QueryAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { query });
+             var result= await (Task<IEnumerable<T>>)service.GetType().InvokeMember("QueryAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { query });
+            return result.Select(SetParent);
         }
 
         public override IGraphItem Initialize(IGraphItem parent)
         {
             this.parent = parent;
+            InternalBaseUrl = ((IInternalGraphHelper)parent).BaseUrl;
             service = ProxyFactory.CreateInstance(typeof(IGraphCollectionService<T>), ((IInternalGraphHelper)parent).BaseUrl, null);
             return this;
         }
 
-        public void SetFilter(string navigationNodeName)
+        public void SetFilter(string navigationNodeName,string id)
         {
+            Id = id;
             navigationPropertyName = navigationNodeName;
         }
+
+        private string Id { get; set; }
     }
 }

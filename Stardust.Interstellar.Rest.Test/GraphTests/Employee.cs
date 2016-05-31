@@ -5,7 +5,7 @@ using Stardust.Interstellar.Rest.Client.Graph;
 
 namespace Stardust.Interstellar.Rest.Test
 {
-    public class Employee:GraphBase
+    public class Employee : GraphBase
     {
         private string name;
 
@@ -17,7 +17,7 @@ namespace Stardust.Interstellar.Rest.Test
             }
             set
             {
-                
+
                 name = value;
             }
         }
@@ -29,20 +29,22 @@ namespace Stardust.Interstellar.Rest.Test
         {
             get
             {
-                return new GraphCollection<Employee>(typeof(IEmployeeService))[ManagerId];
+                return CreateGraphItem<Employee>(ManagerId).Value;
             }
         }
 
         public async Task<Employee> GetManagerAsync()
         {
-            return await new GraphCollection<Employee>(typeof(IEmployeeService)).GetAsync(ManagerId);
+            return await CreateGraphItem<Employee>(ManagerId).GetAsync();
         }
 
+        [JsonIgnore]
         public IGraphCollection<Employee> Colleagues
         {
             get
             {
-                return CreateGraphCollection<Employee>("colleagues");
+                
+                return CreateGraphCollection<Employee>("colleagues", name);
             }
         }
 
@@ -50,6 +52,8 @@ namespace Stardust.Interstellar.Rest.Test
 
         public override IGraphItem Initialize(IGraphItem parent)
         {
+            base.parent = parent;
+            base.InternalBaseUrl = ((IInternalGraphHelper)parent).BaseUrl;
             return this;
         }
     }

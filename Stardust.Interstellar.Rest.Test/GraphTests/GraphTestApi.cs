@@ -10,7 +10,7 @@ namespace Stardust.Interstellar.Rest.Test
         public GraphTestApi(string baseUrl)
         {
             Id = "jonassyrstad@outlook.com";
-            this.baseUrl = baseUrl;
+            this.InternalBaseUrl = baseUrl;
         }
         public IGraphCollection<Employee> Employees
         {

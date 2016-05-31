@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Excel.4.5, Version=2.1.0.0, Culture=neutral, PublicKeyToken=93517dbe6a4012fa, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.149\lib\net45\Excel.4.5.dll</HintPath>
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.153\lib\net45\Excel.4.5.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -111,16 +111,16 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Owin.Security.Providers.AzureAD.1.2.0\lib\net45\Owin.Security.Providers.MicrosoftOnline.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardust, Version=2.1.1.148, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.149\lib\net45\Stardust.dll</HintPath>
+    <Reference Include="Stardust, Version=2.1.1.153, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.153\lib\net45\Stardust.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardust.Core.Service.Web, Version=2.0.1.210, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Core.Service.Web.2.0.1.211\lib\net45\Stardust.Core.Service.Web.dll</HintPath>
+    <Reference Include="Stardust.Core.Service.Web, Version=2.0.1.230, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Core.Service.Web.2.0.1.231\lib\net45\Stardust.Core.Service.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardust.Interstellar.Rest, Version=1.1.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.1.2.0.0\lib\net45\Stardust.Interstellar.Rest.dll</HintPath>
+    <Reference Include="Stardust.Interstellar.Rest, Version=2.0.12.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.2.0.12.0\lib\net45\Stardust.Interstellar.Rest.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
