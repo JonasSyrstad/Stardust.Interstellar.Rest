@@ -2,7 +2,7 @@
 
 This is a tool for creating webapi controllers and clients based upon an interface that is mostly decorated by the common annotations you are used to. It is mainly intended to be used inside the organization 0r the product. But workes well to provide .net clients to the public as well.
 
-When both the client and the service are located in the same project you will have ctrl-F12 support from the client code.
+When both the client and the service are located in the same solution you will have ctrl-F12 support from the client code.
 
 Unit testing and reuse are simplified. All controllers are implemented in an consistent way, no surprises.
 
