@@ -1,13 +1,20 @@
 # Stardust.Interstellar.Rest
+
+This is a tool for creating webapi controllers and clients based upon an interface that is mostly decorated by the common annotations you are used to. It is mainly intended to be used inside the organization 0r the product. But workes well to provide .net clients to the public as well.
+
+When both the client and the service are located in the same solution you will have ctrl-F12 support from the client code.
+
+Unit testing and reuse are simplified. All controllers are implemented in an consistent way, no surprises.
+
 Sample service definition interface
 ```CS
-    [IRoutePrefix("api")]
+    [IRoutePrefix("api")] //Custom: as the RoutePrefix attribute only supports classes, this is one to one
     [CallingMachineName]
     public interface ITestApi
     {
         [Route("test/{id}")]
         [HttpGet]
-        string Apply1([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name);
+        string Apply1([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name);// the In attribute supports more than the basic webapi attributes (but you can use them; FomeUri and FromBody)
 
         [Route("test2/{id}")]
         [HttpGet]
