@@ -208,8 +208,19 @@ namespace Stardust.Interstellar.Rest.Service
             // [HttpGetAttribute]
             method.SetCustomAttribute(new CustomAttributeBuilder(httpGet, new Type[] { }));
             ConstructorInfo ctor5 = typeof(ResponseTypeAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(Type) }, null);
-            method.SetCustomAttribute(new CustomAttributeBuilder(ctor5, new object[] { implementationMethod.ReturnType }));
+            method.SetCustomAttribute(new CustomAttributeBuilder(ctor5, new object[] { GetReturnType(implementationMethod) }));
             return method;
+        }
+
+        private static Type GetReturnType(MethodInfo implementationMethod)
+        {
+            if (typeof(Task).IsAssignableFrom(implementationMethod.ReturnType))
+            {
+                if (implementationMethod.ReturnType.IsGenericType) return implementationMethod.ReturnType.GenericTypeArguments.FirstOrDefault();
+                else return typeof(void);
+            }
+
+            return implementationMethod.ReturnType;
         }
 
         private static List<ParameterWrapper> GetMethodParams(MethodInfo implementationMethod)
@@ -387,10 +398,82 @@ namespace Stardust.Interstellar.Rest.Service
 
         public MethodBuilder BuildAsyncMethod(TypeBuilder type, MethodInfo implementationMethod)
         {
-            return InternalMethodBuilder(type, implementationMethod, BuildAsyncMethodBody);
+            return InternalMethodBuilder(type, implementationMethod, (a, b, c, d) => BuildAsyncMethodBody(a, b, c, d, type));
         }
 
-        private MethodBuilder BuildAsyncMethodBody(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams)
+        private Type CreateDelegate(MethodInfo targetMethod, TypeBuilder parent,List<ParameterWrapper> methodParams)
+        {
+            var typeBuilder = myModuleBuilder.DefineType( string.Format("TempModule.Controllers.{0}{1}{2}Delegate", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length),
+                TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass,
+                typeof(object));
+            //var typeBuilder = myModuleBuilder.DefineType(string.Format("{0}{1}{2}Delegate", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length), TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass, typeof(object));
+            var imp = typeBuilder.DefineField("implementation", parent, FieldAttributes.Public);
+            var baseController= typeof(ServiceWrapperBase<>).MakeGenericType(targetMethod.DeclaringType).GetField("implementation", BindingFlags.Public | BindingFlags.NonPublic|BindingFlags.Instance);
+
+            var param = typeBuilder.DefineField("parameters", typeof(ParameterWrapper[]), FieldAttributes.Public);
+            CreateDelegateCtor(typeBuilder);
+
+            // Declaring method builder
+            // Method attributes
+            System.Reflection.MethodAttributes methodAttributes =
+                  System.Reflection.MethodAttributes.Assembly
+                | System.Reflection.MethodAttributes.HideBySig;
+            MethodBuilder method = typeBuilder.DefineMethod(targetMethod.Name, methodAttributes);
+            // Preparing Reflection instances
+            //FieldInfo field1 = typeof(<> c__DisplayClass2_0).GetField("<>4__this", BindingFlags.Public | BindingFlags.NonPublic);
+            //FieldInfo field2 = typeof(Stardust.Interstellar.Rest.Service.ServiceWrapperBase<>).MakeGenericType(typeof(ITestApi)).GetField("implementation", BindingFlags.Public | BindingFlags.NonPublic);
+            //FieldInfo field3 = typeof(<> c__DisplayClass2_0).GetField("serviceParameters", BindingFlags.Public | BindingFlags.NonPublic);
+            MethodInfo method4 = typeof(ParameterWrapper).GetMethod(
+                "get_value",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                new Type[]{
+                    },
+                null
+                );
+            MethodInfo method5 = targetMethod;
+            // Setting return type
+            method.SetReturnType(targetMethod.ReturnType);
+            // Adding parameters
+            ILGenerator gen = method.GetILGenerator();
+            
+            gen.Emit(OpCodes.Ldarg_0);
+            gen.Emit(OpCodes.Ldfld, imp);
+            gen.Emit(OpCodes.Ldfld, baseController);
+            var iii = 0;
+            foreach (var item in methodParams)
+            {
+                gen.Emit(OpCodes.Ldarg_0);
+                gen.Emit(OpCodes.Ldfld, param);
+                EmitHelpers.EmitInt32(gen,iii);
+                gen.Emit(OpCodes.Ldelem_Ref);
+                gen.Emit(OpCodes.Callvirt, method4);
+                if (item.Type.IsValueType)
+                    gen.Emit(OpCodes.Unbox_Any, item.Type);
+                else
+                    gen.Emit(OpCodes.Castclass, item.Type);
+                iii++;
+            }
+            gen.Emit(OpCodes.Callvirt, method5);
+            gen.Emit(OpCodes.Ret);
+            // finished
+
+
+            var t = typeBuilder.CreateType();
+            return t;
+        }
+
+        private static void CreateDelegateCtor(TypeBuilder typeBuilder)
+        {
+            var ctor = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig, CallingConventions.Standard | CallingConventions.HasThis, new Type[] { });
+            var baseCtor = typeof(object).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+            var gen = ctor.GetILGenerator();
+            gen.Emit(OpCodes.Ldarg_0);
+            gen.Emit(OpCodes.Call, baseCtor);
+            gen.Emit(OpCodes.Ret);
+        }
+
+        private MethodBuilder BuildAsyncMethodBody(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams, TypeBuilder parent)
         {
             MethodInfo gatherParams = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
                     "GatherParameters",
@@ -402,6 +485,8 @@ namespace Stardust.Interstellar.Rest.Service
                               },
                     null
                     );
+            var delegateType = CreateDelegate(implementationMethod, parent,methodParams);
+            var delegateCtor = delegateType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] {  }, null);
             var baseType = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType);
             var implementation = baseType.GetRuntimeFields().Single(f => f.Name == "implementation");
             MethodInfo getValue = typeof(ParameterWrapper).GetMethod(
@@ -412,8 +497,18 @@ namespace Stardust.Interstellar.Rest.Service
                           },
                 null
                 );
+            ConstructorInfo ctor9 = typeof(System.Func<>).MakeGenericType(typeof(Task<>).MakeGenericType(implementationMethod.ReturnType.GenericTypeArguments)).GetConstructor(
+       BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+       null,
+       new Type[]{
+            typeof(Object),
+            typeof(IntPtr)
+           },
+       null
+       );
+
             MethodInfo createResponse = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod("CreateResponseAsync", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            createResponse = createResponse.MakeGenericMethod(implementationMethod.ReturnType.GetGenericArguments());
+            //createResponse = createResponse.MakeGenericMethod(implementationMethod.ReturnType.GetGenericArguments());
             MethodInfo method9 = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType).GetMethod(
                 "CreateErrorResponse",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -423,20 +518,31 @@ namespace Stardust.Interstellar.Rest.Service
                           },
                 null
                 );
+      
+            var delegateMethod = delegateType.GetMethod(implementationMethod.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);//.MakeGenericMethod(implementationMethod.ReturnType.GenericTypeArguments);
+            var method10 = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType)
+                .GetMethod("ExecuteMethodAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+           method10= method10.MakeGenericMethod(implementationMethod.ReturnType.GenericTypeArguments);
+            FieldInfo field7 = delegateType.GetField("parameters", BindingFlags.Public | BindingFlags.NonPublic|BindingFlags.Instance);
+            FieldInfo field5 = delegateType.GetField("implementation", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
             MethodInfo fromResult = typeof(Task).GetMethod("FromResult").MakeGenericMethod(typeof(HttpResponseMessage));
             ILGenerator gen = method.GetILGenerator();
             // Preparing locals
-            LocalBuilder parameters = gen.DeclareLocal(typeof(Object[]));
-            LocalBuilder serviceParameters = gen.DeclareLocal(typeof(ParameterWrapper[]));
-            LocalBuilder result = gen.DeclareLocal(typeof(Task<>).MakeGenericType(implementationMethod.ReturnType.GenericTypeArguments));
-            LocalBuilder message = gen.DeclareLocal(typeof(Task<HttpResponseMessage>));
+            LocalBuilder del = gen.DeclareLocal(delegateType);
+            LocalBuilder serviceParameters = gen.DeclareLocal(typeof(object[]));
+            LocalBuilder result = gen.DeclareLocal(typeof(Task<>).MakeGenericType(typeof(HttpResponseMessage)));
             LocalBuilder ex = gen.DeclareLocal(typeof(Exception));
             // Preparing labels
             Label label97 = gen.DefineLabel();
             // Writing body
             gen.Emit(OpCodes.Nop);
             gen.BeginExceptionBlock();
-            gen.Emit(OpCodes.Nop);
+            gen.Emit(OpCodes.Newobj, delegateCtor);
+            gen.Emit(OpCodes.Stloc_0);
+            gen.Emit(OpCodes.Ldloc_0);
+            gen.Emit(OpCodes.Ldarg_0);
+            gen.Emit(OpCodes.Stfld,field5 );
             var ps = pTypes;
             EmitHelpers.EmitInt32(gen, ps.Length);
             gen.Emit(OpCodes.Newarr, typeof(object));
@@ -453,48 +559,75 @@ namespace Stardust.Interstellar.Rest.Service
                 gen.Emit(OpCodes.Stelem_Ref);
 
             }
-            gen.Emit(OpCodes.Stloc_0);
+            gen.Emit(OpCodes.Stloc_1);
+            gen.Emit(OpCodes.Ldloc_0);
             gen.Emit(OpCodes.Ldarg_0);
             gen.Emit(OpCodes.Ldstr, implementationMethod.Name);
-            gen.Emit(OpCodes.Ldloc_0);
+            gen.Emit(OpCodes.Ldloc_1);
             gen.Emit(OpCodes.Call, gatherParams);
-            gen.Emit(OpCodes.Stloc_1);
+
+            gen.Emit(OpCodes.Stfld, field7);
             gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Ldfld, implementation);
-            int iii = 0;
-            foreach (var parameterWrapper in methodParams)
-            {
-                gen.Emit(OpCodes.Ldloc_1);
-                EmitHelpers.EmitInt32(gen, iii);//gen.Emit(OpCodes.Ldc_I4_0);
-                gen.Emit(OpCodes.Ldelem_Ref);
-                gen.Emit(OpCodes.Callvirt, getValue);
-                if (parameterWrapper.Type.IsValueType)
-                    gen.Emit(OpCodes.Unbox_Any, parameterWrapper.Type);
-                else
-                    gen.Emit(OpCodes.Castclass, parameterWrapper.Type);
-                iii++;
-            }
-            gen.Emit(OpCodes.Callvirt, implementationMethod);
+            gen.Emit(OpCodes.Ldloc_0);
+            gen.Emit(OpCodes.Ldftn, delegateMethod);
+            gen.Emit(OpCodes.Newobj, ctor9);
+            gen.Emit(OpCodes.Call, method10);
             gen.Emit(OpCodes.Stloc_2);
-            gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Ldc_I4, 200);
-            if (implementationMethod.ReturnType != typeof(void))
-                gen.Emit(OpCodes.Ldloc_2);
-            gen.Emit(OpCodes.Call, createResponse);
-            gen.Emit(OpCodes.Stloc_3);
+            gen.Emit(OpCodes.Leave_S, label97);
+
+            //gen.Emit(OpCodes.Stloc_0);
+            //gen.Emit(OpCodes.Ldarg_0);
+            //gen.Emit(OpCodes.Ldstr, implementationMethod.Name);
+            //gen.Emit(OpCodes.Ldloc_0);
+            //gen.Emit(OpCodes.Call, gatherParams);
+            //gen.Emit(OpCodes.Stloc_1);
+            //gen.Emit(OpCodes.Ldarg_0);
+            //gen.Emit(OpCodes.Ldfld, implementation);
+            //int iii = 0;
+            //foreach (var parameterWrapper in methodParams)
+            //{
+            //    gen.Emit(OpCodes.Ldloc_1);
+            //    EmitHelpers.EmitInt32(gen, iii);//gen.Emit(OpCodes.Ldc_I4_0);
+            //    gen.Emit(OpCodes.Ldelem_Ref);
+            //    gen.Emit(OpCodes.Callvirt, getValue);
+            //    if (parameterWrapper.Type.IsValueType)
+            //        gen.Emit(OpCodes.Unbox_Any, parameterWrapper.Type);
+            //    else
+            //        gen.Emit(OpCodes.Castclass, parameterWrapper.Type);
+            //    iii++;
+            //}
+            //gen.Emit(OpCodes.Ldloc_1, implementation);
+            //gen.Emit(OpCodes.Ldftn, implementationMethod);
+
+            ////  implementationMethod.MethodHandle.Value;
+            //gen.Emit(OpCodes.Newobj, delegateCtor);
+            //gen.Emit(OpCodes.Call, delegateMethod);
+            //gen.Emit(OpCodes.Stloc_3);
+            //gen.Emit(OpCodes.Callvirt, implementationMethod);
+            //gen.Emit(OpCodes.Newobj, func);
+            //gen.Emit(OpCodes.Call, method10);
+            //gen.Emit(OpCodes.Stloc_2);
+
+            //gen.Emit(OpCodes.Stloc_2);
+            //gen.Emit(OpCodes.Ldarg_0);
+            //gen.Emit(OpCodes.Ldc_I4, 200);
+            //if (implementationMethod.ReturnType != typeof(void))
+            //    gen.Emit(OpCodes.Ldloc_2);
+            //gen.Emit(OpCodes.Call, createResponse);
+            //gen.Emit(OpCodes.Stloc_3);
             gen.Emit(OpCodes.Leave_S, label97);
             gen.BeginCatchBlock(typeof(Exception));
-            gen.Emit(OpCodes.Stloc_S, 4);
+            gen.Emit(OpCodes.Stloc_S, 3);
             gen.Emit(OpCodes.Nop);
             gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Ldloc_S, 4);
+            gen.Emit(OpCodes.Ldloc_S, 3);
             gen.Emit(OpCodes.Call, method9);
             gen.Emit(OpCodes.Call, fromResult);
-            gen.Emit(OpCodes.Stloc_3);
+            gen.Emit(OpCodes.Stloc_2);
             gen.Emit(OpCodes.Leave_S, label97);
             gen.EndExceptionBlock();
             gen.MarkLabel(label97);
-            gen.Emit(OpCodes.Ldloc_3);
+            gen.Emit(OpCodes.Ldloc_2);
             gen.Emit(OpCodes.Ret);
             // finished
             return method;

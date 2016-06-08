@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Stardust.Interstellar.Rest.Annotations")]
-[assembly: AssemblyDescription("Annotations for the rest generator tool")]
+[assembly: AssemblyTitle("Stardust.Interstellar.Swashbuckle")]
+[assembly: AssemblyDescription("Adds swagger to the stardust generated WebApi's")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Stardust")]
-[assembly: AssemblyProduct("Stardust.Interstellar.Rest.Annotations")]
+[assembly: AssemblyProduct("Swashbuckle.Stardust.Interstellar")]
 [assembly: AssemblyCopyright("Copyright © Stardust 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("fb9f29e3-83d5-4751-bafc-ccb64e40f220")]
+[assembly: Guid("9984cb92-be24-452d-8ddd-001436e4aac7")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.1.1.0")]
+[assembly: AssemblyVersion("1.1.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

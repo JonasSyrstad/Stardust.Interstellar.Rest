@@ -420,6 +420,10 @@
       <Project>{7488ded6-41f7-4a42-b7b6-cbea01ed08b5}</Project>
       <Name>Stardust.Interstellar.Rest</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Swashbuckle.Stardust.Interstellar\Swashbuckle.Stardust.Interstellar.csproj">
+      <Project>{9984cb92-be24-452d-8ddd-001436e4aac7}</Project>
+      <Name>Swashbuckle.Stardust.Interstellar</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

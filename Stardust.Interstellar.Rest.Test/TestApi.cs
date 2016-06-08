@@ -37,20 +37,24 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("test1/{id}")]
         [HttpGet]
-        public Task<HttpResponseMessage> Apply3([FromUri] string id, [FromUri] string name, [FromUri]string item3, [FromUri]string item4)
+        public Task<HttpResponseMessage> Apply3([FromUri] string id, [FromUri] string name, [FromUri] string item3, [FromUri] string item4)
         {
+
             try
             {
                 var parameters = new object[] { id, name, item3, item4 };
                 var serviceParameters = GatherParameters("Apply3", parameters);
-                var result = base.implementation.ApplyAsync((string)serviceParameters[0].value, (string)serviceParameters[1].value, (string)serviceParameters[2].value, (string)serviceParameters[3].value);
-                return base.CreateResponseAsync(HttpStatusCode.OK, result);
+                return base.ExecuteMethodAsync(
+                    delegate { return base.implementation.ApplyAsync((string)serviceParameters[0].value, (string)serviceParameters[1].value, (string)serviceParameters[2].value, (string)serviceParameters[3].value); });
+                //    var result = base.implementation.ApplyAsync((string)serviceParameters[0].value, (string)serviceParameters[1].value, (string)serviceParameters[2].value, (string)serviceParameters[3].value);
+                //    return base.CreateResponseAsync(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
             {
                 return Task.FromResult(CreateErrorResponse(ex));
             }
         }
+
 
         [Route("test/{id}")]
         [HttpPut]

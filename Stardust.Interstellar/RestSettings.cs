@@ -15,7 +15,7 @@ namespace Stardust.Interstellar
         internal static bool initialized = false;
         public static void Initialize(bool useRestAsDefault = true)
         {
-            Resolver.GetConfigurator().Bind<IAuthenticationHandler>().To<AuthHandler>().SetRequestResponseScope();
+            Resolver.GetConfigurator().Bind<IAuthenticationHandler>().To<AuthHandler>().SetTransientScope();
             Resolver.GetConfigurator().Bind<IHeaderHandler>().To<StardustHeaderHandler>("StardustHeaderHandler");
             Resolver.GetConfigurator().Bind<IErrorHandler>().To<StardustErrorHandler>();
             ExtensionsFactory.SetServiceLocator(new StardustServiceLocator());

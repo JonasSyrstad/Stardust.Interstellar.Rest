@@ -37,7 +37,7 @@ namespace Stardust.Interstellar.Rest.Common
             return locator;
         }
 
-        internal static T GetService<T>()
+        public static T GetService<T>()
         {
             return locator != null ? locator.GetService<T>() : default(T);
         }

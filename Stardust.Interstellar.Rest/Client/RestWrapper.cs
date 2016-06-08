@@ -94,11 +94,15 @@ namespace Stardust.Interstellar.Rest.Client
             try
             {
                 var response = req.GetResponse() as HttpWebResponse;
+                EnsureActionId(req, response);
                 GetHeaderValues(action, response);
-                return CreateResult(action, response);
+                var result = CreateResult(action, response);
+                result.ActionId = req.ActionId();
+                return result;
             }
             catch (WebException webError)
             {
+                EnsureActionId(webError, req);
                 GetHeaderValues(action, webError.Response as HttpWebResponse);
                 errorResult = HandleWebException(webError, action);
             }
@@ -117,7 +121,6 @@ namespace Stardust.Interstellar.Rest.Client
                 cookieContainer.Add(response.Cookies);
             foreach (var customHandler in action.CustomHandlers)
             {
-
                 customHandler.GetHeader(response);
             }
         }
@@ -283,11 +286,15 @@ namespace Stardust.Interstellar.Rest.Client
             try
             {
                 var response = await req.GetResponseAsync() as HttpWebResponse;
+                EnsureActionId(req,response);
                 GetHeaderValues(action, response);
-                return CreateResult(action, response);
+                var result=CreateResult(action, response);
+                result.ActionId = req.ActionId();
+                return result;
             }
             catch (WebException webError)
             {
+                EnsureActionId(webError, req);
                 GetHeaderValues(action, webError.Response as HttpWebResponse);
                 errorResult = HandleWebException(webError, action);
             }
@@ -297,6 +304,20 @@ namespace Stardust.Interstellar.Rest.Client
             }
             errorResult.ActionId = req.ActionId();
             return errorResult;
+        }
+
+        private static void EnsureActionId(WebException webError, HttpWebRequest req)
+        {
+            var resp = webError.Response;
+            EnsureActionId(req, resp);
+        }
+
+        private static void EnsureActionId(HttpWebRequest req, WebResponse resp)
+        {
+            if (string.IsNullOrWhiteSpace(resp?.Headers?.Get("sd-ActionId")))
+            {
+                resp?.Headers?.Add("sd-ActionId", req.ActionId());
+            }
         }
 
         public T Invoke<T>(string name, ParameterWrapper[] parameters)

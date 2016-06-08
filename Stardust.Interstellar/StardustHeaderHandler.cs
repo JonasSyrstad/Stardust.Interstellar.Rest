@@ -32,24 +32,32 @@ namespace Stardust.Interstellar
         {
             var tracer = TracerFactory.StartTracer(this, req.RequestUri.ToString());
             state.Add("tracer", tracer);
+            string supportCode = null;
+            runtime.GetStateStorageContainer().TryGetItem<string>("supportCode", out supportCode);
+            if (supportCode.IsNullOrWhiteSpace())
+                supportCode = runtime.RequestContext?.RequestHeader?.SupportCode;
+            else
+            {
+                if (runtime.RequestContext?.RequestHeader != null)
+                    runtime.RequestContext.RequestHeader.SupportCode = supportCode;
+            }
+
+            if (supportCode.ContainsCharacters())
+                req.Headers.Set(SupportCodeHeaderName, supportCode);
             var respHeader = new RequestHeader
             {
                 ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
                 RuntimeInstance = runtime.InstanceId.ToString(),
-                MessageId = state.GetState<Guid>("messageId").ToString(),
+                MessageId = state.GetState<Guid>(Messageid).ToString(),
                 ServerIdentity = Environment.MachineName,
-                SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
+                SupportCode = supportCode,
                 TimeStamp = DateTime.UtcNow,
                 Environment = runtime.Environment,
                 ConfigSet = Utilities.Utilities.GetConfigSetName(),
                 MethodName = req.RequestUri.ToString(),
                 ServiceName = Utilities.Utilities.GetServiceName()
             };
-            var supportCode = runtime.RequestContext?.RequestHeader?.SupportCode;
-            if (supportCode.IsNullOrWhiteSpace())
-                runtime.GetStateStorageContainer().TryGetItem<string>("supportCode", out supportCode);
-            if (supportCode.ContainsCharacters())
-                req.Headers.Set(SupportCodeHeaderName, supportCode);
+
             req.Headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
         }
 
@@ -77,7 +85,7 @@ namespace Stardust.Interstellar
                 RuntimeInstance = runtime.InstanceId.ToString(),
                 CallStack = runtime.CallStack,
                 ExecutionTime = (long)(runtime.CallStack.ExecutionTime.HasValue ? runtime.CallStack.ExecutionTime.Value : -1),
-                MessageId = state.GetState<Guid>("messageId").ToString(),
+                MessageId = state.GetState<Guid>(Messageid).ToString(),
                 ServerIdentity = Environment.MachineName,
                 SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
                 TimeStamp = DateTime.UtcNow
@@ -96,6 +104,7 @@ namespace Stardust.Interstellar
                 var item = JsonConvert.DeserializeObject<RequestHeader>(Convert.FromBase64String(headers.GetValues(StardustMetadataName).First()).GetStringFromArray());
                 state.Add("RequestHeader", item);
                 runtime.InitializeWithMessageContext(new RequestItem(item));
+                state.SetState(Messageid, Guid.NewGuid());
             }
             if (string.IsNullOrWhiteSpace(runtime.RequestContext?.RequestHeader?.SupportCode)) return;
             if (headers.Contains(SupportCodeHeaderName))
@@ -108,7 +117,12 @@ namespace Stardust.Interstellar
             var tracer = runtime.SetServiceName(state.GetState<ApiController>("controller"), Utilities.Utilities.GetServiceName(), state.GetState<string>("action"));
             tracer.GetCallstack().Name = state.GetState<string>("controllerName");
             runtime.SetCurrentPrincipal(HttpContext.Current.User);
-            var supportCode = CreateSupportCode();
+            string supportCode = null;
+            if (headers.Contains(SupportCodeHeaderName))
+                supportCode = headers.GetValues(SupportCodeHeaderName).FirstOrDefault();
+            if (supportCode.IsNullOrWhiteSpace()) runtime.GetStateStorageContainer().TryGetItem(SupportCodeHeaderName, out supportCode);
+            if (supportCode.IsNullOrWhiteSpace())
+                supportCode = CreateSupportCode();
             state.SetState(SupportCodeHeaderName, supportCode);
             runtime.TrySetSupportCode(supportCode);
             runtime.GetStateStorageContainer().TryAddStorageItem(HttpContext.Current, "httpContext");
@@ -150,6 +164,8 @@ namespace Stardust.Interstellar
         private const string SupportCodeHeaderName = "x-supportCode";
 
         private const string StardustMetadataName = "x-stardustMeta";
+
+        private const string Messageid = "messageId";
     }
 
 

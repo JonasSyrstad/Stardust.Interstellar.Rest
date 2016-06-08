@@ -23,7 +23,7 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("test2/{id}")]
         [HttpGet]
-        string Apply2([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Header)]string item3);
+        Task<string> Apply2([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Header)]string item3);
 
         [Route("test3/{id}")]
         [HttpGet]
@@ -39,6 +39,7 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("put2/{id}")]
         [HttpPut]
+        [ServiceDescription("Sample description", Responses ="404;not found|401;Unauthorized access")]
         Task PutAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] DateTime timestamp);
 
         [Route("failure/{id}")]

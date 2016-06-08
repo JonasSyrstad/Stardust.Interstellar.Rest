@@ -19,7 +19,7 @@ namespace Stardust.Interstellar.Rest.Service
     {
         private const string ActionWrapperName = "sd-actionWrapperName";
 
-        protected readonly T implementation;
+        public readonly T implementation;
 
         protected HttpResponseMessage CreateResponse<TMessage>(HttpStatusCode statusCode, TMessage message = default(TMessage))
         {
@@ -53,11 +53,17 @@ namespace Stardust.Interstellar.Rest.Service
             HttpResponseMessage result = null;
             try
             {
-                await messageTask.ContinueWith(r => r.Exception.Flatten().Handle(e =>
-                {
-                    result = CreateErrorResponse(e);
-                    return true;
-                }), TaskContinuationOptions.OnlyOnFaulted);
+                await messageTask.ContinueWith(
+                    r =>
+                        {
+                            r.Exception.Flatten().Handle(
+                                e =>
+                                    {
+                                        result = CreateErrorResponse(e);
+                                        return true;
+                                    });
+                            r.Exception.Handle(e=>true);
+                        }, TaskContinuationOptions.OnlyOnFaulted);
                 if (result == null)
                 {
                     var message = messageTask.Result;
@@ -309,6 +315,18 @@ namespace Stardust.Interstellar.Rest.Service
                     }
                 }
                 action.Parameters.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
+            }
+        }
+
+        protected async Task<HttpResponseMessage> ExecuteMethodAsync<T>( Func<Task<T>> func)
+        {
+            try
+            {
+                return CreateResponse(HttpStatusCode.OK, await func());
+            }
+            catch (Exception ex)
+            {
+                return CreateErrorResponse(ex);
             }
         }
     }

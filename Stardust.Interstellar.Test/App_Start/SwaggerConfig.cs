@@ -2,6 +2,7 @@ using System.Web.Http;
 using WebActivatorEx;
 using Stardust.Interstellar.Test;
 using Swashbuckle.Application;
+using Swashbuckle.Stardust.Interstellar;
 
 [assembly: PreApplicationStartMethod(typeof(SwaggerConfig), "Register")]
 
@@ -33,7 +34,7 @@ namespace Stardust.Interstellar.Test
                         // additional fields by chaining methods off SingleApiVersion.
                         //
                         c.SingleApiVersion("v1", "Stardust.Interstellar.Test");
-
+                        c.ConfigureStardust(f=> {});
                         // If your API has multiple versions, use "MultipleApiVersions" instead of "SingleApiVersion".
                         // In this case, you must provide a lambda that tells Swashbuckle which actions should be
                         // included in the docs for a given API version. Like "SingleApiVersion", each call to "Version"

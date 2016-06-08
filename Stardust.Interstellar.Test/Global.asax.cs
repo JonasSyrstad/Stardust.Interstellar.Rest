@@ -125,9 +125,9 @@ namespace Stardust.Interstellar.Test
             return string.Join("-", id, name);
         }
 
-        public string Apply2(string id, string name, string item3)
+        public Task<string> Apply2(string id, string name, string item3)
         {
-            return string.Join("-", id, name,item3);
+            return Task.FromResult(string.Join("-", id, name,item3));
         }
 
         public string Apply3(string id, string name, string item3, string item4)
@@ -140,9 +140,13 @@ namespace Stardust.Interstellar.Test
             return;
         }
 
-        public Task<StringWrapper> ApplyAsync(string id, string name, string item3, string item4)
+        public async Task<StringWrapper> ApplyAsync(string id, string name, string item3, string item4)
         {
-            return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3, item4) });
+            await Task.Run(() => {
+                //throw new Exception("test"); 
+            });
+            return new StringWrapper { Value = string.Join("-", id, name, item3, item4) };
+            //return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3, item4) });
         }
 
         public Task PutAsync(string id, DateTime timestamp)
