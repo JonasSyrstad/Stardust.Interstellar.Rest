@@ -6,6 +6,8 @@ When both the client and the service are located in the same solution you will h
 
 Unit testing and reuse are simplified. All controllers are implemented in an consistent way, no surprises.
 
+Add the nuget: Install-Package Stardust.Interstellar.Rest
+
 Sample service definition interface
 ```CS
     [IRoutePrefix("api")] //Custom: as the RoutePrefix attribute only supports classes, this is one to one
@@ -114,7 +116,12 @@ Creating the WebApi controller
         }
     }
 ```
+Adding swagger to the service add the following line in Swashbuckle's SwaggerConfig.cs (added with the nuget)
+Add the nuget: Install-Package Stardust.Interstellar.Swashbuckle
 
+```CS
+    c.ConfigureStardust();
+```
 Creating client extensions
 ```CS
     [AttributeUsage(AttributeTargets.Method|AttributeTargets.Interface)]
@@ -278,4 +285,29 @@ public class Employee : GraphBase
 
         public string ManagerId { get; set; }
     }
+```
+
+To add support for WCF rest annotations:
+Install the nuget: Install-Package Stardust.Interstellar.Rest.Legacy
+
+and call the wcf addon before creating the controllers:
+```CS
+ public class WebApiApplication : System.Web.HttpApplication
+    {
+        protected void Application_Start()
+        {
+            WcfServiceProvider.RegisterWcfAdapters();//adds the wcf addon
+            ServiceFactory.CreateServiceImplementationForAllInCotainingAssembly<ITestApi>();//generates the controllers
+            ServiceFactory.FinalizeRegistration(); /registers the new controllers with mvc webapi
+
+            this.LoadBindingConfiguration<TestBlueprint>();
+           
+            AreaRegistration.RegisterAllAreas();
+            GlobalConfiguration.Configure(WebApiConfig.Register);
+            FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            BundleConfig.RegisterBundles(BundleTable.Bundles);
+        }
+    }
+
 ```
