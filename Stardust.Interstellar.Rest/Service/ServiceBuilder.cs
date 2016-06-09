@@ -481,7 +481,6 @@ namespace Stardust.Interstellar.Rest.Service
             var typeBuilder = myModuleBuilder.DefineType(string.Format("TempModule.Controllers.{0}{1}{2}VoidDelegate", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length),
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass,
                 typeof(object));
-            //var typeBuilder = myModuleBuilder.DefineType(string.Format("{0}{1}{2}Delegate", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length), TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass, typeof(object));
             var imp = typeBuilder.DefineField("implementation", parent, FieldAttributes.Public);
             var baseController = typeof(ServiceWrapperBase<>).MakeGenericType(targetMethod.DeclaringType).GetField("implementation", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -490,14 +489,11 @@ namespace Stardust.Interstellar.Rest.Service
 
             // Declaring method builder
             // Method attributes
-            System.Reflection.MethodAttributes methodAttributes =
-                  System.Reflection.MethodAttributes.Assembly
-                | System.Reflection.MethodAttributes.HideBySig;
+            var methodAttributes =
+                  MethodAttributes.Assembly
+                | MethodAttributes.HideBySig;
             MethodBuilder method = typeBuilder.DefineMethod(targetMethod.Name, methodAttributes);
             // Preparing Reflection instances
-            //FieldInfo field1 = typeof(<> c__DisplayClass2_0).GetField("<>4__this", BindingFlags.Public | BindingFlags.NonPublic);
-            //FieldInfo field2 = typeof(Stardust.Interstellar.Rest.Service.ServiceWrapperBase<>).MakeGenericType(typeof(ITestApi)).GetField("implementation", BindingFlags.Public | BindingFlags.NonPublic);
-            //FieldInfo field3 = typeof(<> c__DisplayClass2_0).GetField("serviceParameters", BindingFlags.Public | BindingFlags.NonPublic);
             MethodInfo method4 = typeof(ParameterWrapper).GetMethod(
                 "get_value",
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,

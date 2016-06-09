@@ -16,8 +16,7 @@ namespace Stardust.Interstellar
         public static void Initialize(bool useRestAsDefault = true)
         {
             if(initialized) return;
-            //Resolver.GetConfigurator().UnBind<IHttpControllerActivator>().AllAndBind().To<ControllerActivator>().SetTransientScope();
-            //Resolver.GetConfigurator().UnBind<IHttpActionInvoker>().AllAndBind().To<ActionInvoker>().SetTransientScope();
+           
             Resolver.GetConfigurator().Bind<IAuthenticationHandler>().To<AuthHandler>().SetTransientScope();
             Resolver.GetConfigurator().Bind<IHeaderHandler>().To<StardustHeaderHandler>("StardustHeaderHandler").SetTransientScope();
             Resolver.GetConfigurator().Bind<IErrorHandler>().To<StardustErrorHandler>().SetTransientScope();
@@ -25,6 +24,12 @@ namespace Stardust.Interstellar
             ExtensionsFactory.SetServiceLocator(new StardustServiceLocator());
             if (useRestAsDefault) ServiceContainerFactory.RegisterServiceFactoryAsDefault(new RestServiceContainerFactory());
             initialized = true;
+        }
+
+        public static void SetControllerActivation()
+        {
+            Resolver.GetConfigurator().UnBind<IHttpControllerActivator>().AllAndBind().To<ControllerActivator>().SetTransientScope();
+            Resolver.GetConfigurator().UnBind<IHttpActionInvoker>().AllAndBind().To<ActionInvoker>().SetTransientScope();
         }
 
         public static void RegisterOAuthProvider<T>() where T : IOAuthTokenProvider
