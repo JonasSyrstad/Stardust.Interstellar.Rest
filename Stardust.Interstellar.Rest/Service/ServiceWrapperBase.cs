@@ -329,5 +329,18 @@ namespace Stardust.Interstellar.Rest.Service
                 return CreateErrorResponse(ex);
             }
         }
+
+        protected async Task<HttpResponseMessage> ExecuteMethodVoidAsync(Func<Task> func)
+        {
+            try
+            {
+                await func();
+                return CreateResponse(HttpStatusCode.OK,(object)null );
+            }
+            catch (Exception ex)
+            {
+                return CreateErrorResponse(ex);
+            }
+        }
     }
 }

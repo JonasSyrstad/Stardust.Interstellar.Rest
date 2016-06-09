@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata>
     <id>Stardust.Interstellar.Rest</id>
-    <version>2.2.0.0</version>
+    <version>2.2.1.0</version>
     <title>Stardust.Interstellar.Rest</title>
     <authors>Stardust</authors>
     <owners>Stardust</owners>
@@ -14,7 +14,8 @@
     <iconUrl>http://stardustframework.wdfiles.com/local--files/blog%3A_start/logo_smal.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>false</developmentDependency>
-    <releaseNotes>Made error handling and async invocation more robust</releaseNotes>
+    <releaseNotes>Made error handling and async invocation more robust
+Improved Task async error handling</releaseNotes>
     <copyright>Copyright © Stardust 2016</copyright>
     <tags>rest client proxy service webapi generator </tags>
     <frameworkAssemblies />
