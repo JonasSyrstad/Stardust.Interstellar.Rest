@@ -21,8 +21,11 @@ namespace Stardust.Interstellar
         {
             var scope = RequestResponseScopefactory.CreateScope();
             var runtime = RuntimeFactory.CreateRuntime();
-            var supportCode = request.Headers.GetValues("x-supportCode")?.FirstOrDefault();
-            if (supportCode.ContainsCharacters()) RuntimeFactory.Current.TrySetSupportCode(supportCode);
+            if(request.Headers.Contains("x-supportCode"))
+            {
+                var supportCode = request.Headers.GetValues("x-supportCode")?.FirstOrDefault();
+                if (supportCode.ContainsCharacters()) RuntimeFactory.Current.TrySetSupportCode(supportCode);
+            }
             runtime.GetStateStorageContainer().TryAddStorageItem(scope, "olmscope");
             var controller = (IHttpController)ActivatorFactory.Activator.Activate(controllerType);
             return controller;

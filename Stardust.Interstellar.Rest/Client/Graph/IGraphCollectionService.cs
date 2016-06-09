@@ -5,6 +5,8 @@ using Stardust.Interstellar.Rest.Annotations;
 
 namespace Stardust.Interstellar.Rest.Client.Graph
 {
+    
+
     [IRoutePrefix("graph", true)]
     public interface IGraphCollectionService<T>
     {

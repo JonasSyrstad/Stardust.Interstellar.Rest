@@ -39,8 +39,11 @@ namespace Stardust.Interstellar.Rest.Service
 
         private void SetHeaders(HttpResponseMessage result)
         {
-            var action = GetActionWrapper(Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault().FirstOrDefault());
+            var actionName = Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault()?.FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(actionName)) actionName = GetActionName(ActionContext.ActionDescriptor.ActionName);
+            var action = GetActionWrapper(actionName);
             var actionId = Request.ActionId();
+            if (string.IsNullOrWhiteSpace(actionId)) actionId = ControllerContext.Request.Properties["sd-ActionId"].ToString();
             result.Headers.Add(ExtensionsFactory.ActionIdName, actionId);
             foreach (var customHandler in action.CustomHandlers)
             {
@@ -172,7 +175,7 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected ParameterWrapper[] GatherParameters(string name, object[] fromWebMethodParameters)
         {
-            if(!ModelState.IsValid) throw new InvalidDataException("Invalid input data");
+            
             try
             {
 
@@ -181,6 +184,7 @@ namespace Stardust.Interstellar.Rest.Service
                 Request.GetState().SetState("controller", this);
                 Request.GetState().SetState("controllerName", typeof(T).FullName);
                 Request.GetState().SetState("action", action.Name);
+                this.ControllerContext.Request.Properties.Add("sd-ActionId",Request.ActionId());
                 var i = 0;
                 var wrappers = new List<ParameterWrapper>();
                 foreach (var parameter in action.Parameters)
@@ -201,7 +205,7 @@ namespace Stardust.Interstellar.Rest.Service
 
                 throw new ParameterReflectionException(string.Format("Unable to gather parameters for {0}", name), ex);
             }
-
+            if (!ModelState.IsValid) throw new InvalidDataException("Invalid input data");
         }
 
         private static ActionWrapper GetAction(string name)
@@ -335,7 +339,7 @@ namespace Stardust.Interstellar.Rest.Service
             try
             {
                 await func();
-                return CreateResponse(HttpStatusCode.OK,(object)null );
+                return CreateResponse(HttpStatusCode.NoContent, (object)null);
             }
             catch (Exception ex)
             {

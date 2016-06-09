@@ -37,6 +37,7 @@ namespace Stardust.Interstellar.Rest.Service
         {
             try
             {
+                ExtensionsFactory.GetService<ILogger>()?.Message("Generating webapi controller for {0}",interfaceType.FullName);
                 var type = CreateServiceType(interfaceType);
                 ctor(type, interfaceType);
                 foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
@@ -59,6 +60,8 @@ namespace Stardust.Interstellar.Rest.Service
             }
             catch (Exception ex)
             {
+                ExtensionsFactory.GetService<ILogger>()?.Error(ex);
+                ExtensionsFactory.GetService<ILogger>()?.Message("Skipping type: {0}",interfaceType.FullName);
                 return null;
             }
         }
@@ -505,6 +508,7 @@ namespace Stardust.Interstellar.Rest.Service
                 );
             MethodInfo method5 = targetMethod;
             // Setting return type
+            method.SetReturnType( typeof(Task));
             // Adding parameters
             ILGenerator gen = method.GetILGenerator();
 
