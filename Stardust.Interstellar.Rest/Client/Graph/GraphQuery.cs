@@ -11,13 +11,6 @@ namespace Stardust.Interstellar.Rest.Client.Graph
         public GraphSortStatement SortStatement { get; set; }
     }
 
-    public class GraphSortStatement
-    {
-        public string Field { get; set; }
-
-        public bool Descending { get; set; }
-    }
-
     public class GraphQuery<T> : GraphQuery
     {
 

@@ -6,7 +6,6 @@ using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Nucleus;
-using Stardust.Particles;
 
 namespace Stardust.Interstellar
 {
@@ -43,23 +42,5 @@ namespace Stardust.Interstellar
         }
 
         internal static Action<Dictionary<string, object>> ExtrasHandler { get; set; }
-    }
-
-    public class LogWrapper : ILogger
-    {
-        public void Error(Exception error)
-        {
-            error.Log("rest generator");
-        }
-
-        public void Message(string message)
-        {
-            Logging.DebugMessage(message);
-        }
-
-        public void Message(string format, params object[] args)
-        {
-            Logging.DebugMessage(format,args);
-        }
     }
 }

@@ -60,19 +60,20 @@
   <ItemGroup>
     <Compile Include="CacheSettings.cs" />
     <Compile Include="ConfigParameter.cs" />
-    <Compile Include="ConfigurationReader.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="ConfigurationSet.cs" />
     <Compile Include="ConfigurationSets.cs" />
     <Compile Include="Endpoint.cs" />
     <Compile Include="EndpointConfig.cs" />
-    <Compile Include="EnvironmentsConfig.cs" />
+    <Compile Include="EnvironmentConfig.cs" />
     <Compile Include="IConfigReader.cs" />
     <Compile Include="IConfigReaderCache.cs" />
     <Compile Include="IdentitySettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServicesConfig.cs" />
+    <Compile Include="ServiceConfig.cs" />
     <Compile Include="StardustConfigAuthentication.cs" />
     <Compile Include="StardustConfigAuthenticationAttribute.cs" />
+    <Compile Include="StardustConfigCredentials.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

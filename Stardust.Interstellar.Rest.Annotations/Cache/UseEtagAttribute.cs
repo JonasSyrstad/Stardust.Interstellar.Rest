@@ -16,25 +16,4 @@ namespace Stardust.Interstellar.Rest.Annotations.Cache
             return new ETagHandler();
         }
     }
-
-    public interface ICahceInspector
-    {
-    }
-
-    public class ETagHandler : ICacheHelper
-    {
-        private ICacheHelper implementation;
-
-        public string GetEtag(string itemId)
-        {
-            return implementation.GetEtag(itemId);
-        }
-
-        public void SetImplementation(ICacheHelper instance)
-        {
-            implementation = instance;
-        }
-
-
-    }
 }
