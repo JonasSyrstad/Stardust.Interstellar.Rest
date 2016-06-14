@@ -28,7 +28,7 @@ namespace Swashbuckle.Stardust.Interstellar
                 {
                     var method = methodInfos.Single();
                     var methodParams = GetMethodParams(method);
-                    SetDescription(operation, method);
+                    SetDescription(operation, method,schemaRegistry);
                     var headerTypes = methodParams.Where(p => p.In == InclutionTypes.Header).ToArray();
                     foreach (var item in headerTypes)
                     {
@@ -82,7 +82,7 @@ namespace Swashbuckle.Stardust.Interstellar
             }
         }
 
-        private static void SetDescription(Operation operation, MethodInfo method)
+        private static void SetDescription(Operation operation, MethodInfo method, SchemaRegistry schemaRegistry)
         {
             var descAttrib = method.GetCustomAttribute<ServiceDescriptionAttribute>();
             if (descAttrib != null)
@@ -99,7 +99,7 @@ namespace Swashbuckle.Stardust.Interstellar
                         if (resp.Contains(";"))
                         {
                             var respValue = resp.Split(';');
-                            operation.responses.Add(respValue[0], new Response { description = respValue[1] });
+                            operation.responses.Add(respValue[0], new Response { description = respValue[1],schema =respValue.Length>2?schemaRegistry.GetOrRegister(Type.GetType(respValue[2])):null });
                         }
                     }
                 }

@@ -18,5 +18,7 @@ namespace Stardust.Interstellar.Rest.Common
         public List<HttpMethod> Actions { get; set; }
 
         public List<IHeaderHandler> CustomHandlers { get; set; }
+
+        public InputInterceptorAttribute[] Interceptor { get; set; }
     }
 }

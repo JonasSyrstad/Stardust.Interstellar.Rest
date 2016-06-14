@@ -24,7 +24,11 @@ namespace Stardust.Interstellar.Rest.Service
         protected HttpResponseMessage CreateResponse<TMessage>(HttpStatusCode statusCode, TMessage message = default(TMessage))
         {
             HttpResponseMessage result;
-
+            var action = GetAction();
+            foreach (var interceptor in action.Interceptor)
+            {
+                message = (TMessage)interceptor.GetInterceptor().Intercept(message,Request.GetState());
+            }
             if (message == null)
             {
                 result = Request.CreateResponse(HttpStatusCode.NoContent);
@@ -39,9 +43,7 @@ namespace Stardust.Interstellar.Rest.Service
 
         private void SetHeaders(HttpResponseMessage result)
         {
-            var actionName = Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault()?.FirstOrDefault();
-            if (string.IsNullOrWhiteSpace(actionName)) actionName = GetActionName(ActionContext.ActionDescriptor.ActionName);
-            var action = GetActionWrapper(actionName);
+            var action = GetAction();
             var actionId = Request.ActionId();
             if (string.IsNullOrWhiteSpace(actionId)) actionId = ControllerContext.Request.Properties["sd-ActionId"].ToString();
             result.Headers.Add(ExtensionsFactory.ActionIdName, actionId);
@@ -49,6 +51,14 @@ namespace Stardust.Interstellar.Rest.Service
             {
                 customHandler.SetServiceHeaders(result.Headers);
             }
+        }
+
+        private ActionWrapper GetAction()
+        {
+            var actionName = Request.Headers.Where(h => h.Key == ActionWrapperName).Select(h => h.Value).FirstOrDefault()?.FirstOrDefault();
+            if (string.IsNullOrWhiteSpace(actionName)) actionName = GetActionName(ActionContext.ActionDescriptor.ActionName);
+            var action = GetActionWrapper(actionName);
+            return action;
         }
 
         protected async Task<HttpResponseMessage> CreateResponseAsync<TMessage>(HttpStatusCode statusCode, Task<TMessage> messageTask = null)
@@ -65,7 +75,7 @@ namespace Stardust.Interstellar.Rest.Service
                                         result = CreateErrorResponse(e);
                                         return true;
                                     });
-                            r.Exception.Handle(e=>true);
+                            r.Exception.Handle(e => true);
                         }, TaskContinuationOptions.OnlyOnFaulted);
                 if (result == null)
                 {
@@ -175,16 +185,17 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected ParameterWrapper[] GatherParameters(string name, object[] fromWebMethodParameters)
         {
-            
+
             try
             {
 
                 Request.InitializeState();
                 var action = GetAction(name);
+
                 Request.GetState().SetState("controller", this);
                 Request.GetState().SetState("controllerName", typeof(T).FullName);
                 Request.GetState().SetState("action", action.Name);
-                this.ControllerContext.Request.Properties.Add("sd-ActionId",Request.ActionId());
+                this.ControllerContext.Request.Properties.Add("sd-ActionId", Request.ActionId());
                 var i = 0;
                 var wrappers = new List<ParameterWrapper>();
                 foreach (var parameter in action.Parameters)
@@ -198,7 +209,12 @@ namespace Stardust.Interstellar.Rest.Service
                 {
                     headerHandler.GetServiceHeader(Request.Headers);
                 }
+                ExecuteInterceptors(action, wrappers);
                 return wrappers.ToArray();
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -206,6 +222,20 @@ namespace Stardust.Interstellar.Rest.Service
                 throw new ParameterReflectionException(string.Format("Unable to gather parameters for {0}", name), ex);
             }
             if (!ModelState.IsValid) throw new InvalidDataException("Invalid input data");
+        }
+
+        private  void ExecuteInterceptors(ActionWrapper action, List<ParameterWrapper> wrappers)
+        {
+            if (action.Interceptor != null)
+            {
+                foreach (var interceptor in action.Interceptor)
+                {
+                    bool cancel;
+                    string cancellationMessage;
+                    interceptor.GetInterceptor().Intercept(wrappers.Select(p => p.value).ToArray(),Request.GetState(), out cancel, out cancellationMessage);
+                    if (cancel) throw new OperationCanceledException(cancellationMessage);
+                }
+            }
         }
 
         private static ActionWrapper GetAction(string name)
@@ -249,6 +279,7 @@ namespace Stardust.Interstellar.Rest.Service
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
                 action.CustomHandlers = handlers;
                 action.Actions = methods;
+                action.Interceptor = methodInfo.GetCustomAttributes().OfType<InputInterceptorAttribute>().ToArray();
                 BuildParameterInfo(methodInfo, action);
                 newWrapper.TryAdd(action.Name, action);
             }
@@ -322,7 +353,7 @@ namespace Stardust.Interstellar.Rest.Service
             }
         }
 
-        protected async Task<HttpResponseMessage> ExecuteMethodAsync<T>( Func<Task<T>> func)
+        protected async Task<HttpResponseMessage> ExecuteMethodAsync<T>(Func<Task<T>> func)
         {
             try
             {
