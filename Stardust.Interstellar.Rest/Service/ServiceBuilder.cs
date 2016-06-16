@@ -403,10 +403,11 @@ namespace Stardust.Interstellar.Rest.Service
         {
             return InternalMethodBuilder(type, implementationMethod, (a, b, c, d) => BuildAsyncMethodBody(a, b, c, d, type));
         }
-
+        private static int typeCounter=0;
         private Type CreateDelegate(MethodInfo targetMethod, TypeBuilder parent,List<ParameterWrapper> methodParams)
         {
-            var typeBuilder = myModuleBuilder.DefineType( string.Format("TempModule.Controllers.{0}{1}{2}Delegate", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length),
+            typeCounter++;
+            var typeBuilder = myModuleBuilder.DefineType( string.Format("TempModule.Controllers.{0}{1}{2}Delegate{3}", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length,typeCounter),
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass,
                 typeof(object));
             //var typeBuilder = myModuleBuilder.DefineType(string.Format("{0}{1}{2}Delegate", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length), TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass, typeof(object));
@@ -478,7 +479,8 @@ namespace Stardust.Interstellar.Rest.Service
 
         private Type CreateVoidDelegate(MethodInfo targetMethod, TypeBuilder parent, List<ParameterWrapper> methodParams)
         {
-            var typeBuilder = myModuleBuilder.DefineType(string.Format("TempModule.Controllers.{0}{1}{2}VoidDelegate", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length),
+            typeCounter++;
+            var typeBuilder = myModuleBuilder.DefineType(string.Format("TempModule.Controllers.{0}{1}{2}VoidDelegate{3}", targetMethod.DeclaringType.Name, targetMethod.Name, targetMethod.GetParameters().Length,typeCounter),
                 TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AnsiClass | TypeAttributes.AutoClass,
                 typeof(object));
             var imp = typeBuilder.DefineField("implementation", parent, FieldAttributes.Public);
