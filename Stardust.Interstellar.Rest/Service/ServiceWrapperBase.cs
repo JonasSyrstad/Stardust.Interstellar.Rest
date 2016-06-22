@@ -27,7 +27,7 @@ namespace Stardust.Interstellar.Rest.Service
             var action = GetAction();
             foreach (var interceptor in action.Interceptor)
             {
-                message = (TMessage)interceptor.GetInterceptor().Intercept(message,Request.GetState());
+                message = (TMessage)interceptor.GetInterceptor().Intercept(message, Request.GetState());
             }
             if (message == null)
             {
@@ -185,19 +185,19 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected ParameterWrapper[] GatherParameters(string name, object[] fromWebMethodParameters)
         {
-
+            var wrappers = new List<ParameterWrapper>();
+            List<AuthorizeAttribute> auth=null;
             try
             {
 
                 Request.InitializeState();
                 var action = GetAction(name);
-
+                auth = action.RequireAuth;
                 Request.GetState().SetState("controller", this);
                 Request.GetState().SetState("controllerName", typeof(T).FullName);
                 Request.GetState().SetState("action", action.Name);
                 this.ControllerContext.Request.Properties.Add("sd-ActionId", Request.ActionId());
                 var i = 0;
-                var wrappers = new List<ParameterWrapper>();
                 foreach (var parameter in action.Parameters)
                 {
                     var val = parameter.In == InclutionTypes.Header ? GetFromHeaders(parameter) : fromWebMethodParameters[i];
@@ -210,9 +210,13 @@ namespace Stardust.Interstellar.Rest.Service
                     headerHandler.GetServiceHeader(Request.Headers);
                 }
                 ExecuteInterceptors(action, wrappers);
-                return wrappers.ToArray();
+               
             }
             catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (UnauthorizedAccessException)
             {
                 throw;
             }
@@ -222,9 +226,10 @@ namespace Stardust.Interstellar.Rest.Service
                 throw new ParameterReflectionException(string.Format("Unable to gather parameters for {0}", name), ex);
             }
             if (!ModelState.IsValid) throw new InvalidDataException("Invalid input data");
+            return wrappers.ToArray();
         }
 
-        private  void ExecuteInterceptors(ActionWrapper action, List<ParameterWrapper> wrappers)
+        private void ExecuteInterceptors(ActionWrapper action, List<ParameterWrapper> wrappers)
         {
             if (action.Interceptor != null)
             {
@@ -232,7 +237,7 @@ namespace Stardust.Interstellar.Rest.Service
                 {
                     bool cancel;
                     string cancellationMessage;
-                    interceptor.GetInterceptor().Intercept(wrappers.Select(p => p.value).ToArray(),Request.GetState(), out cancel, out cancellationMessage);
+                    interceptor.GetInterceptor().Intercept(wrappers.Select(p => p.value).ToArray(), Request.GetState(), out cancel, out cancellationMessage);
                     if (cancel) throw new OperationCanceledException(cancellationMessage);
                 }
             }
@@ -279,6 +284,8 @@ namespace Stardust.Interstellar.Rest.Service
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
                 action.CustomHandlers = handlers;
                 action.Actions = methods;
+                action.RequireAuth = methodInfo.GetCustomAttributes().OfType<AuthorizeAttribute>().ToList();
+                action.RequireAuth.AddRange(interfaceType.GetCustomAttributes().OfType<IAuthorizeAttribute>());
                 action.Interceptor = methodInfo.GetCustomAttributes().OfType<InputInterceptorAttribute>().ToArray();
                 BuildParameterInfo(methodInfo, action);
                 newWrapper.TryAdd(action.Name, action);
@@ -353,11 +360,25 @@ namespace Stardust.Interstellar.Rest.Service
             }
         }
 
-        protected async Task<HttpResponseMessage> ExecuteMethodAsync<T>(Func<Task<T>> func)
+        protected async Task<HttpResponseMessage> ExecuteMethodAsync<TMessage>(Func<Task<TMessage>> func)
         {
             try
             {
-                return CreateResponse(HttpStatusCode.OK, await func());
+                AggregateException error = null;
+                var result = await func().ContinueWith(a =>
+                {
+                    if(a.IsFaulted)
+                    {
+                        error = a.Exception;
+                        return default(TMessage);
+                    }
+                    else
+                    {
+                        return a.Result;
+                    }
+                });
+                if (error != null) return CreateErrorResponse(error.InnerException);
+                return CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
             {

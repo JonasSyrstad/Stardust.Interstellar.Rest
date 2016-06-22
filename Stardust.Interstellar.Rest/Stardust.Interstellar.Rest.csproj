@@ -100,6 +100,7 @@
     <Compile Include="Service\ServiceFactory.cs" />
     <Compile Include="Service\ServiceWrapperBase.cs" />
     <Compile Include="Client\TypeWrapper.cs" />
+    <Compile Include="Service\VoidDelegateBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

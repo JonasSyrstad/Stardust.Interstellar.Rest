@@ -18,6 +18,7 @@ namespace Stardust.Interstellar.Rest.Annotations
         protected override void DoGetHeader(StateDictionary state, HttpWebResponse response)
         {
             var sw = state.GetState<Stopwatch>(StardustTimerKey);
+            if(sw==null) return;
             sw.Stop();
             var server = response.Headers[StardustTimerKey];
             if (!string.IsNullOrWhiteSpace(server))
@@ -34,6 +35,7 @@ namespace Stardust.Interstellar.Rest.Annotations
         protected override void DoSetServiceHeaders(StateDictionary state, HttpResponseHeaders headers)
         {
             var sw =  state.GetState<Stopwatch>(StardustTimerKey);
+            if(sw==null) return;
             sw.Stop();
             headers.Add(StardustTimerKey, sw.ElapsedMilliseconds.ToString());
         }

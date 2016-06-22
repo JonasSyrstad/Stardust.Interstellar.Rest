@@ -22,6 +22,7 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("test3/{id}")]
         [HttpGet]
+        [Authorize]
         string Apply3([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Header)]string item3, [In(InclutionTypes.Header)]string item4);
 
         [Route("put1/{id}")]

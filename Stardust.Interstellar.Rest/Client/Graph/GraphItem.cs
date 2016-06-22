@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Stardust.Interstellar.Rest.Client.Graph
 {
@@ -60,6 +61,7 @@ namespace Stardust.Interstellar.Rest.Client.Graph
             await (Task)service.GetType().InvokeMember("UpdateAsync", BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Instance, null, service, new object[] { Id, localCopy });
         }
 
+        [JsonIgnore]
         public T Value
         {
             get
