@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Web.Http;
 using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Common
@@ -20,5 +21,7 @@ namespace Stardust.Interstellar.Rest.Common
         public List<IHeaderHandler> CustomHandlers { get; set; }
 
         public InputInterceptorAttribute[] Interceptor { get; set; }
+
+        public List<AuthorizeAttribute> RequireAuth { get; set; }
     }
 }
