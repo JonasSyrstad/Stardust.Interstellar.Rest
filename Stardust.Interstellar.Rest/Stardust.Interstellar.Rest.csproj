@@ -63,6 +63,8 @@
     <Compile Include="Client\Graph\GraphBase.cs" />
     <Compile Include="Client\Graph\GraphQuery.cs" />
     <Compile Include="Client\Graph\GraphQueryPart.cs" />
+    <Compile Include="Client\Graph\GraphSortStatement.cs" />
+    <Compile Include="Client\Graph\IPagedGraphCollection.cs" />
     <Compile Include="Client\Graph\NavigationAttribute.cs" />
     <Compile Include="Client\Graph\GraphCollection.cs" />
     <Compile Include="Client\Graph\GraphContext.cs" />
@@ -71,9 +73,11 @@
     <Compile Include="Client\Graph\IGraphCollectionService.cs" />
     <Compile Include="Client\Graph\IGraphItem.cs" />
     <Compile Include="Client\Graph\IInternalGraphHelper.cs" />
+    <Compile Include="Client\Graph\PagedGraphCollection.cs" />
     <Compile Include="Common\EmitHelpers.cs" />
     <Compile Include="Common\ActionWrapper.cs" />
     <Compile Include="Common\ExtensionsFactory.cs" />
+    <Compile Include="Common\ILogger.cs" />
     <Compile Include="Extensions\HeaderHandlerFactory.cs" />
     <Compile Include="Extensions\IHeaderHandlerFactory.cs" />
     <Compile Include="Common\IRouteTemplateResolver.cs" />
@@ -88,6 +92,7 @@
     <Compile Include="Client\RestWrapperException.cs" />
     <Compile Include="Client\ResultWrapper.cs" />
     <Compile Include="Service\AggregateHandler.cs" />
+    <Compile Include="Service\CustomAssebliesResolver.cs" />
     <Compile Include="Service\ErrorHandlerAttribute.cs" />
     <Compile Include="Service\IErrorHandler.cs" />
     <Compile Include="Service\ParameterReflectionException.cs" />

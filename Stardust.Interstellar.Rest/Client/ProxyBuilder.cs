@@ -24,10 +24,12 @@ namespace Stardust.Interstellar.Rest.Client
 
         /// <summary>Initializes a new instance of the <see cref="T:System.Object" /> class.</summary>
         public Type Build()
+
         {
             var myCurrentDomain = AppDomain.CurrentDomain;
             var myAssemblyName = new AssemblyName();
             myAssemblyName.Name = Guid.NewGuid().ToString().Replace("-", "") + "_RestWrapper";
+            ExtensionsFactory.GetService<ILogger>()?.Message("Creating dynamic assembly {0}", myAssemblyName.FullName);
             myAssemblyBuilder = myCurrentDomain.DefineDynamicAssembly(myAssemblyName, AssemblyBuilderAccess.RunAndSave);
             var myModuleBuilder = myAssemblyBuilder.DefineDynamicModule("TempModule", "dyn.dll");
             var type = ReflectionTypeBuilder(myModuleBuilder, interfaceType.Name + "_dynimp");
@@ -46,11 +48,14 @@ namespace Stardust.Interstellar.Rest.Client
             try
             {
                 if (ConfigurationManager.AppSettings["stardust.saveGeneratedAssemblies"] == "true")
+                {
+                    ExtensionsFactory.GetService<ILogger>().Message("Saveing generated assembly");
                     myAssemblyBuilder.Save("dyn.dll");
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                ExtensionsFactory.GetService<ILogger>()?.Error(ex);
             }
             return result;
         }

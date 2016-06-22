@@ -43,8 +43,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthenticationInspectorAttributeBase.cs" />
+    <Compile Include="Cache\ETagHandler.cs" />
     <Compile Include="Cache\ICacheHelper.cs" />
+    <Compile Include="Cache\ICahceInspector.cs" />
     <Compile Include="Cache\UseEtagAttribute.cs" />
+    <Compile Include="Extras.cs" />
+    <Compile Include="IInputInterceptor.cs" />
+    <Compile Include="InputInterceptorAttribute.cs" />
+    <Compile Include="PerformanceHeadersHandler.cs" />
     <Compile Include="UserAgent\ConfiguredClienUserAgentName.cs" />
     <Compile Include="UserAgent\FixedClientUserAgentAttribute.cs" />
     <Compile Include="HeaderInspectorAttributeBase.cs" />

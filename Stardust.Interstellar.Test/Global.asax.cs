@@ -142,9 +142,9 @@ namespace Stardust.Interstellar.Test
 
         public async Task<StringWrapper> ApplyAsync(string id, string name, string item3, string item4)
         {
-            await Task.Run(() => {
-                //throw new Exception("test"); 
-            });
+            //await Task.Run(() => {
+            //    throw new Exception("test"); 
+            //});
             return new StringWrapper { Value = string.Join("-", id, name, item3, item4) };
             //return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3, item4) });
         }
@@ -154,17 +154,9 @@ namespace Stardust.Interstellar.Test
             return Task.FromResult(2);
         }
 
-        public async Task FailingAction(string id, string timestamp)
+        public  Task FailingAction(string id, string timestamp)
         {
-            try
-            {
-                throw new NotImplementedException();
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            throw new NotImplementedException();
         }
     }
 }

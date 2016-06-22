@@ -107,7 +107,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyGeneratorTest.cs" />
     <Compile Include="TestApi.cs" />
+    <Compile Include="TestBlueprint.cs" />
     <Compile Include="TestClient.cs" />
+    <Compile Include="TestHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

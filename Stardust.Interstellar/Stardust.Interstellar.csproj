@@ -119,12 +119,12 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Core.Service.Web.2.0.1.233\lib\net45\Stardust.Core.Service.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardust.Interstellar.Rest, Version=2.2.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.2.2.1.0\lib\net45\Stardust.Interstellar.Rest.dll</HintPath>
+    <Reference Include="Stardust.Interstellar.Rest, Version=2.2.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.2.3.0.0\lib\net45\Stardust.Interstellar.Rest.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Stardust.Interstellar.Rest.Annotations, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.Annotations.1.1.1.0\lib\net45\Stardust.Interstellar.Rest.Annotations.dll</HintPath>
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.Annotations.1.2.0.0\lib\net45\Stardust.Interstellar.Rest.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -191,8 +191,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionInvoker.cs" />
     <Compile Include="AuthHandler.cs" />
     <Compile Include="ControllerActivator.cs" />
+    <Compile Include="IOAuthBearerTokenValidator.cs" />
+    <Compile Include="IRequestAuthenticator.cs" />
+    <Compile Include="LogWrapper.cs" />
+    <Compile Include="OAuthRequestAuthenticator.cs" />
+    <Compile Include="RequestItem.cs" />
     <Compile Include="RestSettings.cs" />
     <Compile Include="IOAuthTokenProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

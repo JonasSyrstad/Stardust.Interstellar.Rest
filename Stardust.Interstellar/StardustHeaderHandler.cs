@@ -18,18 +18,17 @@ namespace Stardust.Interstellar
 {
     public class StardustHeaderHandler : StatefullHeaderHandlerBase
     {
-        private readonly IRuntime runtime;
 
         private readonly ISupportCodeGenerator generator;
 
-        public StardustHeaderHandler(IRuntime runtime, ISupportCodeGenerator generator)
+        public StardustHeaderHandler( ISupportCodeGenerator generator)
         {
-            this.runtime = runtime;
             this.generator = generator;
         }
 
         protected override void DoSetHeader(StateDictionary state, HttpWebRequest req)
         {
+            var runtime = RuntimeFactory.Current;
             var tracer = TracerFactory.StartTracer(this, req.RequestUri.ToString());
             state.Add("tracer", tracer);
             string supportCode = null;
@@ -77,14 +76,17 @@ namespace Stardust.Interstellar
 
         protected override void DoSetServiceHeaders(StateDictionary state, HttpResponseHeaders headers)
         {
+            var runtime = RuntimeFactory.Current;
             runtime.TearDown("");
+
+            
             var respHeader = new ResponseHeader
             {
                 ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
                 OriginalRuntimeInstance = runtime.RequestContext?.RequestHeader?.RuntimeInstance,
                 RuntimeInstance = runtime.InstanceId.ToString(),
                 CallStack = runtime.CallStack,
-                ExecutionTime = (long)(runtime.CallStack.ExecutionTime.HasValue ? runtime.CallStack.ExecutionTime.Value : -1),
+                ExecutionTime = (long)(runtime.CallStack!=null&& runtime.CallStack.ExecutionTime.HasValue ? runtime.CallStack.ExecutionTime.Value : -1),
                 MessageId = state.GetState<Guid>(Messageid).ToString(),
                 ServerIdentity = Environment.MachineName,
                 SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
@@ -97,6 +99,7 @@ namespace Stardust.Interstellar
 
         protected override void DoGetServiceHeader(StateDictionary state, HttpRequestHeaders headers)
         {
+            var runtime = RuntimeFactory.Current;
             InitializeStardustRuntime(headers, state);
 
             if (headers.Contains(StardustMetadataName))
@@ -113,6 +116,7 @@ namespace Stardust.Interstellar
 
         private void InitializeStardustRuntime(HttpRequestHeaders headers, StateDictionary state)
         {
+            var runtime = RuntimeFactory.Current;
             runtime.SetEnvironment(Utilities.Utilities.GetEnvironment());
             var tracer = runtime.SetServiceName(state.GetState<ApiController>("controller"), Utilities.Utilities.GetServiceName(), state.GetState<string>("action"));
             tracer.GetCallstack().Name = state.GetState<string>("controllerName");
@@ -166,22 +170,5 @@ namespace Stardust.Interstellar
         private const string StardustMetadataName = "x-stardustMeta";
 
         private const string Messageid = "messageId";
-    }
-
-
-
-    public class RequestItem : IRequestBase
-    {
-        /// <summary>Initializes a new instance of the <see cref="T:System.Object" /> class.</summary>
-        public RequestItem()
-        {
-        }
-
-        public RequestItem(RequestHeader item)
-        {
-            RequestHeader = item;
-        }
-
-        public RequestHeader RequestHeader { get; set; }
     }
 }

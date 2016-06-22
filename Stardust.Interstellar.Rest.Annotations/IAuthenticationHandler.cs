@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Stardust.Interstellar.Rest.Extensions
 {
