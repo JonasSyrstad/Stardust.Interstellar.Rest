@@ -64,6 +64,7 @@ namespace Stardust.Interstellar.Rest.Client
                 var actions = methodInfo.GetCustomAttributes(true).OfType<IActionHttpMethodProvider>().ToList();
                 var methods = ExtensionsFactory.GetHttpMethods(actions, methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
+                action.UseXml = methodInfo.GetCustomAttributes().OfType<UseXmlAttribute>().Any();
                 action.CustomHandlers = handlers;
                 action.Actions = methods;
                 ExtensionsFactory.BuildParameterInfo(methodInfo, action);
@@ -152,7 +153,7 @@ namespace Stardust.Interstellar.Rest.Client
         {
             try
             {
-                using (var reader =new StreamReader(resp.GetResponseStream()))
+                using (var reader = new StreamReader(resp.GetResponseStream()))
                 {
                     return reader.ReadToEnd();
                 }
@@ -167,17 +168,30 @@ namespace Stardust.Interstellar.Rest.Client
         private static ResultWrapper CreateResult(ActionWrapper action, HttpWebResponse response)
         {
             var type = typeof(Task).IsAssignableFrom(action.ReturnType) ? action.ReturnType.GetGenericArguments().FirstOrDefault() : action.ReturnType;
-            if (type == typeof(void)||type==null)
+            if (type == typeof(void) || type == null)
             {
                 return new ResultWrapper { Type = typeof(void), IsVoid = true, Value = null, Status = response.StatusCode, StatusMessage = response.StatusDescription, ActionId = response.ActionId() };
             }
-            using (var reader = new JsonTextReader(new StreamReader(response.GetResponseStream())))
-            {
+            var result = GetResultFromResponse(action, response, type);
+            return new ResultWrapper { Type = type, IsVoid = false, Value = result, Status = response.StatusCode, StatusMessage = response.StatusDescription, ActionId = response.ActionId() };
+        }
 
-                var serializer = new JsonSerializer();
-                var result = serializer.Deserialize(reader, type);
-                return new ResultWrapper { Type = type, IsVoid = false, Value = result, Status = response.StatusCode, StatusMessage = response.StatusDescription, ActionId = response.ActionId() };
+        private static object GetResultFromResponse(ActionWrapper action, HttpWebResponse response, Type type)
+        {
+            object result;
+            if (action.UseXml)
+            {
+                result = GetSerializer().Deserialize(response.GetResponseStream(), type);
             }
+            else
+            {
+                using (var reader = new JsonTextReader(new StreamReader(response.GetResponseStream())))
+                {
+                    var serializer = new JsonSerializer();
+                    result = serializer.Deserialize(reader, type);
+                }
+            }
+            return result;
         }
 
         private ActionWrapper CreateActionRequest(string name, ParameterWrapper[] parameters, out HttpWebRequest req)
@@ -197,16 +211,17 @@ namespace Stardust.Interstellar.Rest.Client
                 }
             }
             if (queryStrings.Any()) path = path + "?" + string.Join("&", queryStrings);
-            req = CreateRequest(path);
+            req = action.UseXml ? CreateRequest(path, "application/xml") : CreateRequest(path);
             req.Headers.Add(ExtensionsFactory.ActionIdName, Guid.NewGuid().ToString());
+            
             req.InitializeState();
             req.Method = action.Actions.First().ToString();
             AppendHeaders(parameters, req, action);
-            AppendBody(parameters, req);
+            AppendBody(parameters, req, action);
 
 
             if (authenticationHandler == null) authenticationHandler = ExtensionsFactory.GetService<IAuthenticationHandler>();
-                if (authenticationHandler != null) authenticationHandler.Apply(req);
+            if (authenticationHandler != null) authenticationHandler.Apply(req);
             return action;
         }
 
@@ -220,12 +235,12 @@ namespace Stardust.Interstellar.Rest.Client
             return action;
         }
 
-        private HttpWebRequest CreateRequest(string path)
+        private HttpWebRequest CreateRequest(string path, string contentType = "application/json")
         {
             var req = WebRequest.Create(new Uri(string.Format("{0}/{1}", baseUri, path))) as HttpWebRequest;
             req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
-            req.Accept = "application/json";
-            req.ContentType = "application/json";
+            req.Accept = contentType;
+            req.ContentType = contentType;
             req.Headers.Add("Accept-Language", "en-us");
             req.UserAgent = "stardust/1.0";
             req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
@@ -233,20 +248,21 @@ namespace Stardust.Interstellar.Rest.Client
             return req;
         }
 
-        private static void AppendBody(ParameterWrapper[] parameters, HttpWebRequest req)
+        private static void AppendBody(ParameterWrapper[] parameters, HttpWebRequest req, ActionWrapper action)
         {
             if (parameters.Any(p => p.In == InclutionTypes.Body))
             {
                 if (parameters.Count(p => p.In == InclutionTypes.Body) > 1)
                 {
-                    SerializeBody(req, parameters.Where(p => p.In == InclutionTypes.Body).Select(p => p.value).ToList());
+                    SerializeBody(req, parameters.Where(p => p.In == InclutionTypes.Body).Select(p => p.value).ToList(), action);
                 }
                 else
                 {
                     var val = parameters.Single(p => p.In == InclutionTypes.Body);
-                    SerializeBody(req, val.value);
+                    SerializeBody(req, val.value, action);
                 }
             }
+            else if (req.ContentType.Contains("xml")) req.ContentType = null;
         }
 
         private void AppendHeaders(ParameterWrapper[] parameters, HttpWebRequest req, ActionWrapper action)
@@ -269,7 +285,27 @@ namespace Stardust.Interstellar.Rest.Client
             }
         }
 
-        private static void SerializeBody(WebRequest req, object val)
+        private static void SerializeBody(WebRequest req, object val, ActionWrapper action)
+        {
+            if (action.UseXml) XmlBodySerializer(req, val);
+            else
+                JsonBodySerializer(req, val);
+        }
+
+        private static void XmlBodySerializer(WebRequest req, object val)
+        {
+            var xmlSerializer = GetSerializer();
+            xmlSerializer.Serialize(req, val);
+        }
+
+        private static ISerializer GetSerializer()
+        {
+            var xmlSerializer = ExtensionsFactory.GetServices<ISerializer>().SingleOrDefault(s => string.Equals(s.SerializationType, "xml", StringComparison.InvariantCultureIgnoreCase));
+            if (xmlSerializer == null) throw new IndexOutOfRangeException("Could not find serializer");
+            return xmlSerializer;
+        }
+
+        private static void JsonBodySerializer(WebRequest req, object val)
         {
             var serializer = new JsonSerializer();
             using (var writer = new JsonTextWriter(new StreamWriter(req.GetRequestStream())))
@@ -286,9 +322,9 @@ namespace Stardust.Interstellar.Rest.Client
             try
             {
                 var response = await req.GetResponseAsync() as HttpWebResponse;
-                EnsureActionId(req,response);
+                EnsureActionId(req, response);
                 GetHeaderValues(action, response);
-                var result=CreateResult(action, response);
+                var result = CreateResult(action, response);
                 result.ActionId = req.ActionId();
                 return result;
             }
@@ -328,7 +364,7 @@ namespace Stardust.Interstellar.Rest.Client
 
             if (result.Error == null)
                 return (T)result.Value;
-            CreateException(name,result);
+            CreateException(name, result);
             return default(T);
         }
 
@@ -340,11 +376,11 @@ namespace Stardust.Interstellar.Rest.Client
             if (typeof(T) == typeof(void)) return default(T);
             if (result.Error == null)
                 return (T)result.Value;
-            CreateException(name,result);
+            CreateException(name, result);
             return default(T);
         }
 
-        private  void CreateException(string name, ResultWrapper result)
+        private void CreateException(string name, ResultWrapper result)
         {
             var action = GetAction(name);
             var handler = GetErrorHandler();

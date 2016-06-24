@@ -62,6 +62,7 @@
     <Compile Include="Extras.cs" />
     <Compile Include="IInputInterceptor.cs" />
     <Compile Include="InputInterceptorAttribute.cs" />
+    <Compile Include="OperationAbortedException.cs" />
     <Compile Include="PerformanceHeadersHandler.cs" />
     <Compile Include="UserAgent\ConfiguredClienUserAgentName.cs" />
     <Compile Include="UserAgent\FixedClientUserAgentAttribute.cs" />

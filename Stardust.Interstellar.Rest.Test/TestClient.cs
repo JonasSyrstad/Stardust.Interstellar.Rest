@@ -24,13 +24,13 @@ namespace Stardust.Interstellar.Rest.Test
             return result;
         }
 
-        public Task<string> Apply2(string id, string name, string item3)
+        public Task<StringWrapper> Apply2(string id, string name, string item3)
         {
             const string apply = "Apply";
             var par = new object[] { id, name, item3 };
             var parameters = GetParameters(apply, par);
             var result = Invoke<string>(apply, parameters);
-            return Task.FromResult(result);
+            return Task.FromResult(new StringWrapper {Value = result});
         }
 
 

@@ -417,6 +417,10 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Annotations\Stardust.Interstellar.Rest.Annotations.csproj">
+      <Project>{fb9f29e3-83d5-4751-bafc-ccb64e40f220}</Project>
+      <Name>Stardust.Interstellar.Rest.Annotations</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stardust.Interstellar.Rest.Legacy\Stardust.Interstellar.Rest.WcfAdapter.csproj">
       <Project>{928518E9-D24D-4C42-A9D8-C6876C8720A4}</Project>
       <Name>Stardust.Interstellar.Rest.WcfAdapter</Name>
@@ -428,6 +432,10 @@
     <ProjectReference Include="..\Stardust.Interstellar.Rest\Stardust.Interstellar.Rest.csproj">
       <Project>{7488ded6-41f7-4a42-b7b6-cbea01ed08b5}</Project>
       <Name>Stardust.Interstellar.Rest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Stardust.Interstellar\Stardust.Interstellar.csproj">
+      <Project>{76d64b5e-b138-493b-a332-b54090c96f41}</Project>
+      <Name>Stardust.Interstellar</Name>
     </ProjectReference>
     <ProjectReference Include="..\Swashbuckle.Stardust.Interstellar\Swashbuckle.Stardust.Interstellar.csproj">
       <Project>{9984cb92-be24-452d-8ddd-001436e4aac7}</Project>

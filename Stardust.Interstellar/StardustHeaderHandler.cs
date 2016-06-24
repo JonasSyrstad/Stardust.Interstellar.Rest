@@ -26,6 +26,11 @@ namespace Stardust.Interstellar
             this.generator = generator;
         }
 
+        /// <summary>
+        /// The order of execution. Lower numbers will be processed first
+        /// </summary>
+        public override int ProcessingOrder => 0;
+
         protected override void DoSetHeader(StateDictionary state, HttpWebRequest req)
         {
             var runtime = RuntimeFactory.Current;

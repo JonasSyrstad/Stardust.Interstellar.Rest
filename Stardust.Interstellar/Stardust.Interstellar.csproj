@@ -119,14 +119,6 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Core.Service.Web.2.0.1.233\lib\net45\Stardust.Core.Service.Web.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Stardust.Interstellar.Rest, Version=2.2.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.2.3.0.0\lib\net45\Stardust.Interstellar.Rest.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Stardust.Interstellar.Rest.Annotations, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.Interstellar.Rest.Annotations.1.2.0.0\lib\net45\Stardust.Interstellar.Rest.Annotations.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.IdentityModel" />
@@ -213,6 +205,16 @@
     <None Include="nugetdeploy.config" />
     <None Include="packages.config" />
     <None Include="Stardust.Interstellar.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Annotations\Stardust.Interstellar.Rest.Annotations.csproj">
+      <Project>{fb9f29e3-83d5-4751-bafc-ccb64e40f220}</Project>
+      <Name>Stardust.Interstellar.Rest.Annotations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest\Stardust.Interstellar.Rest.csproj">
+      <Project>{5ee819e3-b588-431f-b5da-3ebc0557242b}</Project>
+      <Name>Stardust.Interstellar.Rest</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -6,6 +6,10 @@ namespace Stardust.Interstellar.Rest.Extensions
     public interface IHeaderHandler
     {
         /// <summary>
+        /// The order of execution. Lower numbers will be processed first
+        /// </summary>
+        int ProcessingOrder { get; }
+        /// <summary>
         /// Set custom header values on sending request to a service
         /// </summary>
         /// <param name="req"></param>

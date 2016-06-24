@@ -131,6 +131,10 @@
       <Project>{5EE819E3-B588-431F-B5DA-3EBC0557242B}</Project>
       <Name>Stardust.Interstellar.Rest</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Stardust.Interstellar\Stardust.Interstellar.csproj">
+      <Project>{76D64B5E-B138-493B-A332-B54090C96F41}</Project>
+      <Name>Stardust.Interstellar</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

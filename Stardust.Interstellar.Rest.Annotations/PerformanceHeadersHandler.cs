@@ -9,6 +9,11 @@ namespace Stardust.Interstellar.Rest.Annotations
     {
         private const string StardustTimerKey = "x-stardusttimer";
 
+        /// <summary>
+        /// The order of execution. Lower numbers will be processed first
+        /// </summary>
+        public override int ProcessingOrder => -2;
+
         protected override void DoSetHeader(StateDictionary state, HttpWebRequest req)
         {
             if(state.ContainsKey(StardustTimerKey)) return;
