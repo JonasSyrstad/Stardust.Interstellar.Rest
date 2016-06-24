@@ -15,6 +15,11 @@ namespace Stardust.Interstellar.Rest.Annotations.UserAgent
         }
 
         /// <summary>
+        /// The order of execution. Lower numbers will be processed first
+        /// </summary>
+        public int ProcessingOrder => -1;
+
+        /// <summary>
         /// Set custom header values on sending request to a service
         /// </summary>
         /// <param name="req"></param>

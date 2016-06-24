@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Stardust.Interstellar.Rest.Client;
+using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Legacy;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Nucleus;
@@ -18,6 +19,7 @@ namespace Stardust.Interstellar.Rest.Test
             this.output = output;
             WcfServiceProvider.RegisterWcfAdapters();
             Resolver.LoadModuleConfiguration<TestBlueprint>();
+            ExtensionsFactory.SetXmlSerializer(typeof(CustomXmlSerializer));
         }
         [Fact]
         public async Task GeneratorTest()
@@ -25,6 +27,17 @@ namespace Stardust.Interstellar.Rest.Test
         {
             var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
             var res = await service.ApplyAsync("101", "Stardust", "Hello", "World");
+            output.WriteLine(res.Value);
+            await service.PutAsync("test", DateTime.Today);
+            output.WriteLine("Put was successfull");
+        }
+
+        [Fact]
+        public async Task UseXmlTest()
+
+        {
+            var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
+            var res = await service.Apply2("101", "Stardust", "Hello");
             output.WriteLine(res.Value);
             await service.PutAsync("test", DateTime.Today);
             output.WriteLine("Put was successfull");

@@ -37,7 +37,6 @@ namespace Stardust.Interstellar.Rest.Service
                 result = Request.CreateResponse(statusCode, message);
             SetHeaders(result);
             Request.EndState();
-
             return result;
         }
 
@@ -186,7 +185,7 @@ namespace Stardust.Interstellar.Rest.Service
         protected ParameterWrapper[] GatherParameters(string name, object[] fromWebMethodParameters)
         {
             var wrappers = new List<ParameterWrapper>();
-            List<AuthorizeAttribute> auth=null;
+            List<AuthorizeAttribute> auth = null;
             try
             {
 
@@ -210,7 +209,7 @@ namespace Stardust.Interstellar.Rest.Service
                     headerHandler.GetServiceHeader(Request.Headers);
                 }
                 ExecuteInterceptors(action, wrappers);
-               
+
             }
             catch (OperationCanceledException)
             {
@@ -237,8 +236,9 @@ namespace Stardust.Interstellar.Rest.Service
                 {
                     bool cancel;
                     string cancellationMessage;
-                    interceptor.GetInterceptor().Intercept(wrappers.Select(p => p.value).ToArray(), Request.GetState(), out cancel, out cancellationMessage);
-                    if (cancel) throw new OperationCanceledException(cancellationMessage);
+                    HttpStatusCode statusCode;
+                    cancel = interceptor.GetInterceptor().Intercept(wrappers.Select(p => p.value).ToArray(), Request.GetState(), out cancellationMessage, out statusCode);
+                    if (cancel) throw new OperationAbortedException(statusCode, cancellationMessage);
                 }
             }
         }
@@ -282,7 +282,7 @@ namespace Stardust.Interstellar.Rest.Service
                 var actions = methodInfo.GetCustomAttributes(true).OfType<IActionHttpMethodProvider>();
                 var methods = ExtensionsFactory.GetHttpMethods(actions.ToList(), methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
-                action.CustomHandlers = handlers;
+                action.CustomHandlers = handlers.OrderBy(i=>i.ProcessingOrder).ToList();
                 action.Actions = methods;
                 action.RequireAuth = methodInfo.GetCustomAttributes().OfType<AuthorizeAttribute>().ToList();
                 action.RequireAuth.AddRange(interfaceType.GetCustomAttributes().OfType<IAuthorizeAttribute>());
@@ -367,7 +367,7 @@ namespace Stardust.Interstellar.Rest.Service
                 AggregateException error = null;
                 var result = await func().ContinueWith(a =>
                 {
-                    if(a.IsFaulted)
+                    if (a.IsFaulted)
                     {
                         error = a.Exception;
                         return default(TMessage);
@@ -399,4 +399,6 @@ namespace Stardust.Interstellar.Rest.Service
             }
         }
     }
+
+
 }

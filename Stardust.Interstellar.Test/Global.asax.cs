@@ -125,9 +125,9 @@ namespace Stardust.Interstellar.Test
             return string.Join("-", id, name);
         }
 
-        public Task<string> Apply2(string id, string name, string item3)
+        public Task<StringWrapper> Apply2(string id, string name, string item3)
         {
-            return Task.FromResult(string.Join("-", id, name,item3));
+            return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3) });
         }
 
         public string Apply3(string id, string name, string item3, string item4)

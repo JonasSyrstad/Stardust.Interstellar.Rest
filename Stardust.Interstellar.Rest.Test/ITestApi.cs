@@ -18,7 +18,8 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("test2/{id}")]
         [HttpGet]
-        Task<string> Apply2([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Header)]string item3);
+        [UseXml]
+        Task<StringWrapper> Apply2([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Header)]string item3);
 
         [Route("test3/{id}")]
         [HttpGet]

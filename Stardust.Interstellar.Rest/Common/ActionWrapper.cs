@@ -23,5 +23,7 @@ namespace Stardust.Interstellar.Rest.Common
         public InputInterceptorAttribute[] Interceptor { get; set; }
 
         public List<AuthorizeAttribute> RequireAuth { get; set; }
+
+        public bool UseXml { get; set; }
     }
 }

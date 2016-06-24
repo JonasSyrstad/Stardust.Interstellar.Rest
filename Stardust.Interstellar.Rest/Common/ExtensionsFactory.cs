@@ -16,16 +16,18 @@ namespace Stardust.Interstellar.Rest.Common
     public static class ExtensionsFactory
     {
 
-        
+
 
         internal static StateDictionary GetState(this ResultWrapper result)
         {
             var actionId = result.ActionId;
             return StateHelper.InitializeState(actionId);
         }
-        
+
 
         private static IServiceLocator locator;
+
+        private static Type xmlSerializer;
 
         public static void SetServiceLocator(IServiceLocator serviceLocator)
         {
@@ -44,6 +46,7 @@ namespace Stardust.Interstellar.Rest.Common
 
         public static IEnumerable<T> GetServices<T>()
         {
+            if (xmlSerializer != null && typeof(ISerializer) == typeof(T)) return new[] { (T)Activator.CreateInstance(xmlSerializer) };
             return locator?.GetServices<T>();
         }
 
@@ -60,16 +63,16 @@ namespace Stardust.Interstellar.Rest.Common
         internal static string GetRouteTemplate(IRoutePrefixAttribute templatePrefix, RouteAttribute template, MethodInfo methodInfo)
         {
             var interfaceType = methodInfo.DeclaringType;
-            var templateResolver = 
+            var templateResolver =
                 GetService<IRouteTemplateResolver>();
             var route = templateResolver?.GetTemplate(methodInfo);
             if (!String.IsNullOrWhiteSpace(route)) return route;
-            string prefix="";
-            if(templatePrefix!=null)
+            string prefix = "";
+            if (templatePrefix != null)
             {
                 prefix = templatePrefix.Prefix;
                 if (templatePrefix.IncludeTypeName) prefix = prefix + "/" + (interfaceType.GetGenericArguments().Any() ? interfaceType.GetGenericArguments().FirstOrDefault()?.Name.ToLower() : interfaceType.GetInterfaces().FirstOrDefault()?.GetGenericArguments().First().Name.ToLower());
-                
+
             }
             return templatePrefix == null ? "" : (prefix + "/") + template.Template;
         }
@@ -80,7 +83,7 @@ namespace Stardust.Interstellar.Rest.Common
             if (parameterHandler != null)
             {
                 var parameters = parameterHandler.ResolveParameters(methodInfo);
-                if(parameters!=null && parameters.Any())
+                if (parameters != null && parameters.Any())
                 {
                     action.Parameters.AddRange(parameters);
                     return;
@@ -141,8 +144,13 @@ namespace Stardust.Interstellar.Rest.Common
             if (methods.Count == 0) methods.Add(HttpMethod.Get);
             return methods;
         }
-        
+
 
         internal const string ActionIdName = "sd-ActionId";
+
+        public static void SetXmlSerializer(Type type)
+        {
+            xmlSerializer = type;
+        }
     }
 }
