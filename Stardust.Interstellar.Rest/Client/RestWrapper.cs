@@ -65,7 +65,7 @@ namespace Stardust.Interstellar.Rest.Client
                 var methods = ExtensionsFactory.GetHttpMethods(actions, methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
                 action.UseXml = methodInfo.GetCustomAttributes().OfType<UseXmlAttribute>().Any();
-                action.CustomHandlers = handlers;
+                action.CustomHandlers = handlers.OrderBy(i=>i.ProcessingOrder).ToList();
                 action.Actions = methods;
                 ExtensionsFactory.BuildParameterInfo(methodInfo, action);
                 newWrapper.TryAdd(action.Name, action);
