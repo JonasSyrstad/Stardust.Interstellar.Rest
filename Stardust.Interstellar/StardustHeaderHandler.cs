@@ -59,7 +59,8 @@ namespace Stardust.Interstellar
                 Environment = runtime.Environment,
                 ConfigSet = Utilities.Utilities.GetConfigSetName(),
                 MethodName = req.RequestUri.ToString(),
-                ServiceName = Utilities.Utilities.GetServiceName()
+                ServiceName = Utilities.Utilities.GetServiceName(),
+                ConfigVersion = runtime.Context.GetEnvironmentConfiguration().Version
             };
 
             req.Headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
@@ -95,8 +96,8 @@ namespace Stardust.Interstellar
                 MessageId = state.GetState<Guid>(Messageid).ToString(),
                 ServerIdentity = Environment.MachineName,
                 SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
-                TimeStamp = DateTime.UtcNow
-
+                TimeStamp = DateTime.UtcNow,
+                ConfigVersion = runtime.Context.GetEnvironmentConfiguration().Version
             };
             headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
             headers.Add(SupportCodeHeaderName, state.GetState<string>(SupportCodeHeaderName));

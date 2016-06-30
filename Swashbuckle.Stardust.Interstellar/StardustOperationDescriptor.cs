@@ -58,7 +58,6 @@ namespace Swashbuckle.Stardust.Interstellar
                     type = "string",
                     required = false,
                     maxItems = 1,
-                    schema = schemaRegistry.GetOrRegister(typeof(RequestHeader)),
                     format = "byte"
 
                 });
@@ -69,7 +68,7 @@ namespace Swashbuckle.Stardust.Interstellar
                     {
                         description = "Contains meta information from the server and its environment",
                         format = "byte",
-                        type = schemaRegistry.GetOrRegister(typeof(ResponseHeader)).@ref,
+                        type = "string"
                         
 
                     });
