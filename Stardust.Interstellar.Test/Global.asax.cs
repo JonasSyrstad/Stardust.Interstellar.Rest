@@ -158,5 +158,15 @@ namespace Stardust.Interstellar.Test
         {
             throw new NotImplementedException();
         }
+
+        public Task<List<string>> GetOptions()
+        {
+            return Task.FromResult(new List<string> { "Stardust", "Interstellar", "Rest","2.4.*" });
+        }
+
+        public Task GetHead()
+        {
+            return Task.FromResult(new List<string> { "Stardust", "Interstellar", "Rest", "2.4.*" });
+        }
     }
 }

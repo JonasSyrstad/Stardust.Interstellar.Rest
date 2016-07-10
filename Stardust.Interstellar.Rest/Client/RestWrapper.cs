@@ -212,6 +212,7 @@ namespace Stardust.Interstellar.Rest.Client
             }
             if (queryStrings.Any()) path = path + "?" + string.Join("&", queryStrings);
             req = action.UseXml ? CreateRequest(path, "application/xml") : CreateRequest(path);
+
             req.Headers.Add(ExtensionsFactory.ActionIdName, Guid.NewGuid().ToString());
             
             req.InitializeState();
@@ -245,7 +246,15 @@ namespace Stardust.Interstellar.Rest.Client
             req.UserAgent = "stardust/1.0";
             req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
             req.CookieContainer = cookieContainer;
+            SetTimeoutValues(req);
             return req;
+        }
+
+        private static void SetTimeoutValues(HttpWebRequest req)
+        {
+            if (ClientGlobalSettings.Timeout != null) req.Timeout = ClientGlobalSettings.Timeout.Value;
+            if (ClientGlobalSettings.ReadWriteTimeout != null) req.ReadWriteTimeout = ClientGlobalSettings.ReadWriteTimeout.Value;
+            if (ClientGlobalSettings.ContinueTimeout != null) req.ContinueTimeout = ClientGlobalSettings.ContinueTimeout.Value;
         }
 
         private static void AppendBody(ParameterWrapper[] parameters, HttpWebRequest req, ActionWrapper action)

@@ -55,8 +55,26 @@ namespace Stardust.Interstellar.Rest.Test
             {
                 var error = ex.Message;
                 output.WriteLine(error);
-                Assert.True(error== "Bad Gateway");
+                Assert.True(error == "Bad Gateway");
             }
+
+        }
+
+        [Fact]
+        public async Task GetOptions()
+        {
+
+            var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
+            var options = await service.GetOptions();
+            Assert.Equal(4, options.Count);
+        }
+
+        [Fact]
+        public async Task GetHead()
+        {
+
+            var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
+            await service.GetHead();
 
         }
 
@@ -81,9 +99,9 @@ namespace Stardust.Interstellar.Rest.Test
                 catch (Exception ex)
                 {
                     throw;
-                } 
+                }
             }
-           
+
         }
 
         [Fact]

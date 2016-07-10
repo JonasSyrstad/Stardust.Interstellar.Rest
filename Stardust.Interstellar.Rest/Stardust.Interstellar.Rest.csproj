@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\ClientGlobalSettings.cs" />
     <Compile Include="Client\Graph\GraphBase.cs" />
     <Compile Include="Client\Graph\GraphQuery.cs" />
     <Compile Include="Client\Graph\GraphQueryPart.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="Service\CustomAssebliesResolver.cs" />
     <Compile Include="Service\ErrorHandlerAttribute.cs" />
     <Compile Include="Service\IErrorHandler.cs" />
+    <Compile Include="Service\IServiceExtensions.cs" />
     <Compile Include="Service\ParameterReflectionException.cs" />
     <Compile Include="Service\ServiceBuilder.cs" />
     <Compile Include="Service\ServiceFactory.cs" />

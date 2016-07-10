@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Extensions;
@@ -70,6 +71,16 @@ namespace Stardust.Interstellar.Rest.Test
         }
 
         public Task FailingAction(string id, string timestamp)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<string>> GetOptions()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task GetHead()
         {
             throw new NotImplementedException();
         }

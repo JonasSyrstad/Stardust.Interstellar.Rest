@@ -9,11 +9,12 @@ using Stardust.Interstellar.Rest.Annotations;
 namespace Stardust.Interstellar.Config
 {
     [StardustConfigAuthentication]
+    [IRoutePrefix("api")]
     public interface IConfigReader
     {
         [HttpGet]
-        [Route("api/ConfigReader/{id}")]
+        [Route("ConfigReader/{id}")]
         
-        ConfigurationSet Get([FromUri] string id, [In(InclutionTypes.Path)]string env = null, [In(InclutionTypes.Path)]string updKey = null);
+        ConfigurationSet Get([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string env = null, [In(InclutionTypes.Path)]string updKey = null);
     }
 }

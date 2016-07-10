@@ -9,9 +9,7 @@ using Newtonsoft.Json;
 using Stardust.Core.Service.Web;
 using Stardust.Interstellar.Messaging;
 using Stardust.Interstellar.Rest.Extensions;
-using Stardust.Interstellar.Rest.Service;
 using Stardust.Interstellar.Trace;
-using Stardust.Interstellar.Utilities;
 using Stardust.Particles;
 
 namespace Stardust.Interstellar

@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -42,13 +43,53 @@ namespace Stardust.Interstellar.Rest.Service
 
         private void SetHeaders(HttpResponseMessage result)
         {
+            SetServiceHeaders(result);
             var action = GetAction();
+
             var actionId = Request.ActionId();
             if (string.IsNullOrWhiteSpace(actionId)) actionId = ControllerContext.Request.Properties["sd-ActionId"].ToString();
             result.Headers.Add(ExtensionsFactory.ActionIdName, actionId);
             foreach (var customHandler in action.CustomHandlers)
             {
                 customHandler.SetServiceHeaders(result.Headers);
+            }
+        }
+
+        private void SetServiceHeaders(HttpResponseMessage result)
+        {
+            try
+            {
+                var serviceExtensions = implementation as IServiceExtensions;
+                var dictionary = serviceExtensions?.GetHeaders();
+                if (dictionary != null)
+                {
+                    foreach (var headerElement in dictionary)
+                    {
+                        try
+                        {
+                            if (String.Equals(headerElement.Key, "etag", StringComparison.OrdinalIgnoreCase))
+                                result.Headers.ETag = new EntityTagHeaderValue(headerElement.Value);
+                            else if(String.Equals(headerElement.Key, "wetag", StringComparison.OrdinalIgnoreCase))
+                                result.Headers.ETag = new EntityTagHeaderValue(headerElement.Value,true);
+                            else
+                                result.Headers.Add(headerElement.Key, headerElement.Value);
+                        }
+                        catch (Exception ex)
+                        {
+                            ExtensionsFactory.GetService<ILogger>()?.Error(ex);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    ExtensionsFactory.GetService<ILogger>()?.Error(ex);
+                }
+                catch (Exception)
+                {
+                }
             }
         }
 
@@ -184,6 +225,9 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected ParameterWrapper[] GatherParameters(string name, object[] fromWebMethodParameters)
         {
+            var serviceExtensions = implementation as IServiceExtensions;
+            serviceExtensions?.SetControllerContext(ControllerContext);
+            serviceExtensions?.SetResponseHeaderCollection(new Dictionary<string, string>());
             var wrappers = new List<ParameterWrapper>();
             List<AuthorizeAttribute> auth = null;
             try
@@ -282,7 +326,7 @@ namespace Stardust.Interstellar.Rest.Service
                 var actions = methodInfo.GetCustomAttributes(true).OfType<IActionHttpMethodProvider>();
                 var methods = ExtensionsFactory.GetHttpMethods(actions.ToList(), methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
-                action.CustomHandlers = handlers.OrderBy(i=>i.ProcessingOrder).ToList();
+                action.CustomHandlers = handlers.OrderBy(i => i.ProcessingOrder).ToList();
                 action.Actions = methods;
                 action.RequireAuth = methodInfo.GetCustomAttributes().OfType<AuthorizeAttribute>().ToList();
                 action.RequireAuth.AddRange(interfaceType.GetCustomAttributes().OfType<IAuthorizeAttribute>());

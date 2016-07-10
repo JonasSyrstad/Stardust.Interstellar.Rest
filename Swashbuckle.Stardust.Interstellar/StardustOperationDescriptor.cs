@@ -5,10 +5,13 @@ using System.Linq;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Description;
+using Newtonsoft.Json;
+using Stardust.Interstellar;
 using Stardust.Interstellar.Messaging;
 using Stardust.Interstellar.Rest.Annotations;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Service;
+using Stardust.Interstellar.Utilities;
 using Swashbuckle.Swagger;
 
 namespace Swashbuckle.Stardust.Interstellar
@@ -30,6 +33,7 @@ namespace Swashbuckle.Stardust.Interstellar
                     var methodParams = GetMethodParams(method);
                     SetDescription(operation, method,schemaRegistry);
                     var headerTypes = methodParams.Where(p => p.In == InclutionTypes.Header).ToArray();
+                    if (operation.parameters == null) operation.parameters = new List<Parameter>();
                     foreach (var item in headerTypes)
                     {
                         operation.parameters.Add(new Parameter
@@ -48,7 +52,6 @@ namespace Swashbuckle.Stardust.Interstellar
                     @in = "header",
                     type = "string",
                     required = false,
-                    maxItems = 1
                 });
                 operation.parameters.Add(new Parameter
                 {
@@ -57,7 +60,6 @@ namespace Swashbuckle.Stardust.Interstellar
                     @in = "header",
                     type = "string",
                     required = false,
-                    maxItems = 1,
                     format = "byte"
 
                 });

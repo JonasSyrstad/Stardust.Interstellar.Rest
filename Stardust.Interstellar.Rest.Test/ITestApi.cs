@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Stardust.Interstellar.Rest.Annotations;
@@ -36,11 +37,19 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("put2/{id}")]
         [HttpPut]
-        [ServiceDescription("Sample description", Responses ="404;not found|401;Unauthorized access")]
+        [ServiceDescription("Sample description", Responses = "404;not found|401;Unauthorized access")]
         Task PutAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] DateTime timestamp);
 
         [Route("failure/{id}")]
         [HttpPut]
         Task FailingAction([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] string timestamp);
+
+        [Route("opt")]
+        [HttpOptions]
+        Task<List<string>> GetOptions();
+
+        [Route("head")]
+        [HttpHead]
+        Task GetHead();
     }
 }

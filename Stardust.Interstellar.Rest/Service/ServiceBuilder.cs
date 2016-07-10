@@ -180,6 +180,7 @@ namespace Stardust.Interstellar.Rest.Service
             var httpGet = httpMethodAttribute(implementationMethod);
             var uriAttrib = typeof(FromUriAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             var bodyAttrib = typeof(FromBodyAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+
             if (typeof(Task).IsAssignableFrom(implementationMethod.ReturnType))
                 method.SetReturnType(typeof(Task<HttpResponseMessage>));
             else method.SetReturnType(typeof(HttpResponseMessage));
@@ -374,7 +375,7 @@ namespace Stardust.Interstellar.Rest.Service
             {
                 switch (httpMethod.First().Method.ToUpper())
                 {
-                    case "Get":
+                    case "GET":
                         return typeof(HttpGetAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
                     case "POST":
                         return typeof(HttpPostAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
@@ -382,6 +383,12 @@ namespace Stardust.Interstellar.Rest.Service
                         return typeof(HttpPutAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
                     case "DELETE":
                         return typeof(HttpDeleteAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+                    case "OPTIONS":
+                        return typeof(HttpOptionsAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+                    case "HEAD":
+                        return typeof(HttpHeadAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+                    case "PATCH":
+                        return typeof(HttpPatchAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
                 }
             }
             var attribs = implementationMethod.GetCustomAttributes().ToList();
@@ -395,6 +402,12 @@ namespace Stardust.Interstellar.Rest.Service
                 return typeof(HttpPutAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             if (attribs.Any(p => p is HttpDeleteAttribute))
                 return typeof(HttpDeleteAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+            if (attribs.Any(p => p is HttpOptionsAttribute))
+                return typeof(HttpOptionsAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+            if (attribs.Any(p => p is HttpHeadAttribute))
+                return typeof(HttpHeadAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
+            if (attribs.Any(p => p is HttpPatchAttribute))
+                return typeof(HttpPatchAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             return typeof(HttpGetAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
 
         }
