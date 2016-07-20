@@ -18,6 +18,12 @@ namespace Stardust.Interstellar.Rest.Client
 {
     public class RestWrapper
     {
+        public void SetHttpHeader(string name, string value)
+        {
+            additionalHeaders.TryAdd(name, value);
+        }
+
+        private ConcurrentDictionary<string, string> additionalHeaders=new ConcurrentDictionary<string, string>();
         private IAuthenticationHandler authenticationHandler;
 
         private readonly IEnumerable<IHeaderHandler> headerHandlers;
@@ -246,8 +252,24 @@ namespace Stardust.Interstellar.Rest.Client
             req.UserAgent = "stardust/1.0";
             req.AutomaticDecompression = DecompressionMethods.Deflate | DecompressionMethods.GZip;
             req.CookieContainer = cookieContainer;
+            SetExtraHeaderValues(req);
             SetTimeoutValues(req);
             return req;
+        }
+
+        private void SetExtraHeaderValues(HttpWebRequest req)
+        {
+            foreach (var additionalHeader in additionalHeaders)
+            {
+                try
+                {
+                    req.Headers.Add(additionalHeader.Key, additionalHeader.Value);
+                }
+                catch (Exception ex)
+                {
+                    ExtensionsFactory.GetService<ILogger>()?.Error(ex);
+                }
+            }
         }
 
         private static void SetTimeoutValues(HttpWebRequest req)
