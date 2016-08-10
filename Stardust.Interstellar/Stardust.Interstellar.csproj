@@ -187,6 +187,7 @@
     <Compile Include="AuthHandler.cs" />
     <Compile Include="ContainerExtesions.cs" />
     <Compile Include="ControllerActivator.cs" />
+    <Compile Include="GraphClientFactory.cs" />
     <Compile Include="IOAuthBearerTokenValidator.cs" />
     <Compile Include="IRequestAuthenticator.cs" />
     <Compile Include="LogWrapper.cs" />

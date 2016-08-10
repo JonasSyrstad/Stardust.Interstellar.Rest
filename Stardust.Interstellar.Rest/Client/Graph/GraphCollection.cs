@@ -34,7 +34,7 @@ namespace Stardust.Interstellar.Rest.Client.Graph
         public GraphCollection(Type serviceType)
         {
             baseUrl = ConfigurationManager.AppSettings["stardust.graphServiceRoot"];
-            service = ProxyFactory.CreateInstance(serviceType, baseUrl, null);
+            service = ProxyFactory.CreateInstance(serviceType, baseUrl, base.extrasHandler);
         }
 
         public GraphCollection()

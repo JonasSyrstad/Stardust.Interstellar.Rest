@@ -65,6 +65,7 @@
     <Compile Include="Client\Graph\GraphQuery.cs" />
     <Compile Include="Client\Graph\GraphQueryPart.cs" />
     <Compile Include="Client\Graph\GraphSortStatement.cs" />
+    <Compile Include="Client\Graph\InternalHelpers\GraphHelpers.cs" />
     <Compile Include="Client\Graph\IPagedGraphCollection.cs" />
     <Compile Include="Client\Graph\NavigationAttribute.cs" />
     <Compile Include="Client\Graph\GraphCollection.cs" />

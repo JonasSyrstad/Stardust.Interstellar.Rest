@@ -6,15 +6,23 @@ using Stardust.Interstellar.Rest.Extensions;
 
 namespace Stardust.Interstellar.Rest.Client.Graph
 {
-    public abstract class GraphContext<T> :GraphItem<T>
+    public abstract class GraphContext<T> :GraphItem<T>,IGraphContext
     {
         protected GraphContext(string baseUrl)
         {
-            this.InternalBaseUrl = baseUrl;
+            InternalBaseUrl = baseUrl;
         }
 
         protected GraphContext() { }
+
+        public void Initialize(string baseUrl)
+        {
+            InternalBaseUrl = baseUrl;
+        }
     }
 
-    
+    public interface IGraphContext
+    {
+        void Initialize(string baseUrl);
+    }
 }

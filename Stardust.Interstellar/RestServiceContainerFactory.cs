@@ -12,8 +12,9 @@ namespace Stardust.Interstellar
             var service = runtime.Context.GetEndpointConfiguration<TService>();
             var serviceEndpoint = service.GetEndpoint(service.ActiveEndpoint);
             var serviceContainer = new RestServiceContainer<TService>(runtime);
-            if (ConfigurationManagerHelper.GetValueOnKey("stardust.useAudienceAsServiceRoot", true)) serviceContainer.SetServiceRoot(serviceEndpoint.Audience + "/" + ConfigurationManagerHelper.GetValueOnKey("stardust.useAudienceAsServiceRoot",""));
-            else serviceContainer.SetServiceRoot(serviceEndpoint.Address);
+            if (ConfigurationManagerHelper.GetValueOnKey("stardust.useAudienceAsServiceRoot", true) && serviceEndpoint.Audience.ContainsCharacters()) serviceContainer.SetServiceRoot(serviceEndpoint.Audience + "/");
+            else if (serviceEndpoint.Address.ContainsCharacters()) serviceContainer.SetServiceRoot(serviceEndpoint.Address);
+            else serviceContainer.SetServiceRoot(serviceEndpoint.PropertyBag["Address"]);
             return serviceContainer;
         }
     }
