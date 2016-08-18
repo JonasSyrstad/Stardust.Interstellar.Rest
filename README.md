@@ -312,4 +312,4 @@ and call the wcf addon before creating the controllers:
 
 ```
 
-See [link](https://github.com/JonasSyrstad/Stardust.KeenIo.Client "Stardust.KeenIo.Client") for a demo/sample project on building .net client api's for existing rest services. It currenly supports Adding events and getting collection info from the api.
+See [Stardust.KeenIo.Client](https://github.com/JonasSyrstad/Stardust.KeenIo.Client "Stardust.KeenIo.Client") for a demo/sample project on building .net client api's for existing rest services. It currenly supports Adding events and getting collection info from the api.
