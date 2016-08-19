@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Legacy;
@@ -26,10 +28,21 @@ namespace Stardust.Interstellar.Rest.Test
 
         {
             var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
+            
             var res = await service.ApplyAsync("101", "Stardust", "Hello", "World");
             output.WriteLine(res.Value);
+
             await service.PutAsync("test", DateTime.Today);
             output.WriteLine("Put was successfull");
+        }
+
+        [Fact]
+        public void TestMessageExtensions()
+        {
+            var msg = new StringWrapper { Value = "Test" };
+            var service = ProxyFactory.CreateInstance<ITestExtendableApi>("http://localhost/Stardust.Interstellar.Test/");
+            service.SetGlobalProperty("test", "test");
+            service.Test(msg);
         }
 
         [Fact]
@@ -124,9 +137,52 @@ namespace Stardust.Interstellar.Rest.Test
                             output.WriteLine($"{extra.Key}:{extra.Value}");
                         }
                     });
+            
             var getRes = testProxy.TestImplementationGet("test");
             output.WriteLine(getRes.Value);
+            testProxy.SetGlobalProperty("test", "test");
             var putRes = testProxy.TestImplementationPut("hello", new StringWrapper { Value = "hell" });
+            output.WriteLine(putRes.Value);
+
+        }
+
+        [Fact]
+        public async Task WcfWrapperTest2()
+        {
+            var testProxy = ProxyFactory.CreateInstance<IWcfWrapper>("http://localhost/Stardust.Interstellar.Test",
+                extras =>
+                {
+                    foreach (var extra in extras)
+                    {
+                        output.WriteLine($"{extra.Key}:{extra.Value}");
+                    }
+                });
+
+            var getRes = testProxy.TestImplementationGet("test");
+            output.WriteLine(getRes.Value);
+            testProxy.SetGlobalProperty("test", "test");
+            var envents = new Dictionary<string, IEnumerable<object>>
+                              {
+                                  {
+                                      "collection1",
+                                      new List<object>
+                                          {
+                                              new { TimeStamp = DateTime.UtcNow, Name = "UnitTest2" },
+                                              new { TimeStamp = DateTime.UtcNow, Name = "UnitTest3" },
+                                              new { TimeStamp = DateTime.UtcNow, Name = "UnitTest4" }
+                                          }
+                                  },
+                                  {
+                                      "collection2",
+                                      new List<object>
+                                          {
+                                              new { TimeStamp2 = DateTime.UtcNow, Name2 = "UnitTest2" },
+                                              new { TimeStamp2 = DateTime.UtcNow, Name2 = "UnitTest3" },
+                                              new { TimeStamp2 = DateTime.UtcNow, Name2 = "UnitTest4" }
+                                          }
+                                  }
+                              };
+            var putRes = testProxy.TestImplementationPut2("hello", envents);
             output.WriteLine(putRes.Value);
 
         }

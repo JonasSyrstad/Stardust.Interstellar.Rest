@@ -10,6 +10,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using Stardust.Core.Service.Web;
 using Stardust.Interstellar.Rest.Client.Graph;
+using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Legacy;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Interstellar.Rest.Test;
@@ -21,12 +22,13 @@ namespace Stardust.Interstellar.Test
     {
         protected void Application_Start()
         {
-            WcfServiceProvider.RegisterWcfAdapters();   
+            this.LoadBindingConfiguration<TestBlueprint>();
+            WcfServiceProvider.RegisterWcfAdapters();
             ServiceFactory.CreateServiceImplementationForAllInCotainingAssembly<ITestApi>();
             ServiceFactory.FinalizeRegistration();
 
-            this.LoadBindingConfiguration<TestBlueprint>();
-           
+
+
             AreaRegistration.RegisterAllAreas();
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
@@ -39,10 +41,10 @@ namespace Stardust.Interstellar.Test
             var error = Server.GetLastError();
             Logging.Exception(error, "Unhandled exception....");
         }
-    
+
     }
 
-    public class TestBlueprint:Blueprint
+    public class TestBlueprint : Blueprint
     {
         /// <summary>Place your bindings here</summary>
         protected override void DoCustomBindings()
@@ -51,6 +53,7 @@ namespace Stardust.Interstellar.Test
             Configurator.Bind<ITestApi>().To<TestApiImp>().SetTransientScope();
             Configurator.Bind<IWcfWrapper>().To<WcfWrapper>().SetTransientScope();
             Configurator.Bind<IEmployeeService>().To<EmployeeService>();
+            Configurator.Bind<ILogger>().To<LogWrapper>().SetSingletonScope();
         }
     }
 
@@ -58,13 +61,13 @@ namespace Stardust.Interstellar.Test
     {
         static EmployeeService()
         {
-            employees.Add("jonassyrstad@outlook.com", new Employee {Email = "jonassyrstad@outlook.com", ManagerId = "mehh@outlook.com", Name = "Jonas Syrstad"});
+            employees.Add("jonassyrstad@outlook.com", new Employee { Email = "jonassyrstad@outlook.com", ManagerId = "mehh@outlook.com", Name = "Jonas Syrstad" });
             employees.Add("mehh@outlook.com", new Employee { Email = "mehh@outlook.com", ManagerId = "", Name = "Duche" });
             employees.Add("jonas.syrstad@dnvgl.com", new Employee { Email = "jonas.syrstad@dnvgl.com", ManagerId = "mehh@outlook.com", Name = "my alternate self" });
         }
 
 
-        private static Dictionary<string,Employee> employees=new Dictionary<string, Employee>();
+        private static Dictionary<string, Employee> employees = new Dictionary<string, Employee>();
         public Task<Employee> GetAsync(string id)
         {
             return Task.FromResult(employees[id]);
@@ -77,7 +80,7 @@ namespace Stardust.Interstellar.Test
 
         public Task<IEnumerable<Employee>> GetAllAsync()
         {
-            return Task.FromResult(employees.Select(e=>e.Value));
+            return Task.FromResult(employees.Select(e => e.Value));
         }
 
         public Task AddAsync(Employee item)
@@ -95,7 +98,7 @@ namespace Stardust.Interstellar.Test
         public Task UpdateAsync(string id, Employee item)
         {
             employees.Remove(id);
-            employees.Add(item.Email,item);
+            employees.Add(item.Email, item);
             return Task.FromResult(1);
         }
 
@@ -109,12 +112,22 @@ namespace Stardust.Interstellar.Test
     {
         public StringWrapper TestImplementationGet(string wrapper)
         {
-            return new StringWrapper {Value = $"Hello {wrapper}" };
+            return new StringWrapper { Value = $"Hello {wrapper}" };
         }
 
         public StringWrapper TestImplementationPut(string id, StringWrapper wrapper)
         {
-           return new StringWrapper { Value = $"{id}: {wrapper.Value}" };
+            foreach (var msg in this.GetExtendedMessage())
+            {
+                Logging.DebugMessage($"{msg.Key} +  {msg.Value}");
+            }
+            return new StringWrapper { Value = $"{id}: {wrapper.Value}" };
+        }
+
+        public StringWrapper TestImplementationPut2(string id, IDictionary<string, IEnumerable<object>> hierarcy)
+        {
+            Logging.DebugMessage(this.GetExtendedMessage().ToString());
+            return new StringWrapper {Value = "OK"};
         }
     }
 
@@ -127,12 +140,12 @@ namespace Stardust.Interstellar.Test
 
         public Task<StringWrapper> Apply2(string id, string name, string item3)
         {
-            return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3) });
+            return Task.FromResult(new StringWrapper { Value = string.Join("-", id, name, item3) });
         }
 
         public string Apply3(string id, string name, string item3, string item4)
         {
-            return string.Join("-", id, name,item3,item4);
+            return string.Join("-", id, name, item3, item4);
         }
 
         public void Put(string id, DateTime timestamp)
@@ -154,14 +167,14 @@ namespace Stardust.Interstellar.Test
             return Task.FromResult(2);
         }
 
-        public  Task FailingAction(string id, string timestamp)
+        public Task FailingAction(string id, string timestamp)
         {
             throw new NotImplementedException();
         }
 
         public Task<List<string>> GetOptions()
         {
-            return Task.FromResult(new List<string> { "Stardust", "Interstellar", "Rest","2.4.*" });
+            return Task.FromResult(new List<string> { "Stardust", "Interstellar", "Rest", "2.4.*" });
         }
 
         public Task GetHead()

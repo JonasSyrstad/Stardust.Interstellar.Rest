@@ -37,7 +37,7 @@ namespace Stardust.Interstellar.Rest.Service
         {
             try
             {
-                ExtensionsFactory.GetService<ILogger>()?.Message("Generating webapi controller for {0}",interfaceType.FullName);
+                ExtensionsFactory.GetService<ILogger>()?.Message("Generating webapi controller for {0}", interfaceType.FullName);
                 var type = CreateServiceType(interfaceType);
                 ctor(type, interfaceType);
                 foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
@@ -61,7 +61,7 @@ namespace Stardust.Interstellar.Rest.Service
             catch (Exception ex)
             {
                 ExtensionsFactory.GetService<ILogger>()?.Error(ex);
-                ExtensionsFactory.GetService<ILogger>()?.Message("Skipping type: {0}",interfaceType.FullName);
+                ExtensionsFactory.GetService<ILogger>()?.Message("Skipping type: {0}", interfaceType.FullName);
                 return null;
             }
         }
@@ -180,10 +180,8 @@ namespace Stardust.Interstellar.Rest.Service
             var httpGet = httpMethodAttribute(implementationMethod);
             var uriAttrib = typeof(FromUriAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             var bodyAttrib = typeof(FromBodyAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
-
-            if (typeof(Task).IsAssignableFrom(implementationMethod.ReturnType))
-                method.SetReturnType(typeof(Task<HttpResponseMessage>));
-            else method.SetReturnType(typeof(HttpResponseMessage));
+            
+            method.SetReturnType(typeof(Task).IsAssignableFrom(implementationMethod.ReturnType) ? typeof(Task<HttpResponseMessage>) : typeof(HttpResponseMessage));
             // Adding parameters
             methodParams = GetMethodParams(implementationMethod);
             pTypes = methodParams.Where(p => p.In != InclutionTypes.Header).Select(p => p.Type).ToArray();
@@ -204,6 +202,7 @@ namespace Stardust.Interstellar.Rest.Service
                     throw;
                 }
             }
+            DefineAuthorizeAttributes(implementationMethod, method);
             // Adding custom attributes to method
             // [RouteAttribute]
             var template = implementationMethod.GetCustomAttribute<RouteAttribute>()?.Template;
@@ -214,6 +213,27 @@ namespace Stardust.Interstellar.Rest.Service
             ConstructorInfo ctor5 = typeof(ResponseTypeAttribute).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(Type) }, null);
             method.SetCustomAttribute(new CustomAttributeBuilder(ctor5, new object[] { GetReturnType(implementationMethod) }));
             return method;
+        }
+
+        private static void DefineAuthorizeAttributes(MethodInfo implementationMethod, MethodBuilder method)
+        {
+            var authorizeAttribs = implementationMethod.GetCustomAttributes<AuthorizeWrapperAttribute>().ToList();
+            var classAuthorizeAttribs = implementationMethod.DeclaringType.GetCustomAttributes<AuthorizeWrapperAttribute>();
+            var authorizeWrapperAttributes = classAuthorizeAttribs as AuthorizeWrapperAttribute[] ?? classAuthorizeAttribs.ToArray();
+            if (classAuthorizeAttribs != null && authorizeWrapperAttributes.Any()) authorizeAttribs.AddRange(authorizeWrapperAttributes);
+            if (authorizeAttribs.Any())
+            {
+                foreach (var authorizeWrapperAttribute in authorizeAttribs)
+                {
+                    var authAtrib = authorizeWrapperAttribute.GetAutorizationAttribute();
+                    var ctorParams = authorizeWrapperAttribute.GetConstructorParameters();
+                    var ctor = authAtrib.GetType().GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, (from p in ctorParams select p.GetType()).ToArray(), null);
+                    var props = authAtrib.GetType().GetProperties().Where(p=>p.SetMethod!=null);
+                    var propVals = props.Select(p => p.GetMethod.Invoke(authAtrib, null));
+                    method.SetCustomAttribute(new CustomAttributeBuilder(ctor, ctorParams,props.ToArray(),propVals.ToArray()));
+
+                }
+            }
         }
 
         private static Type GetReturnType(MethodInfo implementationMethod)
@@ -416,9 +436,9 @@ namespace Stardust.Interstellar.Rest.Service
         {
             return InternalMethodBuilder(type, implementationMethod, (a, b, c, d) => BuildAsyncMethodBody(a, b, c, d, type));
         }
-        private static int typeCounter=0;
-       
-        
+        private static int typeCounter = 0;
+
+
 
         private MethodBuilder BuildAsyncMethodBody(MethodInfo implementationMethod, MethodBuilder method, Type[] pTypes, List<ParameterWrapper> methodParams, TypeBuilder parent)
         {
@@ -432,8 +452,8 @@ namespace Stardust.Interstellar.Rest.Service
                               },
                     null
                     );
-            var delegateType = new DelegateBuilder(myModuleBuilder).CreateDelegate(implementationMethod, parent,methodParams);
-            var delegateCtor = delegateType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] {  }, null);
+            var delegateType = new DelegateBuilder(myModuleBuilder).CreateDelegate(implementationMethod, parent, methodParams);
+            var delegateCtor = delegateType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { }, null);
             var baseType = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType);
             var implementation = baseType.GetRuntimeFields().Single(f => f.Name == "implementation");
             MethodInfo getValue = typeof(ParameterWrapper).GetMethod(
@@ -465,12 +485,12 @@ namespace Stardust.Interstellar.Rest.Service
                           },
                 null
                 );
-      
+
             var delegateMethod = delegateType.GetMethod(implementationMethod.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);//.MakeGenericMethod(implementationMethod.ReturnType.GenericTypeArguments);
             var method10 = typeof(ServiceWrapperBase<>).MakeGenericType(implementationMethod.DeclaringType)
                 .GetMethod("ExecuteMethodAsync", BindingFlags.Instance | BindingFlags.NonPublic);
-           method10= method10.MakeGenericMethod(implementationMethod.ReturnType.GenericTypeArguments);
-            FieldInfo field7 = delegateType.GetField("parameters", BindingFlags.Public | BindingFlags.NonPublic|BindingFlags.Instance);
+            method10 = method10.MakeGenericMethod(implementationMethod.ReturnType.GenericTypeArguments);
+            FieldInfo field7 = delegateType.GetField("parameters", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             FieldInfo field5 = delegateType.GetField("implementation", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             MethodInfo fromResult = typeof(Task).GetMethod("FromResult").MakeGenericMethod(typeof(HttpResponseMessage));
@@ -489,7 +509,7 @@ namespace Stardust.Interstellar.Rest.Service
             gen.Emit(OpCodes.Stloc_0);
             gen.Emit(OpCodes.Ldloc_0);
             gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Stfld,field5 );
+            gen.Emit(OpCodes.Stfld, field5);
             var ps = pTypes;
             EmitHelpers.EmitInt32(gen, ps.Length);
             gen.Emit(OpCodes.Newarr, typeof(object));

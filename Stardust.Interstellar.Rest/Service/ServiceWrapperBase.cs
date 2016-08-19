@@ -10,7 +10,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
 
@@ -69,8 +72,8 @@ namespace Stardust.Interstellar.Rest.Service
                         {
                             if (String.Equals(headerElement.Key, "etag", StringComparison.OrdinalIgnoreCase))
                                 result.Headers.ETag = new EntityTagHeaderValue(headerElement.Value);
-                            else if(String.Equals(headerElement.Key, "wetag", StringComparison.OrdinalIgnoreCase))
-                                result.Headers.ETag = new EntityTagHeaderValue(headerElement.Value,true);
+                            else if (String.Equals(headerElement.Key, "wetag", StringComparison.OrdinalIgnoreCase))
+                                result.Headers.ETag = new EntityTagHeaderValue(headerElement.Value, true);
                             else
                                 result.Headers.Add(headerElement.Key, headerElement.Value);
                         }
@@ -223,8 +226,10 @@ namespace Stardust.Interstellar.Rest.Service
             InitializeServiceApi(typeof(T));
         }
 
+
         protected ParameterWrapper[] GatherParameters(string name, object[] fromWebMethodParameters)
         {
+            GetMessageExtensions();
             var serviceExtensions = implementation as IServiceExtensions;
             serviceExtensions?.SetControllerContext(ControllerContext);
             serviceExtensions?.SetResponseHeaderCollection(new Dictionary<string, string>());
@@ -270,6 +275,29 @@ namespace Stardust.Interstellar.Rest.Service
             }
             if (!ModelState.IsValid) throw new InvalidDataException("Invalid input data");
             return wrappers.ToArray();
+        }
+
+        private void GetMessageExtensions()
+        {
+            if (typeof(IServiceWithGlobalParameters).IsAssignableFrom(typeof(T)))
+            {
+                var messageContainer = MessageExtensions.GetCache();
+                if(messageContainer == null) return;
+                using (var memStream = ControllerContext.Request.Content.ReadAsStreamAsync().Result)
+                {
+                    
+                    memStream.Position = 0;
+                    using (var reader = new StreamReader(memStream))
+                    {
+                        var msg = reader.ReadToEnd();
+                        if (!string.IsNullOrWhiteSpace(msg))
+                        {
+                            var jobj = JObject.Parse(msg);
+                            messageContainer.SetState(jobj);
+                        }
+                    }
+                }
+            }
         }
 
         private void ExecuteInterceptors(ActionWrapper action, List<ParameterWrapper> wrappers)

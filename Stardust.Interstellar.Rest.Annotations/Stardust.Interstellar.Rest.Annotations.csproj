@@ -60,8 +60,11 @@
     <Compile Include="Cache\ICahceInspector.cs" />
     <Compile Include="Cache\UseEtagAttribute.cs" />
     <Compile Include="Extras.cs" />
+    <Compile Include="IAuthorizeAttribute.cs" />
     <Compile Include="IInputInterceptor.cs" />
     <Compile Include="InputInterceptorAttribute.cs" />
+    <Compile Include="Messaging\ExtensionLevelAttribute.cs" />
+    <Compile Include="Messaging\MessageExtender.cs" />
     <Compile Include="OperationAbortedException.cs" />
     <Compile Include="PerformanceHeadersHandler.cs" />
     <Compile Include="UserAgent\ConfiguredClienUserAgentName.cs" />

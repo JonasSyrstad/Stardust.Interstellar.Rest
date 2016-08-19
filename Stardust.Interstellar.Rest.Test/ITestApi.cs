@@ -3,10 +3,21 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Service;
 
 namespace Stardust.Interstellar.Rest.Test
 {
+    [IRoutePrefix("api")]
+    [CallingMachineName]
+    [PerformanceHeaders]
+    [ErrorHandler(typeof(TestHandler))]
+    public interface ITestExtendableApi:IServiceWithGlobalParameters
+    {
+        [Route("test12323/{id}")]
+        [HttpPost]  
+        string Test(StringWrapper message);
+    }
     [IRoutePrefix("api")]
     [CallingMachineName]
     [PerformanceHeaders]
@@ -24,13 +35,14 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("test3/{id}")]
         [HttpGet]
-        [Authorize]
+        [AuthorizeWrapper(null)]
         string Apply3([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Header)]string item3, [In(InclutionTypes.Header)]string item4);
 
         [Route("put1/{id}")]
         [HttpPut]
         void Put([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] DateTime timestamp);
 
+        
         [Route("test5/{id}")]
         [HttpGet]
         Task<StringWrapper> ApplyAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Path)]string item3, [In(InclutionTypes.Path)]string item4);

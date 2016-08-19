@@ -25,5 +25,9 @@ namespace Stardust.Interstellar.Rest.Common
         public List<AuthorizeAttribute> RequireAuth { get; set; }
 
         public bool UseXml { get; set; }
+
+        public int MessageExtesionLevel { get; set; }
     }
+
+
 }

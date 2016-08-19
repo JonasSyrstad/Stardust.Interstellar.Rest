@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Web.Http.Controllers;
 using System.Web.Http.Dispatcher;
+using Newtonsoft.Json.Linq;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
 using Stardust.Interstellar.Rest.Service;
@@ -20,6 +21,7 @@ namespace Stardust.Interstellar
             Resolver.GetConfigurator().Bind<IHeaderHandler>().To<StardustHeaderHandler>("StardustHeaderHandler").SetTransientScope();
             Resolver.GetConfigurator().Bind<IErrorHandler>().To<StardustErrorHandler>().SetTransientScope();
             Resolver.GetConfigurator().Bind<ILogger>().To<LogWrapper>().SetSingletonScope();
+            Resolver.GetConfigurator().Bind<IStateCache>().To<StardustMessageContainer>().SetSingletonScope();
             ExtensionsFactory.SetServiceLocator(new StardustServiceLocator());
             if (useRestAsDefault) ServiceContainerFactory.RegisterServiceFactoryAsDefault(new RestServiceContainerFactory());
             initialized = true;
@@ -42,5 +44,18 @@ namespace Stardust.Interstellar
         }
 
         internal static Action<Dictionary<string, object>> ExtrasHandler { get; set; }
+    }
+
+    public class StardustMessageContainer : IStateCache
+    {
+        public JObject GetState()
+        {
+            return ContainerFactory.Current.Resolve(typeof(JObject), Scope.Context) as JObject;
+        }
+
+        public void SetState(JObject extendedMessage)
+        {
+            ContainerFactory.Current.Bind(typeof(JObject),extendedMessage,Scope.Context);
+        }
     }
 }

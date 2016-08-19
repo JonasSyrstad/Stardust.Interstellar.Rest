@@ -1,16 +1,16 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Stardust.Interstellar.Rest")]
-[assembly: AssemblyDescription("Create rest services and clients based on decorated interfaces. Extend both service and client behavior by adding Attributes for error, header and authentication handling.")]
+[assembly: AssemblyTitle("Stardust.Interstellar.Generator")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Stardust")]
-[assembly: AssemblyProduct("Stardust.Interstellar.Rest")]
-[assembly: AssemblyCopyright("Copyright © Stardust 2016")]
+[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyProduct("Stardust.Interstellar.Generator")]
+[assembly: AssemblyCopyright("Copyright © Microsoft 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("5ee819e3-b588-431f-b5da-3ebc0557242b")]
+[assembly: Guid("8db9b08a-01eb-4e35-a3fd-507152c83a6c")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("2.6.1.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]

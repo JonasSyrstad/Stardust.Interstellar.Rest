@@ -10,6 +10,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
 using Stardust.Interstellar.Rest.Service;
@@ -23,7 +24,7 @@ namespace Stardust.Interstellar.Rest.Client
             additionalHeaders.TryAdd(name, value);
         }
 
-        private ConcurrentDictionary<string, string> additionalHeaders=new ConcurrentDictionary<string, string>();
+        private ConcurrentDictionary<string, string> additionalHeaders = new ConcurrentDictionary<string, string>();
         private IAuthenticationHandler authenticationHandler;
 
         private readonly IEnumerable<IHeaderHandler> headerHandlers;
@@ -62,8 +63,10 @@ namespace Stardust.Interstellar.Rest.Client
             var templatePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>()
                 ?? interfaceType.GetInterfaces().FirstOrDefault()?.GetCustomAttribute<IRoutePrefixAttribute>();
             errorInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
+            ExtensionsFactory.GetService<ILogger>()?.Message($"Initializing client {interfaceType.Name}");
             foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
             {
+                ExtensionsFactory.GetService<ILogger>()?.Message($"Initializing client action {interfaceType.Name}.{methodInfo.Name}");
                 var template = methodInfo.GetCustomAttribute<RouteAttribute>();
                 var actionName = GetActionName(methodInfo);
                 var action = new ActionWrapper { Name = actionName, ReturnType = methodInfo.ReturnType, RouteTemplate = ExtensionsFactory.GetRouteTemplate(templatePrefix, template, methodInfo), Parameters = new List<ParameterWrapper>() };
@@ -71,7 +74,7 @@ namespace Stardust.Interstellar.Rest.Client
                 var methods = ExtensionsFactory.GetHttpMethods(actions, methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
                 action.UseXml = methodInfo.GetCustomAttributes().OfType<UseXmlAttribute>().Any();
-                action.CustomHandlers = handlers.OrderBy(i=>i.ProcessingOrder).ToList();
+                action.CustomHandlers = handlers.OrderBy(i => i.ProcessingOrder).ToList();
                 action.Actions = methods;
                 ExtensionsFactory.BuildParameterInfo(methodInfo, action);
                 newWrapper.TryAdd(action.Name, action);
@@ -220,7 +223,7 @@ namespace Stardust.Interstellar.Rest.Client
             req = action.UseXml ? CreateRequest(path, "application/xml") : CreateRequest(path);
 
             req.Headers.Add(ExtensionsFactory.ActionIdName, Guid.NewGuid().ToString());
-            
+
             req.InitializeState();
             req.Method = action.Actions.First().ToString();
             AppendHeaders(parameters, req, action);
@@ -279,7 +282,7 @@ namespace Stardust.Interstellar.Rest.Client
             if (ClientGlobalSettings.ContinueTimeout != null) req.ContinueTimeout = ClientGlobalSettings.ContinueTimeout.Value;
         }
 
-        private static void AppendBody(ParameterWrapper[] parameters, HttpWebRequest req, ActionWrapper action)
+        private  void AppendBody(ParameterWrapper[] parameters, HttpWebRequest req, ActionWrapper action)
         {
             if (parameters.Any(p => p.In == InclutionTypes.Body))
             {
@@ -316,11 +319,16 @@ namespace Stardust.Interstellar.Rest.Client
             }
         }
 
-        private static void SerializeBody(WebRequest req, object val, ActionWrapper action)
+        private void SerializeBody(WebRequest req, object val, ActionWrapper action)
         {
             if (action.UseXml) XmlBodySerializer(req, val);
             else
-                JsonBodySerializer(req, val);
+            {
+                if (typeof(IServiceWithGlobalParameters).IsAssignableFrom(interfaceType))
+                    JsonBodySerializer(req, GlobalParameterExtensions.AppendGlobalParameters(interfaceType.FullName, val,action.MessageExtesionLevel));
+                else
+                    JsonBodySerializer(req, val);
+            }
         }
 
         private static void XmlBodySerializer(WebRequest req, object val)

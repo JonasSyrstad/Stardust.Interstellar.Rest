@@ -9,9 +9,11 @@ using Newtonsoft.Json;
 using Stardust.Interstellar;
 using Stardust.Interstellar.Messaging;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Interstellar.Utilities;
+using Stardust.Particles;
 using Swashbuckle.Swagger;
 
 namespace Swashbuckle.Stardust.Interstellar
@@ -20,7 +22,9 @@ namespace Swashbuckle.Stardust.Interstellar
     {
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
+            var serviceDesription = "";
             var implementationType = GetImplementation(apiDescription);
+            if (typeof(IServiceWithGlobalParameters).IsAssignableFrom(implementationType)) serviceDesription = "Extendable content type";
             if (implementationType != null)
             {
                 var methods = implementationType.GetMethods().Length == 0 ? implementationType.GetInterfaces().First().GetMethods() : implementationType.GetMethods();
@@ -31,7 +35,7 @@ namespace Swashbuckle.Stardust.Interstellar
                 {
                     var method = methodInfos.Single();
                     var methodParams = GetMethodParams(method);
-                    SetDescription(operation, method,schemaRegistry);
+                    SetDescription(operation, method, schemaRegistry);
                     var headerTypes = methodParams.Where(p => p.In == InclutionTypes.Header).ToArray();
                     if (operation.parameters == null) operation.parameters = new List<Parameter>();
                     foreach (var item in headerTypes)
@@ -43,8 +47,20 @@ namespace Swashbuckle.Stardust.Interstellar
                             type = item.Type.Name.ToLower()
                         });
                     }
+                    if (String.Equals(apiDescription.HttpMethod.Method, "POST", StringComparison.OrdinalIgnoreCase) || String.Equals(apiDescription.HttpMethod.Method, "PUT", StringComparison.OrdinalIgnoreCase))
+                        operation.summary += serviceDesription;
                 }
                 if (operation.parameters == null) operation.parameters = new List<Parameter>();
+                if (serviceDesription.ContainsCharacters())
+                {
+                    foreach (var parameter in operation.parameters)
+                    {
+                        if (parameter.@in == "body" && parameter.schema?.@ref!=null)
+                        {
+                            parameter.description = "This parameter can be extended with custom content";
+                        }
+                    }
+                }
                 operation.parameters.Add(new Parameter
                 {
                     name = "x-supportCode",
@@ -71,7 +87,7 @@ namespace Swashbuckle.Stardust.Interstellar
                         description = "Contains meta information from the server and its environment",
                         format = "byte",
                         type = "string"
-                        
+
 
                     });
                     response.Value.headers.Add("x-supportCode", new Header
@@ -100,7 +116,7 @@ namespace Swashbuckle.Stardust.Interstellar
                         if (resp.Contains(";"))
                         {
                             var respValue = resp.Split(';');
-                            operation.responses.Add(respValue[0], new Response { description = respValue[1],schema =respValue.Length>2?schemaRegistry.GetOrRegister(Type.GetType(respValue[2])):null });
+                            operation.responses.Add(respValue[0], new Response { description = respValue[1], schema = respValue.Length > 2 ? schemaRegistry.GetOrRegister(Type.GetType(respValue[2])) : null });
                         }
                     }
                 }

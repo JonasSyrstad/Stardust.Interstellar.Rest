@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Extensions;
 
@@ -79,6 +80,7 @@ namespace Stardust.Interstellar.Rest.Common
 
         internal static void BuildParameterInfo(MethodInfo methodInfo, ActionWrapper action)
         {
+            
             var parameterHandler = GetService<IServiceParameterResolver>();
             if (parameterHandler != null)
             {
@@ -86,6 +88,12 @@ namespace Stardust.Interstellar.Rest.Common
                 if (parameters != null && parameters.Any())
                 {
                     action.Parameters.AddRange(parameters);
+                    foreach (var pi in methodInfo.GetParameters())
+                    {
+                        action.MessageExtesionLevel = pi.GetCustomAttribute<ExtensionLevelAttribute>() == null
+                            ? action.MessageExtesionLevel
+                            : pi.GetCustomAttribute<ExtensionLevelAttribute>().PropertInjectionLevel;
+                    }
                     return;
                 }
             }
@@ -103,7 +111,11 @@ namespace Stardust.Interstellar.Rest.Common
                         if (fromUri != null)
                             @in = new InAttribute(InclutionTypes.Path);
                     }
+                    
                 }
+                action.MessageExtesionLevel = parameterInfo.GetCustomAttribute<ExtensionLevelAttribute>() == null
+                           ? action.MessageExtesionLevel
+                           : parameterInfo.GetCustomAttribute<ExtensionLevelAttribute>().PropertInjectionLevel;
                 action.Parameters.Add(new ParameterWrapper { Name = parameterInfo.Name, Type = parameterInfo.ParameterType, In = @in?.InclutionType ?? InclutionTypes.Body });
             }
         }
