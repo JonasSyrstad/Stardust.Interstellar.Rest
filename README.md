@@ -41,6 +41,7 @@ Sample service definition interface
 ```
 Creating a service proxy
 ```CS
+
         var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/",
                     extras =>
                         {
@@ -60,6 +61,19 @@ Creating a service proxy
             throw;
         }
 ```
+Optional: Setting JsonSerializerSettings to service definitions or message types 
+
+```CS
+
+new JsonSerializerSettings
+                              {
+                                  DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+                                  DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                                  NullValueHandling = NullValueHandling.Include,
+                                  Formatting = Formatting.Indented
+                              }.AddClientSerializer<IMyService>().AddClientSerializer<SomeMessageType>;
+```
+
 
 Creating the service implementation (just implement it as you implement any other interface):
 ```CS
