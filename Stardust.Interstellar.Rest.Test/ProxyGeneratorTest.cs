@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Common;
@@ -32,8 +33,26 @@ namespace Stardust.Interstellar.Rest.Test
             var res = await service.ApplyAsync("101", "Stardust", "Hello", "World");
             output.WriteLine(res.Value);
 
+            res=await service.Apply2("101", "Stardust", "Hello");
+            output.WriteLine(res.Value);
+
             await service.PutAsync("test", DateTime.Today);
             output.WriteLine("Put was successfull");
+        }
+
+        [Fact]
+        public async Task ProxyWithCustomSerializerSettirngTest()
+
+        {
+            var actual = new JsonSerializerSettings
+                              {
+                                  DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+                                  DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                                  NullValueHandling = NullValueHandling.Include,
+                                  Formatting = Formatting.Indented
+                              }.AddClientSerializer<StringWrapper>();
+            var retreived = JsonSerializerExtensions.GetClientSerializationSettings(typeof(StringWrapper));
+            Assert.Equal(actual,retreived);
         }
 
         [Fact]

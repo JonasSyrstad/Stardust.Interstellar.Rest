@@ -82,6 +82,7 @@
     <Compile Include="Common\ActionWrapper.cs" />
     <Compile Include="Common\ExtensionsFactory.cs" />
     <Compile Include="Common\ILogger.cs" />
+    <Compile Include="Common\JsonSerializerExtensions.cs" />
     <Compile Include="Extensions\HeaderHandlerFactory.cs" />
     <Compile Include="Extensions\IHeaderHandlerFactory.cs" />
     <Compile Include="Common\IRouteTemplateResolver.cs" />

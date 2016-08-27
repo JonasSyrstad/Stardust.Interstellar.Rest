@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -174,7 +175,7 @@ namespace Stardust.Interstellar.Rest.Client
             return null;
         }
 
-        private static ResultWrapper CreateResult(ActionWrapper action, HttpWebResponse response)
+        private  ResultWrapper CreateResult(ActionWrapper action, HttpWebResponse response)
         {
             var type = typeof(Task).IsAssignableFrom(action.ReturnType) ? action.ReturnType.GetGenericArguments().FirstOrDefault() : action.ReturnType;
             if (type == typeof(void) || type == null)
@@ -185,7 +186,7 @@ namespace Stardust.Interstellar.Rest.Client
             return new ResultWrapper { Type = type, IsVoid = false, Value = result, Status = response.StatusCode, StatusMessage = response.StatusDescription, ActionId = response.ActionId() };
         }
 
-        private static object GetResultFromResponse(ActionWrapper action, HttpWebResponse response, Type type)
+        private object GetResultFromResponse(ActionWrapper action, HttpWebResponse response, Type type)
         {
             object result;
             if (action.UseXml)
@@ -196,11 +197,23 @@ namespace Stardust.Interstellar.Rest.Client
             {
                 using (var reader = new JsonTextReader(new StreamReader(response.GetResponseStream())))
                 {
-                    var serializer = new JsonSerializer();
+                    var serializer = CreateJsonSerializer(type);
                     result = serializer.Deserialize(reader, type);
                 }
             }
             return result;
+        }
+
+        private JsonSerializer CreateJsonSerializer(Type getType)
+        {
+            JsonSerializerSettings serializerSettings=null;
+            if (getType != null) serializerSettings = getType.GetClientSerializationSettings();
+            if (serializerSettings == null)
+            {
+                serializerSettings = interfaceType.GetClientSerializationSettings();
+            }
+            var serializer = serializerSettings == null ? JsonSerializer.Create() : JsonSerializer.Create(serializerSettings);
+            return serializer;
         }
 
         private ActionWrapper CreateActionRequest(string name, ParameterWrapper[] parameters, out HttpWebRequest req)
@@ -301,10 +314,9 @@ namespace Stardust.Interstellar.Rest.Client
 
         private void AppendHeaders(ParameterWrapper[] parameters, HttpWebRequest req, ActionWrapper action)
         {
-            if (headerHandlers == null) return;
-            foreach (var headerHandler in headerHandlers)
+            foreach (var source in parameters.Where(p => p.In == InclutionTypes.Header))
             {
-                headerHandler.SetHeader(req);
+                req.Headers.Add(string.Format("{0}", source.Name), source.value?.ToString());
             }
             if (action.CustomHandlers != null)
             {
@@ -313,10 +325,13 @@ namespace Stardust.Interstellar.Rest.Client
                     customHandler.SetHeader(req);
                 }
             }
-            foreach (var source in parameters.Where(p => p.In == InclutionTypes.Header))
+            if (headerHandlers == null) return;
+            foreach (var headerHandler in headerHandlers)
             {
-                req.Headers.Add(string.Format("x-{0}", source.Name), source.value.ToString());
+                headerHandler.SetHeader(req);
             }
+            
+           
         }
 
         private void SerializeBody(WebRequest req, object val, ActionWrapper action)
@@ -344,9 +359,10 @@ namespace Stardust.Interstellar.Rest.Client
             return xmlSerializer;
         }
 
-        private static void JsonBodySerializer(WebRequest req, object val)
+        private void JsonBodySerializer(WebRequest req, object val)
         {
-            var serializer = new JsonSerializer();
+
+            var serializer = CreateJsonSerializer(val?.GetType());
             using (var writer = new JsonTextWriter(new StreamWriter(req.GetRequestStream())))
             {
                 serializer.Serialize(writer, val);
@@ -421,7 +437,7 @@ namespace Stardust.Interstellar.Rest.Client
 
         private void CreateException(string name, ResultWrapper result)
         {
-            var action = GetAction(name);
+        var action = GetAction(name);
             var handler = GetErrorHandler();
             if (handler != null) throw handler.ProduceClientException(result.StatusMessage, result.Status, result.Error, result.Value as string);
             if (result.Value != null) throw new RestWrapperException(result.StatusMessage, result.Status, result.Value, result.Error);
