@@ -19,6 +19,12 @@ namespace Stardust.Interstellar.Rest.Annotations.Messaging
         /// <returns></returns>
         public static T SetGlobalProperty<T>(this T service, string propertyName, object value) where T : IServiceWithGlobalParameters
         {
+            SetGlobalProperty<T>(propertyName,value);
+            return service;
+        }
+
+        public static void SetGlobalProperty<T>(string propertyName, object value) where T : IServiceWithGlobalParameters
+        {
             ConcurrentDictionary<string, object> parameterCache;
             if (!globalParameterCache.TryGetValue(typeof(T).FullName, out parameterCache))
             {
@@ -26,7 +32,6 @@ namespace Stardust.Interstellar.Rest.Annotations.Messaging
                 globalParameterCache.TryAdd(typeof(T).FullName, parameterCache);
             }
             parameterCache.TryAdd(propertyName, JToken.FromObject(value));
-            return service;
         }
 
         public static object AppendGlobalParameters(string serviceName, object message, int level)

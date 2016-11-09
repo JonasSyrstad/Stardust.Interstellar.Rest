@@ -14,10 +14,11 @@ namespace Stardust.Interstellar.Rest.Extensions
             return default(T);
         }
 
-        public void SetState<T>(string key, T value)
+        public Extras SetState<T>(string key, T value)
         {
-            if (ContainsKey(key)) return;
+            if (ContainsKey(key)) return this;
             Add(key, value);
+            return this;
         }
         
     }
