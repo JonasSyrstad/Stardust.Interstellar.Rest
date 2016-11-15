@@ -326,4 +326,25 @@ and call the wcf addon before creating the controllers:
 
 ```
 
+In some cases you might want to allow the request body to be dynamic and extendable. By adding IServiceWithGlobalParameters to the service interface the framework will inject properties, at the root level of the json document, defined during app startup.
+
+The global properties are tied to the service so there are two ways of doing this:
+from the instance
+```CS
+
+var myServiceInstance=ProxyFactory.CreateInstance<IMyExtendableService>(serviceRoot);
+myServiceInstance.SetGlobalProperty("myCustomGlobalProperty1", DateTime.UtcNow);//injects the utc datetime of application start (the time the global prrperty is defined)
+myServiceInstance.SetGlobalProperty("myCustomGlobalProperty2", new ScopedValueFetcher(() => new { timestamp=DateTime.UtcNow, created=DateTime.UtcNow}); //injects the datetime of service invocation. The ScopedValueFetcher can access any of the context/thread variables avaiable.
+
+
+```
+or
+```CS
+
+GlobalParameterExtensions.SetGlobalProperty<IMyExtendableService>("myCustomGlobalProperty1", DateTime.UtcNow);//injects the utc datetime of application start (the time the global prrperty is defined)
+GlobalParameterExtensions.SetGlobalProperty<IMyExtendableService>("myCustomGlobalProperty2", new ScopedValueFetcher(() => new { timestamp=DateTime.UtcNow, created=DateTime.UtcNow}); //injects the datetime of service invocation. The ScopedValueFetcher can access any of the context/thread variables avaiable.
+
+
+```
+
 See [Stardust.KeenIo.Client](https://github.com/JonasSyrstad/Stardust.KeenIo.Client "Stardust.KeenIo.Client") for a demo/sample project on building .net client api's for existing rest services. It currenly supports Adding events and getting collection info from the api.
