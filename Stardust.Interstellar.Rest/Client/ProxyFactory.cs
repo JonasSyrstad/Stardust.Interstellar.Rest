@@ -11,6 +11,11 @@ namespace Stardust.Interstellar.Rest.Client
     public static class ProxyFactory
     {
         static ConcurrentDictionary<Type, Type> proxyTypeCache = new ConcurrentDictionary<Type, Type>();
+
+        public static bool EnableExpectContinue100ForPost { get; set; }
+
+        public static bool EnableExpectContinue100ForAll { get; set; }
+
         public static Type CreateProxy<T>()
         {
             var interfaceType = typeof(T);

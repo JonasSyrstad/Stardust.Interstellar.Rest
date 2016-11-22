@@ -59,14 +59,22 @@
     <Compile Include="Cache\ICacheHelper.cs" />
     <Compile Include="Cache\ICahceInspector.cs" />
     <Compile Include="Cache\UseEtagAttribute.cs" />
+    <Compile Include="DeleteAttribute.cs" />
     <Compile Include="Extras.cs" />
+    <Compile Include="GetAttribute.cs" />
+    <Compile Include="HeadAttribute.cs" />
+    <Compile Include="AuthorizeWrapperAttribute.cs" />
     <Compile Include="IAuthorizeAttribute.cs" />
     <Compile Include="IInputInterceptor.cs" />
     <Compile Include="InputInterceptorAttribute.cs" />
     <Compile Include="Messaging\ExtensionLevelAttribute.cs" />
     <Compile Include="Messaging\MessageExtender.cs" />
     <Compile Include="OperationAbortedException.cs" />
+    <Compile Include="OptionsAttribute.cs" />
     <Compile Include="PerformanceHeadersHandler.cs" />
+    <Compile Include="PostAttribute.cs" />
+    <Compile Include="PutAttribute.cs" />
+    <Compile Include="Resolver\IVerbResolver.cs" />
     <Compile Include="UserAgent\ConfiguredClienUserAgentName.cs" />
     <Compile Include="UserAgent\FixedClientUserAgentAttribute.cs" />
     <Compile Include="HeaderInspectorAttributeBase.cs" />
@@ -85,6 +93,7 @@
     <Compile Include="StatefullHeaderHandlerBase.cs" />
     <Compile Include="StateHelper.cs" />
     <Compile Include="UserAgent\UserAgent.cs" />
+    <Compile Include="VerbAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="nugetdeploy.config" />

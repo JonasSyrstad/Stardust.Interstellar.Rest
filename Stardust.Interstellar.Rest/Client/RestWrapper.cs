@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -102,9 +101,10 @@ namespace Stardust.Interstellar.Rest.Client
             HttpWebRequest req;
             var action = CreateActionRequest(name, parameters, out req);
             ResultWrapper errorResult;
+            HttpWebResponse response=null;
             try
             {
-                var response = req.GetResponse() as HttpWebResponse;
+                response = req.GetResponse() as HttpWebResponse;
                 EnsureActionId(req, response);
                 GetHeaderValues(action, response);
                 var result = CreateResult(action, response);
@@ -114,12 +114,30 @@ namespace Stardust.Interstellar.Rest.Client
             catch (WebException webError)
             {
                 EnsureActionId(webError, req);
+                
                 GetHeaderValues(action, webError.Response as HttpWebResponse);
                 errorResult = HandleWebException(webError, action);
+                try
+                {
+                    webError.Response?.Close();
+                }
+                catch (Exception)
+                {
+                }
             }
             catch (Exception ex)
             {
                 errorResult = HandleGenericException(ex);
+            }
+            finally
+            {
+                try
+                {
+                    response?.Close();
+                }
+                catch (Exception)
+                {
+                }
             }
             errorResult.ActionId = req.ActionId();
             return errorResult;
@@ -234,9 +252,10 @@ namespace Stardust.Interstellar.Rest.Client
             }
             if (queryStrings.Any()) path = path + "?" + string.Join("&", queryStrings);
             req = action.UseXml ? CreateRequest(path, "application/xml") : CreateRequest(path);
-
+            if ((string.Equals(action.Actions.First().Method, "POST", StringComparison.OrdinalIgnoreCase) && ProxyFactory.EnableExpectContinue100ForPost) || ProxyFactory.EnableExpectContinue100ForAll) req.ServicePoint.Expect100Continue = true;
+            else req.ServicePoint.Expect100Continue = false;
+            if (DisableProxy) req.Proxy = null;
             req.Headers.Add(ExtensionsFactory.ActionIdName, Guid.NewGuid().ToString());
-
             req.InitializeState();
             req.Method = action.Actions.First().ToString();
             AppendHeaders(parameters, req, action);
@@ -248,6 +267,8 @@ namespace Stardust.Interstellar.Rest.Client
             req.GetState().Extras.Add("serviceRoot", baseUri);
             return action;
         }
+
+        public static bool DisableProxy { get; set; }
 
         private ActionWrapper GetAction(string name)
         {
@@ -375,9 +396,10 @@ namespace Stardust.Interstellar.Rest.Client
             HttpWebRequest req;
             var action = CreateActionRequest(name, parameters, out req);
             ResultWrapper errorResult;
+            HttpWebResponse response=null;
             try
             {
-                var response = await req.GetResponseAsync() as HttpWebResponse;
+                response = await req.GetResponseAsync() as HttpWebResponse;
                 EnsureActionId(req, response);
                 GetHeaderValues(action, response);
                 var result = CreateResult(action, response);
@@ -389,12 +411,30 @@ namespace Stardust.Interstellar.Rest.Client
                 EnsureActionId(webError, req);
                 GetHeaderValues(action, webError.Response as HttpWebResponse);
                 errorResult = HandleWebException(webError, action);
+                try
+                {
+                    webError.Response?.Close();
+                }
+                catch (Exception)
+                {
+                }
             }
             catch (Exception ex)
             {
                 errorResult = HandleGenericException(ex);
             }
+            finally
+            {
+                try
+                {
+                    response?.Close();
+                }
+                catch (Exception)
+                {
+                }
+            }
             errorResult.ActionId = req.ActionId();
+           
             return errorResult;
         }
 
