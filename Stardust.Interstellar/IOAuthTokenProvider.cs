@@ -6,4 +6,4 @@ namespace Stardust.Interstellar
 
         string GetBearerToken(string resourceUrl);
     }
-}
+} 
