@@ -245,6 +245,7 @@ namespace Stardust.Interstellar.Rest.Client
 
             if (authenticationHandler == null) authenticationHandler = ExtensionsFactory.GetService<IAuthenticationHandler>();
             if (authenticationHandler != null) authenticationHandler.Apply(req);
+            req.GetState().Extras.Add("serviceRoot", baseUri);
             return action;
         }
 
