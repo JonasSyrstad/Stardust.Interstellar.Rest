@@ -59,12 +59,14 @@
     <Compile Include="Cache\ICacheHelper.cs" />
     <Compile Include="Cache\ICahceInspector.cs" />
     <Compile Include="Cache\UseEtagAttribute.cs" />
+    <Compile Include="CircuitBreakerAttribute.cs" />
     <Compile Include="DeleteAttribute.cs" />
     <Compile Include="Extras.cs" />
     <Compile Include="GetAttribute.cs" />
     <Compile Include="HeadAttribute.cs" />
     <Compile Include="AuthorizeWrapperAttribute.cs" />
     <Compile Include="IAuthorizeAttribute.cs" />
+    <Compile Include="RetryAttribute.cs" />
     <Compile Include="IInputInterceptor.cs" />
     <Compile Include="InputInterceptorAttribute.cs" />
     <Compile Include="Messaging\ExtensionLevelAttribute.cs" />

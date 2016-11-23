@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
@@ -158,6 +159,8 @@ namespace Stardust.Interstellar.Test
             //await Task.Run(() => {
             //    throw new Exception("test"); 
             //});
+            var rnd = new Random();
+            if (rnd.Next(0, 3) == 2) throw new StatusException(HttpStatusCode.RequestTimeout);
             return new StringWrapper { Value = string.Join("-", id, name, item3, item4) };
             //return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3, item4) });
         }

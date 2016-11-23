@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Client;
+using Stardust.Interstellar.Rest.Client.CircuitBreaker;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Legacy;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Nucleus;
+using Stardust.Particles;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,7 +24,9 @@ namespace Stardust.Interstellar.Rest.Test
         {
             this.output = output;
             WcfServiceProvider.RegisterWcfAdapters();
+
             Resolver.LoadModuleConfiguration<TestBlueprint>();
+            Logging.SetLogger(Logger.Initialize(output));
             ExtensionsFactory.SetXmlSerializer(typeof(CustomXmlSerializer));
         }
         [Fact]
@@ -29,11 +34,11 @@ namespace Stardust.Interstellar.Rest.Test
 
         {
             var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
-            
+
             var res = await service.ApplyAsync("101", "Stardust", "Hello", "World");
             output.WriteLine(res.Value);
 
-            res=await service.Apply2("101", "Stardust", "Hello");
+            res = await service.Apply2("101", "Stardust", "Hello");
             output.WriteLine(res.Value);
 
             await service.PutAsync("test", DateTime.Today);
@@ -45,14 +50,14 @@ namespace Stardust.Interstellar.Rest.Test
 
         {
             var actual = new JsonSerializerSettings
-                              {
-                                  DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
-                                  DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
-                                  NullValueHandling = NullValueHandling.Include,
-                                  Formatting = Formatting.Indented
-                              }.AddClientSerializer<StringWrapper>();
+            {
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+                DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate,
+                NullValueHandling = NullValueHandling.Include,
+                Formatting = Formatting.Indented
+            }.AddClientSerializer<StringWrapper>();
             var retreived = JsonSerializerExtensions.GetClientSerializationSettings(typeof(StringWrapper));
-            Assert.Equal(actual,retreived);
+            Assert.Equal(actual, retreived);
         }
 
         [Fact]
@@ -113,6 +118,8 @@ namespace Stardust.Interstellar.Rest.Test
         [Fact]
         public async Task GeneratorPerfTest()
         {
+
+            var retried = false;
             for (var i = 0; i < 1000; i++)
             {
                 var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/",
@@ -122,6 +129,7 @@ namespace Stardust.Interstellar.Rest.Test
                             {
                                 output.WriteLine($"{extra.Key}:{extra.Value}");
                             }
+                            if (extras.ContainsKey("retryCount")) retried = true;
                         });
                 try
                 {
@@ -130,9 +138,11 @@ namespace Stardust.Interstellar.Rest.Test
                 }
                 catch (Exception ex)
                 {
-                    throw;
+                    Assert.IsType<SuspendedDependencyException>(ex.InnerException);
                 }
             }
+            Assert.True(retried);
+
 
         }
 
@@ -156,7 +166,7 @@ namespace Stardust.Interstellar.Rest.Test
                             output.WriteLine($"{extra.Key}:{extra.Value}");
                         }
                     });
-            
+
             var getRes = testProxy.TestImplementationGet("test");
             output.WriteLine(getRes.Value);
             testProxy.SetGlobalProperty("test", "test");
@@ -203,6 +213,83 @@ namespace Stardust.Interstellar.Rest.Test
                               };
             var putRes = testProxy.TestImplementationPut2("hello", envents);
             output.WriteLine(putRes.Value);
+
+        }
+
+        [Fact]
+        public void CircuitBreakerTest()
+        {
+            CircuitBreakerContainer.Register<DummyExternaDependency>(10,1);
+            var dummy = new DummyExternaDependency();
+            var result = dummy.ExecuteWithCircuitBreaker("", s => s.DoWork("hi"));
+            output.WriteLine(result);
+        }
+
+        [Fact]
+        public void CircuitBreakerFailTest()
+        {
+            CircuitBreakerContainer.Register<DummyExternaDependencyImpl>(10, 1);
+            for (int i = 0; i < 20; i++)
+            {
+                try
+                {
+                    var dummy = new DummyExternaDependencyImpl();
+                    var result = dummy.ExecuteWithCircuitBreaker("", s => s.DoWorkFail("hi"));
+                    output.WriteLine(result);
+                }
+                catch (Exception ex)
+                {
+                    output.WriteLine(ex.Message);
+                    if (i > 20) Assert.IsType<SuspendedDependencyException>(ex);
+                }
+            }
+        }
+    }
+
+    public class DummyExternaDependency
+    {
+        public string DoWork(string name)
+        {
+            return name;
+        }
+
+        public string DoWorkFail(string hi)
+        {
+            throw new NotImplementedException("NotImplemented");
+        }
+    }
+
+    class DummyExternaDependencyImpl : DummyExternaDependency
+    {
+    }
+
+    public class Logger : ILogging
+    {
+        private static ITestOutputHelper _output;
+
+
+        public static Type Initialize(ITestOutputHelper output)
+        {
+            _output = output;
+            return typeof(Logger);
+        }
+
+        public void Exception(Exception exceptionToLog, string additionalDebugInformation = null)
+        {
+            _output.WriteLine(exceptionToLog.Message);
+        }
+
+        public void HeartBeat()
+        {
+        }
+
+        public void DebugMessage(string message, EventLogEntryType entryType = EventLogEntryType.Information, string additionalDebugInformation = null)
+        {
+            _output.WriteLine(message);
+        }
+
+        public void SetCommonProperties(string logName)
+        {
 
         }
     }

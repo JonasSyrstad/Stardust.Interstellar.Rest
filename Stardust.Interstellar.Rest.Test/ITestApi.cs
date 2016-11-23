@@ -18,10 +18,12 @@ namespace Stardust.Interstellar.Rest.Test
         [HttpPost]  
         string Test(StringWrapper message);
     }
+
     [IRoutePrefix("api")]
     [CallingMachineName]
     [PerformanceHeaders]
     [ErrorHandler(typeof(TestHandler))]
+    [CircuitBreaker(50, 1)]
     public interface ITestApi
     {
         [Route("test/{id}")]
@@ -45,6 +47,7 @@ namespace Stardust.Interstellar.Rest.Test
         
         [Route("test5/{id}")]
         [HttpGet]
+        [Retry(10,3,false)]
         Task<StringWrapper> ApplyAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Path)]string item3, [In(InclutionTypes.Path)]string item4);
 
         [Route("put2/{id}")]

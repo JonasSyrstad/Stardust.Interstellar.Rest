@@ -61,6 +61,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\CircuitBreaker\CircuitBreaker.cs" />
+    <Compile Include="Client\CircuitBreaker\CircuitBreakerContainer.cs" />
+    <Compile Include="Client\CircuitBreaker\CircuitBreakerState.cs" />
+    <Compile Include="Client\CircuitBreaker\ClosedState.cs" />
+    <Compile Include="Client\CircuitBreaker\HalfOpenState.cs" />
+    <Compile Include="Client\CircuitBreaker\ICircuitBreaker.cs" />
+    <Compile Include="Client\CircuitBreaker\NullBreaker.cs" />
+    <Compile Include="Client\CircuitBreaker\OpenState.cs" />
+    <Compile Include="Client\CircuitBreaker\SuspendedDependencyException.cs" />
     <Compile Include="Client\ClientGlobalSettings.cs" />
     <Compile Include="Client\Graph\GraphBase.cs" />
     <Compile Include="Client\Graph\GraphQuery.cs" />

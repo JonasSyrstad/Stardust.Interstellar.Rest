@@ -7,15 +7,17 @@ using System.Xml;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Client;
+using Stardust.Interstellar.Rest.Common;
 using Stardust.Particles;
 
 namespace Stardust.Interstellar.Rest.Test
 {
-    public class TestBlueprint : Blueprint
+    public class TestBlueprint : Blueprint<Logger>
     {
         protected override void DoCustomBindings()
         {
             base.DoCustomBindings();
+            Configurator.Bind<ILogger>().To<LogWrapper>().SetSingletonScope();
         }
     }
 

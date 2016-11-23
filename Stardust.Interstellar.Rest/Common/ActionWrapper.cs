@@ -27,6 +27,10 @@ namespace Stardust.Interstellar.Rest.Common
         public bool UseXml { get; set; }
 
         public int MessageExtesionLevel { get; set; }
+        public bool Retry { get; set; }
+        public int Interval { get; set; }
+        public int NumberOfRetries { get; set; }
+        public bool IncrementalRetry { get; set; }
     }
 
 

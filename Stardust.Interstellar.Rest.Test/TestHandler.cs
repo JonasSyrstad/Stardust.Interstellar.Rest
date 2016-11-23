@@ -24,11 +24,21 @@ namespace Stardust.Interstellar.Rest.Test
                 var resp= request.CreateResponse(HttpStatusCode.InternalServerError,DateTime.Now);
                 return resp;
             }
+            if (exception is StatusException)
+            {
+                var resp = request.CreateResponse(HttpStatusCode.RequestTimeout, DateTime.Now);
+                return resp;
+            }
             if (!(exception is AggregateException)) return null;
             {
                 if (!((exception as AggregateException).InnerExceptions is NotImplementedException))
                 {
                     var resp = request.CreateResponse(HttpStatusCode.BadGateway, DateTime.Now);
+                    return resp;
+                }
+                if (!((exception as AggregateException).InnerExceptions is StatusException))
+                {
+                    var resp = request.CreateResponse(HttpStatusCode.RequestTimeout, DateTime.Now);
                     return resp;
                 }
             }
