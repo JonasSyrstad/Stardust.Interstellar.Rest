@@ -5,11 +5,15 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Stardust.Interstellar.Rest;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Annotations.UserAgent;
 
 namespace Stardust.Interstellar.Config
 {
     [StardustConfigAuthentication]
     [IRoutePrefix("api")]
+    [Retry(5,500,true)]
+    [PerformanceHeaders]
+    [FixedClientUserAgent("stardust/1.1 (config client)")]
     public interface IConfigReader
     {
         [HttpGet]
