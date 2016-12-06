@@ -12,14 +12,15 @@ namespace Stardust.Interstellar.Rest.Annotations
     [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method)]
     public class RetryAttribute : Attribute
     {
+        private Type _errorCategorizer;
         public bool IncremetalWait { get; }
-        public int NumberOfRetries { get;}
+        public int NumberOfRetries { get; }
         /// <summary>
         /// the wait time in ms
         /// </summary>
         public int RetryInterval { get; }
 
-        public RetryAttribute():this(3,10,true)
+        public RetryAttribute() : this(3, 10, true)
         { }
 
         public RetryAttribute(int numberOfRetries) : this(numberOfRetries, 1000, true)
@@ -36,5 +37,21 @@ namespace Stardust.Interstellar.Rest.Annotations
             NumberOfRetries = numberOfRetries;
             RetryInterval = retryInterval;
         }
+
+        public Type ErrorCategorizer
+        {
+            get { return _errorCategorizer; }
+            set
+            {
+                if (!typeof(IErrorCategorizer).IsAssignableFrom(value))
+                    throw new InvalidCastException($"Unable to convert {value.FullName} to {nameof(IErrorCategorizer)}");
+                _errorCategorizer = value;
+            }
+        }
+    }
+
+    public interface IErrorCategorizer
+    {
+        bool IsTransientError(Exception exception);
     }
 }

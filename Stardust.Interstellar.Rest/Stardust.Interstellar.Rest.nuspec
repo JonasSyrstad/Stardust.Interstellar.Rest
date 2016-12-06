@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata>
     <id>Stardust.Interstellar.Rest</id>
-    <version>2.7.0.0</version>
+    <version>2.7.6.0</version>
     <title>Stardust.Interstellar.Rest</title>
     <authors>Stardust</authors>
     <owners>Stardust</owners>
@@ -15,7 +15,8 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>false</developmentDependency>
     <releaseNotes>Added support for jsonSerializerSettings.
-Optimizations of connection handling and expect100Continue</releaseNotes>
+Optimizations of connection handling and expect100Continue
+Added Retry and CircuitBreaker options</releaseNotes>
     <copyright>Copyright © Stardust 2016</copyright>
     <tags>rest client proxy service webapi generator </tags>
     <frameworkAssemblies />
@@ -26,7 +27,7 @@ Optimizations of connection handling and expect100Continue</releaseNotes>
         <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />
         <dependency id="Microsoft.AspNet.WebApi.WebHost" version="5.2.3" />
         <dependency id="Newtonsoft.Json" version="6.0.4" />
-        <dependency id="Stardust.Interstellar.Rest.Annotations" version="1.4.0" />
+        <dependency id="Stardust.Interstellar.Rest.Annotations" version="1.4.1" />
       </group>
     </dependencies>
   </metadata>

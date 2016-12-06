@@ -12,5 +12,9 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
         T Invoke<T>(string actionUrl, Func<T> func);
 
         Task<T> InvokeAsync<T>(string actionUrl, Func<Task<T>> func);
+
+        void Invoke(string actionUrl, Action func);
+
+        Task InvokeAsync(string actionUrl, Func<Task> func);
     }
 }

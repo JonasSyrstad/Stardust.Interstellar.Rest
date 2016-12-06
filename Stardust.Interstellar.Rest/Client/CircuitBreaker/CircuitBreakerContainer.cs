@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Stardust.Interstellar.Rest.Annotations;
 
@@ -38,6 +39,23 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
         public static void Register<T>(int threshold, int timeout)
         {
             Register(typeof(T),new CircuitBreaker(new CircuitBreakerAttribute(threshold,timeout)));
+        }
+
+        public static async Task ExecuteWithCircuitBreakerAsync<TExtDep>(this TExtDep externaDependency, string path, Func<TExtDep, Task> func)
+        {
+            await GetCircuitBreaker(externaDependency.GetType()).InvokeAsync(GetActionUrl<TExtDep>(path), async () => await func(externaDependency));
+        }
+
+        public static void ExecuteWithCircuitBreaker<TExtDep>(this TExtDep externaDependency, string path, Action<TExtDep> func)
+        {
+             GetCircuitBreaker(externaDependency.GetType()).Invoke(GetActionUrl<TExtDep>(path), () => func(externaDependency));
+        }
+
+        public static KeyValuePair<int, TimeSpan?>? GetCircuitState<T>(this T circuit)
+        {
+            var state = GetCircuitBreaker(typeof(T)) as ICircuit;
+            if (state == null) return null;
+            return new KeyValuePair<int, TimeSpan?>(state.Failures,state.SuspendedTime);
         }
     }
 }

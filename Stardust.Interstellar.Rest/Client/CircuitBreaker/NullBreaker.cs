@@ -28,6 +28,16 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
             return await func();
         }
 
+        public void Invoke(string actionUrl, Action func)
+        {
+            func();
+        }
+
+        public async Task InvokeAsync(string actionUrl, Func<Task> func)
+        {
+            await func();
+        }
+
         public void Trip(string circuitBreakerServiceName, Exception exception, ICircuitBreakerState state)
         {
             ExtensionsFactory.GetService<ILogger>()?.Error(exception);

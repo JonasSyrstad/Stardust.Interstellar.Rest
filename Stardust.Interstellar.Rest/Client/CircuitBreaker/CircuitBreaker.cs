@@ -157,7 +157,7 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
         public T Invoke<T>(string actionUrl, Func<T> func)
         {
             T result;
-            PreCallProcessing<T>(actionUrl);
+            PreCallProcessing(actionUrl);
             try
             {
                 result = func();
@@ -181,7 +181,7 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
         public async Task<T> InvokeAsync<T>(string actionUrl, Func<Task<T>> func)
         {
             T result;
-            PreCallProcessing<T>(actionUrl);
+            PreCallProcessing(actionUrl);
             try
             {
                 result = await func();
@@ -201,7 +201,50 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
             return result;
         }
 
-        private bool PreCallProcessing<T>(string actionUrl)
+        public void Invoke(string actionUrl, Action func)
+        {
+            
+            PreCallProcessing(actionUrl);
+            try
+            {
+                func();
+
+            }
+            catch (Exception e)
+            {
+                this.exceptionFromLastAttemptCall = e;
+                lock (triowing)
+                {
+                    state.ActUponException(actionUrl, e);
+                }
+                throw;
+            }
+
+            PostProcessing();
+        }
+
+        public async Task InvokeAsync(string actionUrl, Func<Task> func)
+        {
+            PreCallProcessing(actionUrl);
+            try
+            {
+                await func();
+
+            }
+            catch (Exception e)
+            {
+                this.exceptionFromLastAttemptCall = e;
+                lock (triowing)
+                {
+                    state.ActUponException(actionUrl, e);
+                }
+                throw;
+            }
+
+            PostProcessing();
+        }
+
+        private bool PreCallProcessing(string actionUrl)
         {
             lock (triowing)
             {

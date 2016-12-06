@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Stardust.Interstellar.Rest.Annotations;
@@ -47,7 +49,7 @@ namespace Stardust.Interstellar.Rest.Test
         
         [Route("test5/{id}")]
         [HttpGet]
-        [Retry(10,3,false)]
+        [Retry(10,3,false, ErrorCategorizer = typeof(ErrorCategorizer))]
         Task<StringWrapper> ApplyAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Path)]string item3, [In(InclutionTypes.Path)]string item4);
 
         [Route("put2/{id}")]
@@ -66,5 +68,22 @@ namespace Stardust.Interstellar.Rest.Test
         [Route("head")]
         [HttpHead]
         Task GetHead();
+    }
+
+    public class ErrorCategorizer : IErrorCategorizer
+    {
+        public bool IsTransientError(Exception exception)
+        {
+            var webException = exception as WebException;
+            if (webException != null)
+            {
+                return new[] {WebExceptionStatus.ConnectionClosed,
+                  WebExceptionStatus.Timeout,
+                  WebExceptionStatus.RequestCanceled ,WebExceptionStatus.ConnectFailure,WebExceptionStatus.ProtocolError}.
+                        Contains(webException.Status);
+            }
+
+            return false;
+        }
     }
 }

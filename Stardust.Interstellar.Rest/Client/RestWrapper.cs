@@ -94,6 +94,8 @@ namespace Stardust.Interstellar.Rest.Client
                     action.Interval = actionRetry.RetryInterval;
                     action.NumberOfRetries = actionRetry.NumberOfRetries;
                     action.IncrementalRetry = actionRetry.IncremetalWait;
+                    if (actionRetry.ErrorCategorizer != null)
+                        action.ErrorCategorizer = (IErrorCategorizer)Activator.CreateInstance(actionRetry.ErrorCategorizer);
                 }
                 ExtensionsFactory.BuildParameterInfo(methodInfo, action);
                 newWrapper.TryAdd(action.Name, action);
@@ -130,18 +132,22 @@ namespace Stardust.Interstellar.Rest.Client
                     if (result.Error != null)
                     {
                         if (result.Error is SuspendedDependencyException) return result;
-                        if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(result.Error)) return result;
+                        if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(action, result.Error)) return result;
                         ExtensionsFactory.GetService<ILogger>()?.Error(result.Error);
-                        ExtensionsFactory.GetService<ILogger>()?.Message($"Retrying action {action.Name}, retry count {cnt}");
+                        ExtensionsFactory.GetService<ILogger>()?
+                            .Message($"Retrying action {action.Name}, retry count {cnt}");
                         waittime = waittime * (action.IncrementalRetry ? cnt : 1);
                         Thread.Sleep(waittime);
                     }
                     else
+                    {
+                        if (cnt > 1) result.GetState().Extras.Add("retryCount", cnt);
                         return result;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(ex)) throw;
+                    if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(action, ex)) throw;
                     Thread.Sleep(action.IncrementalRetry ? cnt : 1 * action.Interval);
                 }
             }
@@ -461,7 +467,7 @@ namespace Stardust.Interstellar.Rest.Client
                     {
                         if (result.Error is SuspendedDependencyException)
                             return result;
-                        if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(result.Error)) return result;
+                        if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(action,result.Error)) return result;
                         ExtensionsFactory.GetService<ILogger>()?.Error(result.Error);
                         ExtensionsFactory.GetService<ILogger>()?
                             .Message($"Retrying action {action.Name}, retry count {cnt}");
@@ -476,21 +482,25 @@ namespace Stardust.Interstellar.Rest.Client
                 }
                 catch (Exception ex)
                 {
-                    if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(ex)) throw;
+                    if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(action, ex)) throw;
                     await Task.Delay(action.IncrementalRetry ? cnt : 1 * action.Interval);
                 }
             }
             throw new Exception("Should not get here!?!");
         }
 
-        private bool IsTransient(Exception exception)
+        private bool IsTransient(ActionWrapper action, Exception exception)
         {
+            if (action.ErrorCategorizer != null)
+            {
+                return action.ErrorCategorizer.IsTransientError(exception);
+            }
             var webException = exception as WebException;
             if (webException != null)
             {
                 return new[] {WebExceptionStatus.ConnectionClosed,
                   WebExceptionStatus.Timeout,
-                  WebExceptionStatus.RequestCanceled ,WebExceptionStatus.ConnectFailure,WebExceptionStatus.ProtocolError}.
+                  WebExceptionStatus.RequestCanceled ,WebExceptionStatus.ConnectFailure}.
                         Contains(webException.Status);
             }
 
@@ -585,7 +595,7 @@ namespace Stardust.Interstellar.Rest.Client
         {
             var action = GetAction(name);
             var handler = GetErrorHandler();
-                if (handler != null) throw handler.ProduceClientException(result.StatusMessage, result.Status, result.Error, result.Value as string);
+            if (handler != null) throw handler.ProduceClientException(result.StatusMessage, result.Status, result.Error, result.Value as string);
             if (result.Value != null) throw new RestWrapperException(result.StatusMessage, result.Status, result.Value, result.Error);
             throw new RestWrapperException(result.StatusMessage, result.Status, result.Error);
         }
