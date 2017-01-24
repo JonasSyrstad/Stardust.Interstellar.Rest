@@ -31,8 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -66,6 +66,8 @@
     <Compile Include="HeadAttribute.cs" />
     <Compile Include="AuthorizeWrapperAttribute.cs" />
     <Compile Include="IAuthorizeAttribute.cs" />
+    <Compile Include="LowPriorityContainer.cs" />
+    <Compile Include="PeriodicTask.cs" />
     <Compile Include="RetryAttribute.cs" />
     <Compile Include="IInputInterceptor.cs" />
     <Compile Include="InputInterceptorAttribute.cs" />
@@ -77,6 +79,7 @@
     <Compile Include="PostAttribute.cs" />
     <Compile Include="PutAttribute.cs" />
     <Compile Include="Resolver\IVerbResolver.cs" />
+    <Compile Include="Service\ServiceInitializerAttribute.cs" />
     <Compile Include="UserAgent\ConfiguredClienUserAgentName.cs" />
     <Compile Include="UserAgent\FixedClientUserAgentAttribute.cs" />
     <Compile Include="HeaderInspectorAttributeBase.cs" />
@@ -98,6 +101,7 @@
     <Compile Include="VerbAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="nugetdeploy.config" />
     <None Include="packages.config" />
     <None Include="Stardust.Interstellar.Rest.Annotations.nuspec" />

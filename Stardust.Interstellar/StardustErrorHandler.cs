@@ -74,7 +74,7 @@ namespace Stardust.Interstellar
             {
                 return new FaultException<ErrorMessage>(JsonConvert.DeserializeObject<ErrorMessage>(value), new FaultReason(statusMessage));
             }
-            return null;
+            return error;
         }
 
         public bool OverrideDefaults => true;

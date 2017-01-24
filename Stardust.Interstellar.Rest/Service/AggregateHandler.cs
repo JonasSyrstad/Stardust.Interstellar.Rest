@@ -24,8 +24,8 @@ namespace Stardust.Interstellar.Rest.Service
         /// <returns></returns>
         public HttpResponseMessage ConvertToErrorResponse(Exception exception, HttpRequestMessage request)
         {
-            var res1 = errorHandler.ConvertToErrorResponse(exception,request);
-            var res2 = errorInterceptor.ConvertToErrorResponse(exception,request);
+            var res1 = errorHandler.ConvertToErrorResponse(exception, request);
+            var res2 = errorInterceptor.ConvertToErrorResponse(exception, request);
             if (res1.StatusCode == HttpStatusCode.InternalServerError) return res2;
             return res1;
         }
@@ -38,7 +38,9 @@ namespace Stardust.Interstellar.Rest.Service
         public Exception ProduceClientException(string statusMessage, HttpStatusCode status, Exception error, string value)
         {
             var ex = errorHandler.ProduceClientException(statusMessage, status, error, value);
-            var ex2= errorInterceptor.ProduceClientException(statusMessage, status, ex, value);
+            var ex2 = errorInterceptor.ProduceClientException(statusMessage, status, ex, value);
+            if (ex != null && ex2 == null) throw new AggregateException(ex);
+            if (ex == null && ex2 != null) throw new AggregateException(ex2);
             return new AggregateException(ex, ex2);
         }
     }

@@ -20,6 +20,5 @@ namespace Stardust.Interstellar.Rest.Extensions
             Add(key, value);
             return this;
         }
-        
     }
 }

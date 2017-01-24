@@ -1,15 +1,35 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 
 namespace Stardust.Interstellar.Rest.Extensions
 {
     public static class StateHelper
     {
+        static StateHelper()
+        {
+            PeriodicTask.Run(CleanStateCache, null, TimeSpan.FromMinutes(1), CancellationToken.None);
+        }
+
+        private static void CleanStateCache(object o, CancellationToken cancellationToken)
+        {
+            try
+            {
+                foreach (var c in stateContainer.Where(i => i.Value.Created < DateTime.UtcNow.AddMinutes(-10)).ToArray())
+                {
+                    LowPriorityContainer deprecatedItem;
+                    stateContainer.TryRemove(c.Key, out deprecatedItem);
+                }
+            }
+            catch
+            {
+            }
+        }
+
         public static void InitializeState(this HttpWebRequest req)
         {
             GetState(req);
@@ -17,11 +37,12 @@ namespace Stardust.Interstellar.Rest.Extensions
 
         public static void EndState(this HttpWebResponse response)
         {
-            StateDictionary removedState;
+            LowPriorityContainer removedState;
             stateContainer.TryRemove(response.ActionId(), out removedState);
+            removedState.StateReference.Clear();
         }
 
-        
+
 
         public static void InitializeState(this HttpRequestMessage request)
         {
@@ -52,17 +73,20 @@ namespace Stardust.Interstellar.Rest.Extensions
             return InitializeState(actionId);
         }
 
-        
+
 
         public static StateDictionary InitializeState(string actionId)
         {
-            StateDictionary state;
+            LowPriorityContainer state;
             if (!stateContainer.TryGetValue(actionId, out state))
             {
-                state = new StateDictionary { { "stardust.extras", new Extras() } };
+                state = new LowPriorityContainer
+                {
+                    StateReference = new StateDictionary { { StateDictionary.StardustExtras, new Extras() } }
+                };
                 stateContainer.TryAdd(actionId, state);
             }
-            return state;
+            return state.StateReference;
         }
 
         public static StateDictionary GetState(this HttpWebRequest req)
@@ -73,8 +97,10 @@ namespace Stardust.Interstellar.Rest.Extensions
 
         public static void EndState(this HttpRequestMessage request)
         {
-            StateDictionary removedState;
+            LowPriorityContainer removedState;
+            if (!request.Properties.ContainsKey(ActionIdName)) return;
             stateContainer.TryRemove(request.ActionId(), out removedState);
+            removedState.StateReference.Clear();
         }
         public static StateDictionary GetState(this HttpWebResponse response)
         {
@@ -109,14 +135,16 @@ namespace Stardust.Interstellar.Rest.Extensions
             return null;
         }
 
-        private static ConcurrentDictionary<string, StateDictionary> stateContainer = new ConcurrentDictionary<string, StateDictionary>();
+        private static ConcurrentDictionary<string, LowPriorityContainer> stateContainer = new ConcurrentDictionary<string, LowPriorityContainer>();
 
         private const string ActionIdName = "sd-ActionId";
 
         public static void EndState(string actionId)
         {
-            StateDictionary removedState;
+            if (string.IsNullOrWhiteSpace(actionId)) return;
+            LowPriorityContainer removedState;
             stateContainer.TryRemove(actionId, out removedState);
+            removedState.StateReference.Clear();
         }
     }
 }

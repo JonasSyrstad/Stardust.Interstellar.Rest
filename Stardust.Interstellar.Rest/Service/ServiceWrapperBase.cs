@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Stardust.Interstellar.Rest.Annotations;
 using Stardust.Interstellar.Rest.Annotations.Messaging;
+using Stardust.Interstellar.Rest.Annotations.Service;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
 
@@ -22,6 +23,7 @@ namespace Stardust.Interstellar.Rest.Service
     public abstract class ServiceWrapperBase<T> : ApiController
     {
         private const string ActionWrapperName = "sd-actionWrapperName";
+        private const string ActionId = "sd-ActionId";
 
         public readonly T implementation;
 
@@ -50,7 +52,11 @@ namespace Stardust.Interstellar.Rest.Service
             var action = GetAction();
 
             var actionId = Request.ActionId();
-            if (string.IsNullOrWhiteSpace(actionId)) actionId = ControllerContext.Request.Properties["sd-ActionId"].ToString();
+            if (string.IsNullOrWhiteSpace(actionId))
+            {
+                if (ControllerContext.Request.Properties.ContainsKey(ActionId))
+                    actionId = ControllerContext.Request.Properties[ActionId].ToString();
+            }
             result.Headers.Add(ExtensionsFactory.ActionIdName, actionId);
             foreach (var customHandler in action.CustomHandlers)
             {
@@ -244,7 +250,7 @@ namespace Stardust.Interstellar.Rest.Service
                 Request.GetState().SetState("controller", this);
                 Request.GetState().SetState("controllerName", typeof(T).FullName);
                 Request.GetState().SetState("action", action.Name);
-                this.ControllerContext.Request.Properties.Add("sd-ActionId", Request.ActionId());
+                this.ControllerContext.Request.Properties.Add(ActionId, Request.ActionId());
                 var i = 0;
                 foreach (var parameter in action.Parameters)
                 {
@@ -258,6 +264,7 @@ namespace Stardust.Interstellar.Rest.Service
                     headerHandler.GetServiceHeader(Request.Headers);
                 }
                 ExecuteInterceptors(action, wrappers);
+                ExecuteInitializers(action, Request.GetState(), wrappers);
 
             }
             catch (OperationCanceledException)
@@ -277,15 +284,25 @@ namespace Stardust.Interstellar.Rest.Service
             return wrappers.ToArray();
         }
 
+        private void ExecuteInitializers(ActionWrapper action, StateDictionary state, List<ParameterWrapper> wrappers)
+        {
+            var service = implementation as IInitializableService;
+            if (service != null)
+            {
+                var parameters = wrappers.Select(p => p.value).ToArray();
+                action.Initializers?.ForEach(init => init.Initialize(service, state, parameters));
+            }
+        }
+
         private void GetMessageExtensions()
         {
             if (typeof(IServiceWithGlobalParameters).IsAssignableFrom(typeof(T)))
             {
                 var messageContainer = MessageExtensions.GetCache();
-                if(messageContainer == null) return;
+                if (messageContainer == null) return;
                 using (var memStream = ControllerContext.Request.Content.ReadAsStreamAsync().Result)
                 {
-                    
+
                     memStream.Position = 0;
                     using (var reader = new StreamReader(memStream))
                     {
@@ -341,6 +358,8 @@ namespace Stardust.Interstellar.Rest.Service
         private static ConcurrentDictionary<Type, ErrorHandlerAttribute> errorhanderCache = new ConcurrentDictionary<Type, ErrorHandlerAttribute>();
         protected void InitializeServiceApi(Type interfaceType)
         {
+            var classInitializers = interfaceType.GetCustomAttributes<ServiceInitializerAttribute>();
+            var serviceInitializerAttributes = classInitializers as ServiceInitializerAttribute[] ?? classInitializers.ToArray();
             GetErrorInterceptor(interfaceType);
             ConcurrentDictionary<string, ActionWrapper> wrapper;
             if (cache.TryGetValue(interfaceType, out wrapper)) return;
@@ -348,6 +367,8 @@ namespace Stardust.Interstellar.Rest.Service
 
             foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
             {
+                var methodInitializers = methodInfo.GetCustomAttributes<ServiceInitializerAttribute>().ToList();
+                methodInitializers.AddRange(serviceInitializerAttributes);
                 var template = ExtensionsFactory.GetServiceTemplate(methodInfo);
                 var actionName = GetActionName(methodInfo);
                 var action = new ActionWrapper { Name = actionName, ReturnType = methodInfo.ReturnType, RouteTemplate = template, Parameters = new List<ParameterWrapper>() };
@@ -359,7 +380,9 @@ namespace Stardust.Interstellar.Rest.Service
                 action.RequireAuth = methodInfo.GetCustomAttributes().OfType<AuthorizeAttribute>().ToList();
                 action.RequireAuth.AddRange(interfaceType.GetCustomAttributes().OfType<IAuthorizeAttribute>());
                 action.Interceptor = methodInfo.GetCustomAttributes().OfType<InputInterceptorAttribute>().ToArray();
+                action.Initializers = methodInitializers;
                 BuildParameterInfo(methodInfo, action);
+
                 newWrapper.TryAdd(action.Name, action);
             }
             if (cache.TryGetValue(interfaceType, out wrapper)) return;

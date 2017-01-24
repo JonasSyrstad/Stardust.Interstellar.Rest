@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <!-- Part 1: Wrap all page content here -->
+    <div id="wrap">
+
+        <!-- Fixed navbar -->
+        <div class="navbar navbar-fixed-top navbar-inverse">
+            <div class="navbar-inner">
+                <div class="container">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a href="@Url.Action("Index", "Home", null, Request.Url.Scheme)" class="navbar-brand">
+                        <img src="@Url.Content("~/Assets/logo_white.svg")" alt="Brand" style="height: 25px; text-align: center; padding-top: -20px;"  />
+                         Continuum
+                    </a>
+                    <div class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav">
+                            <li>@Html.ActionLink("Log stream", "Index", "Home", new { area = "" }, null)</li>
+                            <li>@Html.ActionLink("API", "", "Swagger", new { area = "" }, null)</li>
+                            <li>@Html.ActionLink("About", "About", "Home", new { area = "" }, null)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Begin page content -->
+        <div class="container body-content" style="width: 100%;">
+            @RenderBody()
+        </div>
+
+        <div id="push"></div>
+    </div>
+
+    <div id="footer">
+        <div class="container" style="color: azure;">
+            <p>&copy; @DateTime.Now.Year - Stardust</p>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

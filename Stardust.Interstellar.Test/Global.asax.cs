@@ -159,8 +159,8 @@ namespace Stardust.Interstellar.Test
             //await Task.Run(() => {
             //    throw new Exception("test"); 
             //});
-            var rnd = new Random();
-            if (rnd.Next(0, 3) == 2) throw new StatusException(HttpStatusCode.RequestTimeout);
+            //var rnd = new Random();
+            //if (rnd.Next(0, 3) == 2) throw new StatusException(HttpStatusCode.RequestTimeout);
             return new StringWrapper { Value = string.Join("-", id, name, item3, item4) };
             //return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3, item4) });
         }

@@ -27,6 +27,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Swashbuckle.Stardust.Inters
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Generator", "..\Stardust.Interstellar.Generator\Stardust.Interstellar.Generator.csproj", "{8DB9B08A-01EB-4E35-A3FD-507152C83A6C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Continuum", "..\Stardust.Continuum\Stardust.Continuum.csproj", "{DE8052E7-096C-4754-9275-1B0DC18F6A1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Continuum.Client", "Stardust.Interstellar.Continuum.Client\Stardust.Continuum.Client.csproj", "{C32996BE-E728-4FBC-B294-E8C1EB563950}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +73,14 @@ Global
 		{8DB9B08A-01EB-4E35-A3FD-507152C83A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DB9B08A-01EB-4E35-A3FD-507152C83A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DB9B08A-01EB-4E35-A3FD-507152C83A6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE8052E7-096C-4754-9275-1B0DC18F6A1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE8052E7-096C-4754-9275-1B0DC18F6A1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE8052E7-096C-4754-9275-1B0DC18F6A1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE8052E7-096C-4754-9275-1B0DC18F6A1A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C32996BE-E728-4FBC-B294-E8C1EB563950}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C32996BE-E728-4FBC-B294-E8C1EB563950}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C32996BE-E728-4FBC-B294-E8C1EB563950}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C32996BE-E728-4FBC-B294-E8C1EB563950}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

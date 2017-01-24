@@ -1,0 +1,134 @@
+﻿
+html {
+    height: 100%;
+    background-color: black;
+}
+
+body {
+    padding-top: 50px;
+    padding-bottom: 0px;
+    height: 100%;
+    min-height: 100%;
+    background-color: black;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: black;
+    color: green;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+}
+
+
+
+/* Wrapper for page content to push down footer */
+#wrap {
+    min-height: 90%;
+    /*height: auto !important;*/
+    height: 90%;
+    /* Negative indent footer by it's height */
+    margin: 0 auto -20px;
+}
+
+/* Set the fixed height of the footer here */
+#push,
+#footer {
+    height: 20px;
+    padding-top: 70px;
+    padding-left: 40px;
+    margin-left: 0px;
+    color: azure;
+}
+
+
+/* Lastly, apply responsive CSS fixes as necessary */
+@media (max-width: 767px) {
+    #footer {
+        margin-left: -0px;
+        margin-right: -20px;
+        padding-left: 0px;
+        padding-right: 20px;
+            padding-top: 30px;
+        
+    }
+}
+
+
+
+/* Custom page CSS
+      -------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+#wrap > .container {
+    padding-top: 15px;
+    padding-left: 50px;
+    padding-right: 20px;
+}
+
+.container .credit {
+    margin: 20px 0;
+}
+
+code {
+    font-size: 80%;
+}
+
+.navbar-brand>img {
+   max-height: 50%;
+   height: 50%;
+   width: auto;
+   margin: 0 auto;
+
+
+   /* probably not needed anymore, but doesn't hurt */
+   -o-object-fit: contain;
+   object-fit: contain; 
+
+}
+.navbar {
+    color: white;
+}
+
+    .navbar-inner:before,
+    .navbar-inner:after {
+        display: table;
+        line-height: 0;
+        content: "";
+    }
+
+    .navbar-inner:after {
+        clear: both;
+    }
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.pre-scrollable {
+    max-height: 100%;
+    overflow-y: scroll;
+    min-height: 100%;
+}
+
+.truncate {
+    width: 250px;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-wrap; /* CSS3 */
+    white-space: -moz-pre-wrap; /* Firefox */
+    white-space: -pre-wrap; /* Opera <7 */
+    white-space: -o-pre-wrap; /* Opera 7 */
+    word-wrap: break-word; /* IE */
+    height: 100%;
+}
+
+.div-inline {
+    display: inline-block;
+}
