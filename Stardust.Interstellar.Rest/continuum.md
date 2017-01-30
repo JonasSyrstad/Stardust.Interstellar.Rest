@@ -13,9 +13,11 @@ entries to a centralized service. The developers can on their side connect to th
 
 ##Service setup:
 
-Download the web deployment package here: [Web Deploy Package](https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/tree/master/ContinuumInstall)
-Follow the instructions: [How to: Install a Deployment Package](https://msdn.microsoft.com/en-us/library/ff356104(v=vs.110).aspx)
-Add your projects and environments in the web.config file. 
+* Download the web deployment package here: [Web Deploy Package](https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/tree/master/ContinuumInstall)
+
+* Follow the instructions: [How to: Install a Deployment Package](https://msdn.microsoft.com/en-us/library/ff356104(v=vs.110).aspx)
+
+* Add your projects and environments in the web.config file. 
 
 
 ##Usage:

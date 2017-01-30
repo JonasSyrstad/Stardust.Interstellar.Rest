@@ -7,7 +7,7 @@
     <authors>Stardust</authors>
     <description>Client for the continuum live log stream service</description>
     <licenseUrl>http://stardustframework.com/license</licenseUrl>
-    <projectUrl>https://github.com/JonasSyrstad/Stardust.Interstellar.Rest</projectUrl>
+    <projectUrl>https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/blob/master/Stardust.Interstellar.Rest/continuum.md</projectUrl>
     <iconUrl>http://stardustframework.wdfiles.com/local--files/blog%3A_start/logo_smal.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>false</developmentDependency>
