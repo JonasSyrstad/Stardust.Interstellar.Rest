@@ -39,7 +39,7 @@ namespace Stardust.Interstellar.Rest.Test
             var res = await service.ApplyAsync("101", "Stardust", "Hello", "World");
             output.WriteLine(res.Value);
 
-            res = await service.Apply2("101", "Stardust", "Hello");
+            res = await service.Apply2("101?20", "Stardust", "Hello");
             output?.WriteLine(res.Value);
 
             await service.PutAsync("test", DateTime.Today);

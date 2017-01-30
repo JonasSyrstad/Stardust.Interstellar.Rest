@@ -9,7 +9,7 @@
 <div class="panel-group">
     <div class="row">
         <div class="col-lg-5">
-            <div class="panel panel-info" style="height: 250px;">
+            <div class="panel panel-primary" style="min-height: 250px;">
                 <div class="panel-heading"><i class="glyphicon glyphicon-question-sign"></i> Definition of continuum</div>
                 <div class="panel-body">
                     <p>plural continuaplay \-yü-ə\ also continuums</p>
@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="col-lg-5">
-            <div class="panel panel-primary" style="height: 250px;">
+            <div class="panel panel-default" style="min-height: 250px;">
                 <div class="panel-heading"><i class="glyphicon glyphicon-info-sign"></i> Objective</div>
                 <div class="panel-body">
                     Debugging and troubleshooting requires good logs. Getting good logs from highly distributes systems is hard and require new tooling that enables the developers to look at the log streams from all parts of the distributed system in one place.
@@ -34,7 +34,7 @@
     <div class="row" style="height: 25px;"></div>
     <div class="row">
         <div class="col-lg-10">
-            <div class="panel panel-success">
+            <div class="panel panel-default">
                 <div class="panel-heading"><b class="glyphicon glyphicon-download-alt"></b> How to get it</div>
                 <div class="panel-body" style="background-color: black;">
                     <b>
@@ -87,6 +87,9 @@
                         AppendData(d);
                     });
             }
+            $.connection.hub.reconnected(function () {
+                hub.server.connect("Connected to log stream", $('#selected').text());
+            });
             // Kick off the connection.
             $.connection.hub.start().done(function () {
                 //hub.server.subcribe()
@@ -140,11 +143,7 @@
                 data.LogLevel +
                 "_item'><span class='truncate'>" + prefix +
                 data.ServiceName +
-                " [" +
-                data.UserName +
-                "] (" +
-                data.CorrelationToken +
-                "): " +
+                "&gt; " +
                 data.Message +
                 "</span></div><div class='" +
                 errorBox +
@@ -162,10 +161,10 @@
             blankDiv.html(newItem);
 
             // Slide down the blank div (it has a fixed height in CSS), and then fade the new update in.
-            blankDiv.slideDown(7,
+            blankDiv.slideDown(25,
                 null,
                 function () {
-                    newItem.fadeIn(25);
+                    newItem.fadeIn(50);
                 });
         }
     </script>

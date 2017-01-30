@@ -26,6 +26,8 @@
     <WebGreaseLibPath>..\Stardust.Interstellar.Rest\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <ApplicationInsightsResourceId>/subscriptions/9b581290-fa5a-4eb3-bc2d-1fafcc2ada1c/resourcegroups/continuumTest/providers/microsoft.insights/components/continuumDev</ApplicationInsightsResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/9b581290-fa5a-4eb3-bc2d-1fafcc2ada1c/resourceGroups/continuumTest/providers/microsoft.insights/components/continuumDev</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -49,8 +51,8 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.127\lib\net45\Excel.4.5.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.AI.Agent.Intercept, Version=2.0.6.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -79,6 +81,10 @@
     </Reference>
     <Reference Include="Microsoft.ApplicationInsights, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\Stardust.Interstellar.Rest\packages\Microsoft.ApplicationInsights.2.2.0\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.ApplicationInsights.Log4NetAppender, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Microsoft.ApplicationInsights.Log4NetAppender.2.2.0\lib\net45\Microsoft.ApplicationInsights.Log4NetAppender.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Client, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -331,6 +337,7 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="ErrorHandler\AiHandleErrorAttribute.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -348,13 +355,18 @@
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.cyporg.css" />
     <Content Include="Content\bootstrap.min.css">
       <DependentUpon>bootstrap.css</DependentUpon>
     </Content>
+    <Content Include="Content\font-awesome.css" />
+    <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\Site.min.css">
       <DependentUpon>Site.css</DependentUpon>
     </Content>
+    <Content Include="Content\vis.min.css" />
     <Content Include="favicon.ico" />
+    <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\bootstrap.js" />
@@ -383,10 +395,38 @@
     </Content>
     <Content Include="nugetdeploy.config" />
     <None Include="bundleconfig.json" />
+    <Content Include="fonts\28 Days Later.ttf" />
+    <Content Include="fonts\28 Days Later.woff" />
+    <Content Include="fonts\Beyond Wonderland.ttf" />
+    <Content Include="fonts\Beyond Wonderland.woff" />
+    <Content Include="fonts\Bleeding_Cowboys.ttf" />
+    <Content Include="fonts\Capture_it.ttf" />
+    <Content Include="fonts\Capture_it.woff" />
+    <Content Include="fonts\Cocaine sans.ttf" />
+    <Content Include="fonts\Cocaine sans.woff" />
+    <Content Include="fonts\Colony Wars.ttf" />
+    <Content Include="fonts\Colony Wars.woff" />
+    <Content Include="fonts\EpoXY_histoRy.ttf" />
+    <Content Include="fonts\EpoXY_histoRy.woff" />
+    <Content Include="fonts\esp.ttf" />
+    <Content Include="fonts\esp.woff" />
+    <Content Include="fonts\FACTOR2.TTF" />
+    <Content Include="fonts\FACTOR2.woff" />
+    <Content Include="fonts\fontawesome-webfont.eot" />
+    <Content Include="fonts\fontawesome-webfont.ttf" />
+    <Content Include="fonts\fontawesome-webfont.woff" />
+    <Content Include="fonts\FontAwesome.otf" />
+    <Content Include="fonts\MakeJuice.ttf" />
+    <Content Include="fonts\mechanical.ttf" />
+    <Content Include="fonts\mechanical.woff" />
+    <Content Include="fonts\VOX.TTF" />
+    <Content Include="fonts\VOX.woff" />
+    <Content Include="fonts\xeroxmal.ttf" />
     <None Include="Properties\PublishProfiles\continuumDemo - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\continuumDemo - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\continuumDev - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\continuumDev - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\ContinuumWebDeployPackage.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
@@ -418,6 +458,7 @@
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
+    <Content Include="Service References\Application Insights\ConnectedService.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -439,6 +480,9 @@
       <Project>{5EE819E3-B588-431F-B5DA-3EBC0557242B}</Project>
       <Name>Stardust.Interstellar.Rest</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

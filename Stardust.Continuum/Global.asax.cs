@@ -8,12 +8,12 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using Stardust.Core.Default.Implementations;
-using Stardust.Interstellar.Continuum.Client;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Core.Service.Web;
 using Stardust.Interstellar;
 using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
+using Stardust.Continuum.Client;
 using Stardust.Particles;
 
 namespace Stardust.Continuum
@@ -23,7 +23,7 @@ namespace Stardust.Continuum
         protected void Application_Start()
         {
             this.LoadBindingConfiguration<ContinuumBlueprint>();
-            ServiceFactory.CreateServiceImplementationForAllInCotainingAssembly<ILogStreamClient>();
+            ServiceFactory.CreateServiceImplementationForAllInCotainingAssembly<ILogStream>();
             ServiceFactory.FinalizeRegistration();
 
             AreaRegistration.RegisterAllAreas();
@@ -47,7 +47,7 @@ namespace Stardust.Continuum
         protected override void DoCustomBindings()
         {
             base.DoCustomBindings();
-            Configurator.Bind<ILogStreamClient>().To<StreamServiceImp>().SetSingletonScope();
+            Configurator.Bind<ILogStream>().To<StreamServiceImp>().SetSingletonScope();
         }
     }
 
@@ -57,19 +57,26 @@ namespace Stardust.Continuum
         {
             Task.Run(() =>
             {
-                var item = new StreamItem
+                try
                 {
-                    Timestamp = DateTime.UtcNow,
-                    Message =
-                        exceptionToLog.Message +
-                        (string.IsNullOrWhiteSpace(additionalDebugInformation) ? "" : $"[{additionalDebugInformation}]"),
-                    LogLevel = LogLevels.Error,
-                    CorrelationToken = Environment.MachineName,
-                    UserName = "streamServer",
-                    ServiceName = "Continuum",
-                    StackTrace = exceptionToLog.StackTrace
-                };
-                PushMessage(item);
+                    var item = new StreamItem
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Message =
+                                    exceptionToLog.Message +
+                                    (string.IsNullOrWhiteSpace(additionalDebugInformation) ? "" : $"[{additionalDebugInformation}]"),
+                        LogLevel = LogLevels.Error,
+                        CorrelationToken = Environment.MachineName,
+                        UserName = "streamServer",
+                        ServiceName = "Continuum",
+                        StackTrace = exceptionToLog.StackTrace
+                    };
+                    PushMessage(item);
+                }
+                catch 
+                {
+                    
+                }
             });
         }
 
@@ -77,16 +84,22 @@ namespace Stardust.Continuum
         {
             Task.Run(() =>
             {
-                var item = new StreamItem
+                try
                 {
-                    Timestamp = DateTime.UtcNow,
-                    Message = "BomBom",
-                    LogLevel = LogLevels.Information,
-                    CorrelationToken = Environment.MachineName,
-                    UserName = "streamServer",
-                    ServiceName = "Continuum",
-                };
-                PushMessage(item);
+                    var item = new StreamItem
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Message = "BomBom",
+                        LogLevel = LogLevels.Information,
+                        CorrelationToken = Environment.MachineName,
+                        UserName = "streamServer",
+                        ServiceName = "Continuum",
+                    };
+                    PushMessage(item);
+                }
+                catch 
+                {
+                }
             });
         }
 
@@ -94,17 +107,23 @@ namespace Stardust.Continuum
         {
             Task.Run(() =>
             {
-                var item = new StreamItem
+                try
                 {
-                    Timestamp = DateTime.UtcNow,
-                    Message = message +
-                        (string.IsNullOrWhiteSpace(additionalDebugInformation) ? "" : $"[{additionalDebugInformation}]"),
-                    LogLevel = LogLevels.Error,
-                    CorrelationToken = Environment.MachineName,
-                    UserName = "streamServer",
-                    ServiceName = "Continuum"
-                };
-                PushMessage(item);
+                    var item = new StreamItem
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Message = message +
+                                    (string.IsNullOrWhiteSpace(additionalDebugInformation) ? "" : $"[{additionalDebugInformation}]"),
+                        LogLevel = LogLevels.Error,
+                        CorrelationToken = Environment.MachineName,
+                        UserName = "streamServer",
+                        ServiceName = "Continuum"
+                    };
+                    PushMessage(item);
+                }
+                catch 
+                {
+                }
             });
         }
 
@@ -112,16 +131,23 @@ namespace Stardust.Continuum
         {
             Task.Run(() =>
             {
-                var item = new StreamItem
+                try
                 {
-                    Timestamp = DateTime.UtcNow,
-                    Message = "setting prop: " + logName,
-                    LogLevel = LogLevels.Error,
-                    CorrelationToken = Environment.MachineName,
-                    UserName = "streamServer",
-                    ServiceName = "Continuum"
-                };
-                PushMessage(item);
+                    var item = new StreamItem
+                    {
+                        Timestamp = DateTime.UtcNow,
+                        Message = "setting prop: " + logName,
+                        LogLevel = LogLevels.Error,
+                        CorrelationToken = Environment.MachineName,
+                        UserName = "streamServer",
+                        ServiceName = "Continuum"
+                    };
+                    PushMessage(item);
+                }
+                catch
+                {
+                    
+                }
             });
         }
 

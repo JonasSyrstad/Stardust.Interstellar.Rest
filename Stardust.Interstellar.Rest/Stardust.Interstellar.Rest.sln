@@ -13,8 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Confi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9498D521-91EA-4E6C-BD30-5C118C5BA5C8}"
 	ProjectSection(SolutionItems) = preProject
+		continuum.md = continuum.md
 		..\README.md = ..\README.md
 		WE-Markdown.css = WE-Markdown.css
+		WebEssentials2015-Settings.json = WebEssentials2015-Settings.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Test", "..\Stardust.Interstellar.Test\Stardust.Interstellar.Test.csproj", "{B8C0D439-6286-40E9-92C1-1DA267C2E83A}"

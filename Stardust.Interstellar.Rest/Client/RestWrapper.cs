@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Newtonsoft.Json;
@@ -317,11 +318,11 @@ namespace Stardust.Interstellar.Rest.Client
             {
                 if (path.Contains($"{{{source.Name}}}"))
                 {
-                    path = path.Replace($"{{{source.Name}}}", source.value.ToString());
+                    path = path.Replace($"{{{source.Name}}}", HttpUtility.UrlEncode( source.value.ToString()));
                 }
                 else
                 {
-                    queryStrings.Add($"{source.Name}={source.value}");
+                    queryStrings.Add($"{source.Name}={HttpUtility.UrlEncode(source.value.ToString())}");
                 }
             }
             if (queryStrings.Any()) path = path + "?" + string.Join("&", queryStrings);

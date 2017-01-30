@@ -59,7 +59,7 @@ namespace Stardust.Interstellar
         public IServiceContainer<T> SetServiceRoot(string serviceRootUrl)
         {
 
-             this.serviceRoot = serviceRootUrl;
+             this.serviceRoot = serviceRootUrl?.TrimEnd('/');
             return this;
         }
 

@@ -6,6 +6,17 @@
     <title>@ViewBag.Title</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
+    <script type='text/javascript'>
+        var appInsights = window.appInsights || function (config) {
+            function r(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } }
+            var t = { config: config }, u = document, e = window, o = 'script', s = u.createElement(o), i, f; for (s.src = config.url || '//az416426.vo.msecnd.net/scripts/a/ai.0.js', u.getElementsByTagName(o)[0].parentNode.appendChild(s), t.cookie = u.cookie, t.queue = [], i = ['Event', 'Exception', 'Metric', 'PageView', 'Trace', 'Ajax']; i.length;) r('track' + i.pop()); return r('setAuthenticatedUserContext'), r('clearAuthenticatedUserContext'), config.disableExceptionTracking || (i = 'onerror', r('_' + i), f = e[i], e[i] = function (config, r, u, e, o) { var s = f && f(config, r, u, e, o); return s !== !0 && t['_' + i](config, r, u, e, o), s }), t
+        }({
+            instrumentationKey: '89f831fc-9213-434a-8c15-542a172ff3a8'
+        });
+
+        window.appInsights = appInsights;
+        appInsights.trackPageView();
+    </script>
 </head>
 <body>
     <!-- Part 1: Wrap all page content here -->
@@ -14,16 +25,16 @@
         <!-- Fixed navbar -->
         <div class="navbar navbar-fixed-top navbar-inverse">
             <div class="navbar-inner">
-                <div class="container">
+                <div class="container" style="margin-left: 30px;">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a href="@Url.Action("Index", "Home", null, Request.Url.Scheme)" class="navbar-brand">
-                        <img src="@Url.Content("~/Assets/logo_white.svg")" alt="Brand" style="height: 25px; text-align: center; padding-top: -20px;"  />
-                         Continuum
+                    <a href="@Url.Action("Index", "Home", null, Request.Url.Scheme)" class="navbar-brand text-nowrap">
+                        <div><img src="@Url.Content("~/Assets/logo_white.svg")" alt="Brand" style="height:30px; margin-top: -5px;text-align: center; text-align-all: center; padding-top: -20px; text-wrap: none;display:inline-block; " /> <span class="hidden-sm hidden-xs" style="color: white">Continuum</span></div>
                     </a>
+
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
                             <li>@Html.ActionLink("Log stream", "Index", "Home", new { area = "" }, null)</li>
@@ -44,7 +55,7 @@
     </div>
 
     <div id="footer">
-        <div class="container" style="color: azure;">
+        <div class="container hidden-md hidden-sm hidden-xs" style="color: azure;">
             <p>&copy; @DateTime.Now.Year - Stardust</p>
         </div>
     </div>

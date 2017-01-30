@@ -141,7 +141,7 @@ namespace Stardust.Interstellar.Test
 
         public Task<StringWrapper> Apply2(string id, string name, string item3)
         {
-            return Task.FromResult(new StringWrapper { Value = string.Join("-", id, name, item3) });
+            return Task.FromResult(new StringWrapper { Value = string.Join("-", id, name, item3),NullDateTime = DateTime.UtcNow});
         }
 
         public string Apply3(string id, string name, string item3, string item4)

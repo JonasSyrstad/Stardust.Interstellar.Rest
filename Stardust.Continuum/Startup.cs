@@ -6,8 +6,8 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using Microsoft.Owin;
 using Owin;
+using Stardust.Continuum.Client;
 using Stardust.Continuum.Controllers;
-using Stardust.Interstellar.Continuum.Client;
 using Stardust.Particles;
 
 [assembly: OwinStartup(typeof(Stardust.Continuum.Startup))]
@@ -83,12 +83,13 @@ namespace Stardust.Continuum
 
     }
 
-    public class StreamServiceImp : ILogStreamClient
+    public class StreamServiceImp : ILogStream
     {
         private static int cnt = 0;
         private static long totalCnt = 0;
         private static long dbg = 0;
         private static long error = 0;
+        private static DateTime collectionSince=DateTime.UtcNow;
 
         public Task AddStream(string project, string environment, StreamItem item)
         {
@@ -118,9 +119,8 @@ namespace Stardust.Continuum
             if (cnt > 200)
             {
                 cnt = 0;
-                Logging.DebugMessage($"A total of {totalCnt} messages added");
-                Logging.DebugMessage($"{dbg} debug messages received");
-                Logging.DebugMessage($"{error} error messages received");
+                var timeSpan = (DateTime.UtcNow - collectionSince);
+                Logging.DebugMessage($"{dbg} debug, {error} error messages received. Giving a total of {totalCnt} messages added since {collectionSince}. Average rate {totalCnt/timeSpan.TotalSeconds}m/sec, {totalCnt / timeSpan.TotalMinutes}m/min");
 
             }
             if (!HomeController.sources.ContainsKey($"{project}.{environment}"))

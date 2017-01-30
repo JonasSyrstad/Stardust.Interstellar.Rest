@@ -54,8 +54,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="CallingMachineNameAttribute.cs" />
+    <Compile Include="CallingMachineNameHandler.cs" />
+    <Compile Include="ApiKeyAttribute.cs" />
+    <Compile Include="ILogStream.cs" />
+    <Compile Include="LogLevels.cs" />
+    <Compile Include="LogStreamConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamItem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -67,6 +73,10 @@
     <ProjectReference Include="..\..\Stardust.Interstellar.Rest.Annotations\Stardust.Interstellar.Rest.Annotations.csproj">
       <Project>{FB9F29E3-83D5-4751-BAFC-CCB64E40F220}</Project>
       <Name>Stardust.Interstellar.Rest.Annotations</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.csproj">
+      <Project>{5EE819E3-B588-431F-B5DA-3EBC0557242B}</Project>
+      <Name>Stardust.Interstellar.Rest</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

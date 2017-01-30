@@ -24,7 +24,20 @@ body {
 }
 
 
+@font-face {
+    font-family: 'stardustLogo';
+    font-style: normal;
+    src: url('/fonts/mechanical.ttf') format('truetype');
+    src: url('/fonts/mechanical.woff') format('woff');
+}
 
+.navbar-brand {
+    font-family: 'stardustLogo','UnifrakturCook', 'Geostar Fill','Shojumaru', cursive, Arial, serif;
+    font-size: 25px;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 /* Wrapper for page content to push down footer */
 #wrap {
     min-height: 90%;
@@ -42,6 +55,9 @@ body {
     padding-left: 40px;
     margin-left: 0px;
     color: azure;
+    position: absolute;
+    bottom: 30px;
+
 }
 
 
@@ -53,6 +69,7 @@ body {
         padding-left: 0px;
         padding-right: 20px;
             padding-top: 30px;
+            
         
     }
 }
@@ -77,22 +94,22 @@ code {
     font-size: 80%;
 }
 
+.navbar-brand {
+    -webkit-text-fill-color: white;
+}
+
 .navbar-brand>img {
-   max-height: 50%;
-   height: 50%;
-   width: auto;
-   margin: 0 auto;
-
-
-   /* probably not needed anymore, but doesn't hurt */
-   -o-object-fit: contain;
-   object-fit: contain; 
+   font-family: 'stardustLogo','UnifrakturCook', 'Geostar Fill','Shojumaru', cursive, Arial, serif;
+    font-size: 25px;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: white;
 
 }
 .navbar {
     color: white;
 }
-
+/*
     .navbar-inner:before,
     .navbar-inner:after {
         display: table;
@@ -102,7 +119,7 @@ code {
 
     .navbar-inner:after {
         clear: both;
-    }
+    }*/
 /* Set width on the form input elements since they're 100% wide by default */
 input,
 select,
@@ -132,3 +149,33 @@ textarea {
 .div-inline {
     display: inline-block;
 }
+
+.navbar{ min-height: 60px;}
+.nav-stacked{ padding-top: 30px;}
+.navbar-nav>li>a {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.inner-addon { 
+    position: relative; 
+}
+
+/* style icon */
+.inner-addon .glyphicon {
+  position: absolute;
+  padding: 10px;
+  pointer-events: none;
+  color: #444
+}
+.input-group .form-control {
+    position: absolute;
+}
+
+/* align icon */
+.left-addon .glyphicon  { left:  0px;}
+.right-addon .glyphicon { right: 0px;}
+
+/* add padding  */
+.left-addon input  { padding-left:  30px; }
+.right-addon input { padding-right: 30px; }

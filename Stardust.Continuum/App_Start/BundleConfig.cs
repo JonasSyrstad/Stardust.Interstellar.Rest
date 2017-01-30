@@ -21,8 +21,9 @@ namespace Stardust.Continuum
                       "~/Scripts/respond.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
-                      "~/Content/bootstrap.css",
-                      "~/Content/site.css"));
+                        //"~/Content/bootstrap.css",
+                        "~/Content/bootstrap.cyporg.css",
+                        "~/Content/site.css", "~/Content/vis.min.css", "~/Content/font-awesome.min.css"));
         }
     }
 }

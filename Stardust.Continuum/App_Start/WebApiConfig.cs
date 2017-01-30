@@ -44,12 +44,13 @@ namespace Stardust.Continuum
         {
             try
             {
+                var configKey = string.Join(".", context.ActionContext.ControllerContext.RouteData.Values.Values);
                 if (!context.Request.Headers.Authorization.Scheme.Equals("ApiKey", StringComparison.InvariantCultureIgnoreCase) || string.IsNullOrWhiteSpace(context.Request.Headers.Authorization.Parameter))
-                    Logging.DebugMessage("No api-key provided");
+                    Logging.DebugMessage( $"No api-key provided for {configKey}");
                 var apiKey = context.Request.Headers.Authorization.Parameter;
 
                 bool isAllowed;
-                var configKey = string.Join(".", context.ActionContext.ControllerContext.RouteData.Values.Values);
+                
                 if (!apiKeyState.TryGetValue($"{apiKey}.{configKey}", out isAllowed))
                 {
                     List<string> setting;
@@ -62,13 +63,14 @@ namespace Stardust.Continuum
                     isAllowed = setting.Contains(apiKey);
                     apiKeyState.TryAdd(apiKey, isAllowed);
                 }
-                if (!isAllowed) throw new UnauthorizedAccessException("Invalid api key");
+                if (!isAllowed) throw new UnauthorizedAccessException($"Invalid api key for {configKey}");
                 return Task.FromResult(0);
             }
             catch (Exception ex)
             {
                 ex.Log("Auth");
-                throw;
+                if (ex is UnauthorizedAccessException) throw;
+                throw new UnauthorizedAccessException("Unable to authorize request",ex);
             }
         }
 
