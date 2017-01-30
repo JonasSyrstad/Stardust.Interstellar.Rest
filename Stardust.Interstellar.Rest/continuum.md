@@ -11,8 +11,14 @@
 In modern SOA or micro services architectures we spread processing and handling of user request across multiple machines and instances making debugging and troubleshooting harder. This tool allows all instances to stream log
 entries to a centralized service. The developers can on their side connect to the Continuum UI and watch all entries flow through the system, pause if anything interesting happens to investigate further.
 
+##Service setup:
 
-Usage:
+Download the web deployment package here: [Web Deploy Package](https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/tree/master/ContinuumInstall)
+Follow the instructions: [How to: Install a Deployment Package](https://msdn.microsoft.com/en-us/library/ff356104(v=vs.110).aspx)
+Add your projects and environments in the web.config file. 
+
+
+##Usage:
 
 Direct
 ```CS
