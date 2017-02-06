@@ -87,7 +87,7 @@ namespace Stardust.Interstellar.Rest.Client
                 var methods = ExtensionsFactory.GetHttpMethods(actions, methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
                 action.UseXml = methodInfo.GetCustomAttributes().OfType<UseXmlAttribute>().Any();
-                action.CustomHandlers = handlers.OrderBy(i => i.ProcessingOrder).ToList();
+                action.CustomHandlers = handlers.Where(h=>headerHandlers.All(parent=>parent.GetType()!=h.GetType())).OrderBy(i => i.ProcessingOrder).ToList();
                 action.Actions = methods;
                 if (actionRetry != null)
                 {
@@ -318,7 +318,7 @@ namespace Stardust.Interstellar.Rest.Client
             {
                 if (path.Contains($"{{{source.Name}}}"))
                 {
-                    path = path.Replace($"{{{source.Name}}}", HttpUtility.UrlEncode( source.value.ToString()));
+                    path = path.Replace($"{{{source.Name}}}", Uri.EscapeDataString(source.value.ToString()));
                 }
                 else
                 {
@@ -468,7 +468,7 @@ namespace Stardust.Interstellar.Rest.Client
                     {
                         if (result.Error is SuspendedDependencyException)
                             return result;
-                        if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(action,result.Error)) return result;
+                        if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(action, result.Error)) return result;
                         ExtensionsFactory.GetService<ILogger>()?.Error(result.Error);
                         ExtensionsFactory.GetService<ILogger>()?
                             .Message($"Retrying action {action.Name}, retry count {cnt}");

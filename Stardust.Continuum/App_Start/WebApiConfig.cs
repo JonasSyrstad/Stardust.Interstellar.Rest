@@ -3,11 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Filters;
+using System.Web.Http.Results;
 using Microsoft.Owin.Security.OAuth;
 using Newtonsoft.Json.Serialization;
 using Stardust.Particles;
@@ -42,13 +45,15 @@ namespace Stardust.Continuum
         public bool AllowMultiple { get { return false; } }
         public Task AuthenticateAsync(HttpAuthenticationContext context, CancellationToken cancellationToken)
         {
+            var configKey = string.Join(".", context.ActionContext.ControllerContext.RouteData.Values.Values);
             try
             {
-                var configKey = string.Join(".", context.ActionContext.ControllerContext.RouteData.Values.Values);
-                if (!context.Request.Headers.Authorization.Scheme.Equals("ApiKey", StringComparison.InvariantCultureIgnoreCase) || string.IsNullOrWhiteSpace(context.Request.Headers.Authorization.Parameter))
+                
+                if (!context.Request.Headers.Authorization.Scheme.Equals("ApiKey", StringComparison.InvariantCultureIgnoreCase) && string.IsNullOrWhiteSpace(context.Request.Headers.Authorization.Parameter)&&context.Request.RequestUri.ParseQueryString()["api_key"].IsNullOrWhiteSpace())
                     Logging.DebugMessage( $"No api-key provided for {configKey}");
                 var apiKey = context.Request.Headers.Authorization.Parameter;
-
+                if (apiKey.IsNullOrWhiteSpace())
+                    apiKey = context.Request.RequestUri.ParseQueryString()["api_key"];
                 bool isAllowed;
                 
                 if (!apiKeyState.TryGetValue($"{apiKey}.{configKey}", out isAllowed))
@@ -63,14 +68,19 @@ namespace Stardust.Continuum
                     isAllowed = setting.Contains(apiKey);
                     apiKeyState.TryAdd(apiKey, isAllowed);
                 }
-                if (!isAllowed) throw new UnauthorizedAccessException($"Invalid api key for {configKey}");
+                if (!isAllowed)
+                {
+                    Logging.DebugMessage($"Invalid api key for {configKey}");
+                    context.ErrorResult = new UnauthorizedResult(new List<AuthenticationHeaderValue>(), context.Request);
+                    return Task.FromResult(0);
+                }
                 return Task.FromResult(0);
             }
             catch (Exception ex)
             {
-                ex.Log("Auth");
-                if (ex is UnauthorizedAccessException) throw;
-                throw new UnauthorizedAccessException("Unable to authorize request",ex);
+                Logging.DebugMessage($"Invalid api key for {configKey}: {ex.Message}");
+                context.ErrorResult = new UnauthorizedResult(new List<AuthenticationHeaderValue>(), context.Request);
+                return Task.FromResult(0);
             }
         }
 

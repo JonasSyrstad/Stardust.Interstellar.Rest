@@ -22,7 +22,6 @@ namespace Stardust.Interstellar.Rest.Test
     }
 
     [IRoutePrefix("api")]
-    [CallingMachineName]
     [PerformanceHeaders]
     [ErrorHandler(typeof(TestHandler))]
     [CircuitBreaker(50, 1)]
@@ -49,6 +48,7 @@ namespace Stardust.Interstellar.Rest.Test
         [Route("test5/{id}")]
         [HttpGet]
         [Retry(10,3,false, ErrorCategorizer = typeof(ErrorCategorizer))]
+        [CallingMachineName]
         Task<StringWrapper> ApplyAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Path)]string name, [In(InclutionTypes.Path)]string item3, [In(InclutionTypes.Path)]string item4);
 
         [Route("put2/{id}")]

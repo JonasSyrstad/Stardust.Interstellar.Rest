@@ -1,7 +1,7 @@
 ﻿<div id="header" class="">
     <div class="dropdown div-inline">
-        <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
-            <i class="glyphicon glyphicon-tags"></i>&nbsp; Sources<span id="label"></span>
+        <button class="btn btn-sm  btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+            <i class="glyphicon glyphicon-tags"></i>&nbsp; <span class="hidden-md hidden-sm hidden-xs">Source:</span><span id="label"></span>
             <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
@@ -11,21 +11,22 @@
             }
         </ul>
     </div>
-    <div class="btn btn-danger div-inline" id="clearFeed"><i class="glyphicon glyphicon-remove"></i> Clear feed</div>
-    <div class="btn btn-info div-inline" id="pause"><i class="glyphicon glyphicon-pause"></i> Pause</div>
-    <div class="btn btn-info div-inline" id="start"><i class="glyphicon glyphicon-play-circle"></i> Resume</div>
+    <div class="btn btn-sm btn-danger div-inline" id="clearFeed" title="Clear feed"><i class="glyphicon glyphicon-remove"></i></div>
+    <div class="btn btn-sm btn-info div-inline hidden" id="pause" title="Pause feed"><i class="glyphicon glyphicon-pause"></i></div>
+    <div class="btn btn-sm btn-info div-inline hidden" id="start" title="Resume feed"><i class="glyphicon glyphicon-play"></i></div>
     <input type="hidden" id="selected" />
     <input type="hidden" id="state" />
     <div class="div-inline">&nbsp;</div>
-                                            <div class="inner-addon left-addon div-inline">
-                                                <i class="glyphicon glyphicon-filter">&nbsp;&nbsp;</i>
-                                                <input  style="display: inline-block; " type="text" class="form-control" id="filterBox" />
-                                            </div><div class="btn  div-inline btn-default" id="filter"><i class="glyphicon glyphicon-filter"></i></div>
-        <input type="hidden" id="filterString" />
+    <div class="inner-addon left-addon div-inline form-group-sm">
+        <i title="filter" class="glyphicon glyphicon-filter ">&nbsp;&nbsp;</i>
+        <input style="display: inline-block; padding-left: 30px; width: 200px; padding-right: 10px; " type="text" class="form-control " id="filterBox" />
+    </div><div class="btn btn-sm div-inline btn-default" id="filter"><i class="glyphicon glyphicon-filter"></i></div>
+    <input type="hidden" id="filterString" />
+    <div class="info help-block" id="filterhelp" style="font-size: 10px;">Filter: </div>
 </div>
-<div class="info help-block" id="filterhelp"></div>
-<hr/>
-<div id="container" style="width: 100%; height: 100%;" class="pre-scrollable">
+
+<hr style="margin-top: 5px; margin-bottom: 10px;" />
+<div id="container" style="width: 100%; height: 100%;font-family: monospace;" class="pre-scrollable">
     <div class='itemContainer'>
         <div class="truncate" style="width: 100%">
             <span style="font-weight: bolder">Select a stream....</span>
@@ -63,12 +64,15 @@
                 if ($("#filterBox").val() !== "")
                     $("#filterhelp").text("Filter: " + $("#filterBox").val());
                 else {
-                    $("#filterhelp").text("");
+                    $("#filterhelp").text("Filter: ");
                 }
             });
             $("#start").click(function () {
 
-                if ($("#state").text() === "running") return;
+                if ($("#state").text() === "running") {
+
+                    return;
+                }
                 $.connection.hub.stop();
                 hub.client.cmessage = function (data) {
                     // Container for newItem
@@ -83,6 +87,7 @@
                         });
                 }
                 // Kick off the connection.
+                $.connection.hub.stop();
                 $.connection.hub.start().done(function () {
                     //hub.server.subcribe()
                     hub.server.connect("Connected to log stream", $('#selected').text());
@@ -90,7 +95,7 @@
                     $("#start").addClass('hidden');
                     $("#pause").removeClass('hidden');
                 });
-                $.connection.hub.reconnected(function() {
+                $.connection.hub.reconnected(function () {
                     hub.server.connect("Connected to log stream", $('#selected').text());
                 });
 
@@ -103,7 +108,7 @@
 
                 if (selected === "-Select source-" || selected === $('#selected').text()) return;
                 //$(".btn:first-child").text("Sources: " + $(this).text());
-                $("#label").text(": " + $(this).text());
+                $("#label").text(" " + $(this).text());
                 $(".btn:first-child").val($(this).text());
                 $('#selected').text(selected);
                 // Establish a connection to the updateFeed hub
@@ -122,8 +127,10 @@
                         });
                 }
                 // Kick off the connection.
+                $.connection.hub.stop();
                 $.connection.hub.start().done(function () {
                     //hub.server.subcribe()
+                    console.log("connected statistics");
                     hub.server.connect("Connected to log stream", selected);
                     $("#state").text("running");
                     $("#start").addClass('hidden');
@@ -134,14 +141,45 @@
 
         });
         function AppendData(data) {
+            var getStackTrace = function (data1) {
+                if (data1.StackTrace === "") return "";
+                return "<div class='" +
+                    errorBox +
+                    "'>" + data1.Message + "<br/>" +
 
+                    stackTraceHeader +
+                    data.StackTrace +
+                    "<div>";
+            };
+            var convertUTCDateToLocalDate = function (d) {
+                var date = new Date(d.toString());
+
+                return date.toLocaleString();
+            }
+            var getFromProperties = function (data2) {
+                if (data2.Properties == null) return "";
+                var info = "";
+                if (data2.Properties.MachineName != null)
+                    info += "\n" + data2.Properties.MachineName;
+                if (data2.Properties.SourceAddress != null)
+                    info += "\n" + data2.Properties.SourceAddress;
+                return info;
+            };
             if ($("#filterString").text() !== null && $("#filterString").text() !== "")
                 if ($("#filterString").text() !== data.UserName && $("#filterString").text() !== data.CorrelationToken) return;
             var blankDiv = $("<div class='itemContainer'></div>");
             var errorBox = "alert alert-danger";
+            var errorStyle = "style='color:red;font-weight: bold;'";
+
+            var lineIcon = "<span class='my-tool-tip' data-toggle='tooltip' data-placement='top-right' title='" + convertUTCDateToLocalDate(data.Timestamp) + getFromProperties(data) + "'><i class='glyphicon glyphicon-info-sign'> </i></span>";
+            var stackTraceHeader = "";
             if (data.StackTrace == null) {
                 data.StackTrace = "";
-                errorBox = "";
+                errorBox = "hidden";
+                errorStyle = "";
+            } else {
+                stackTraceHeader = "StackTrace:<br/>";
+                lineIcon = "<span class='my-tool-tip' data-toggle='tooltip' data-placement='top-right' title='" + convertUTCDateToLocalDate(data.Timestamp) + getFromProperties(data) + "'><i class='glyphicon glyphicon-warning-sign'> </i></span>";
             }
             if (data.CorrelationToken == null)
                 data.CorrelationToken = "";
@@ -151,9 +189,9 @@
             if ($('#selected').text() === "All" && data.Environment != null)
                 prefix = "[" + data.Environment + "] ";
             // Holds the update
-            var newItem = $("<div class='alert" +
-                data.LogLevel +
-                "_item'><span class='truncate'>" +
+            var newItem = $("<div class='info'><span class='truncate'" + errorStyle + ">" +
+                lineIcon
+                +
                 prefix +
                 data.ServiceName +
                 "&gt; [" +
@@ -162,11 +200,8 @@
                 data.CorrelationToken +
                 "): " +
                 data.Message +
-                "</span></div><div class='" +
-                errorBox +
-                "'>" +
-                data.StackTrace +
-                "<div>");
+                "</span></div>" +
+                getStackTrace(data));
 
             // Hide our blank div (that will contain the new update), and our new item itself.
             // The blank div will slide down, and our newItem will fade into existence.
@@ -192,6 +227,7 @@
 
                 }
             );
+            $("span.my-tool-tip").tooltip();
         }
     </script>
 }

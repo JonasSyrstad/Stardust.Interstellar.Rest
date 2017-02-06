@@ -21,6 +21,7 @@ namespace Stardust.Continuum.Controllers
         internal static ConcurrentDictionary<string, string> sources;
 
         internal static List<string> itemd = new List<string> { "-Select source-", "All" };
+        internal static List<string> itemc = new List<string> { "-Select source-", "Total" };
         public ActionResult Index()
         {
             Logging.DebugMessage($"Serving request from {Request.UserHostAddress}");
@@ -46,7 +47,10 @@ namespace Stardust.Continuum.Controllers
             {
                 ViewBag.Title = "About the continuum";
 
-                ViewBag.Sources = itemd;
+                var s=   new ConcurrentDictionary<string, string>();
+                s.TryAdd("-Select source-", "-Select source-");
+                s.TryAdd("Total", "Total");
+                ViewBag.Sources = itemc;
                 return View();
             }
             catch (Exception ex)

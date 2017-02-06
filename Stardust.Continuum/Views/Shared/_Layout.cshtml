@@ -3,20 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
+    <title>@ViewBag.Title - Continuum</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
-    <script type='text/javascript'>
-        var appInsights = window.appInsights || function (config) {
-            function r(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } }
-            var t = { config: config }, u = document, e = window, o = 'script', s = u.createElement(o), i, f; for (s.src = config.url || '//az416426.vo.msecnd.net/scripts/a/ai.0.js', u.getElementsByTagName(o)[0].parentNode.appendChild(s), t.cookie = u.cookie, t.queue = [], i = ['Event', 'Exception', 'Metric', 'PageView', 'Trace', 'Ajax']; i.length;) r('track' + i.pop()); return r('setAuthenticatedUserContext'), r('clearAuthenticatedUserContext'), config.disableExceptionTracking || (i = 'onerror', r('_' + i), f = e[i], e[i] = function (config, r, u, e, o) { var s = f && f(config, r, u, e, o); return s !== !0 && t['_' + i](config, r, u, e, o), s }), t
-        }({
-            instrumentationKey: '89f831fc-9213-434a-8c15-542a172ff3a8'
-        });
-
-        window.appInsights = appInsights;
-        appInsights.trackPageView();
-    </script>
 </head>
 <body>
     <!-- Part 1: Wrap all page content here -->
@@ -25,7 +14,7 @@
         <!-- Fixed navbar -->
         <div class="navbar navbar-fixed-top navbar-inverse">
             <div class="navbar-inner">
-                <div class="container" style="margin-left: 30px;">
+                <div class="container" style="margin-left: 0px; padding-left: 10px;">
                     <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
@@ -37,31 +26,132 @@
 
                     <div class="navbar-collapse collapse">
                         <ul class="nav navbar-nav">
-                            <li>@Html.ActionLink("Log stream", "Index", "Home", new { area = "" }, null)</li>
+                            <li class="hidden-md hidden-sm hidden-xs"><a href="https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/blob/master/Stardust.Interstellar.Rest/continuum.md">The Continuum Project</a></li>
+                            <li>
+
+                                <div id="throughPutText" class="div-inline hidden-sm hidden-xs hidden-md" style="padding-top: 20px;line-height: 20px; padding-right: 5px; width: 100px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>Throughput: </div>
+                                <div id="throughPutLabel" class="div-inline hidden-sm hidden-xs hidden-md pull-right" style="text-align: right;padding-top: 20px;line-height: 20px; width: 70px; margin-left: 10px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>m/sec</div>
+                                
+
+                            </li><li><div class="div-inline" style="padding-top: 12.5px;line-height: 20px;">
+    <div id="smallGraph" class="demo-placeholder div-inline" style="vert-align: middle;height: 30px; width: 250px; "></div>
+</div></li>
+                            
                             <li>@Html.ActionLink("API", "", "Swagger", new { area = "" }, null)</li>
                             <li>@Html.ActionLink("About", "About", "Home", new { area = "" }, null)</li>
                         </ul>
+
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Begin page content -->
-        <div class="container body-content" style="width: 100%;">
+        <div id="main" class="container body-content" style="width: 100%;">
             @RenderBody()
         </div>
-
-        <div id="push"></div>
     </div>
 
-    <div id="footer">
-        <div class="container hidden-md hidden-sm hidden-xs" style="color: azure;">
-            <p>&copy; @DateTime.Now.Year - Stardust</p>
-        </div>
+    <div class="hidden-md hidden-sm hidden-xs" style="transform: rotate(-90deg);transform-origin: left top 0; color: lightsteelblue; left: 2px; bottom: 0px; position: absolute;">
+        @*<div class="container hidden-md hidden-sm hidden-xs" style="color: azure;">*@
+        &copy; @DateTime.Now.Year - Stardust
+        @*</div>*@
     </div>
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
     @RenderSection("scripts", required: false)
+    <script language="javascript">
+        $(function () {
+            var plotIndex2 = {};
+            var plotdata2 = [];
+            var hub2 = $.connection.updateFeed;
+            var options2 = {
+                bars: {
+                    show: true,
+                    zero: true,
+                    steps: false,
+                    lineWidth: 1
+
+                },
+                points: {
+                    show: false
+                },
+                xaxis: {
+                    tickDecimals: 0,
+                    tickSize: 1,
+                    show: false
+
+                },
+                yaxis: {
+                    min: 0,
+                    show: false
+                },
+                legend: {
+                    position: "nw",
+                    backgroundOpacity: 0.7,
+                    show: false,
+                    noColumns: 3
+                },
+                grid: {
+                    borderWidth: 1,
+                    borderColor: "rgb(40, 40, 40)",
+                    backgroundColor: { colors: ["#111", "#333"] }
+                }
+            };
+            var isAsterix = true;
+            hub2.client.usageUpdate = function (series) {
+                try {
+                    if ($.processNewEvents !== null)
+                        $.processNewEvents(series);
+                }
+                catch (e) { }
+
+                if (isAsterix)
+                { $("#throughPutText").text("Throughput" + "."); }
+                else {
+                    $("#throughPutText").text("Throughput" + ":");
+                }
+                isAsterix = !isAsterix;
+                $.each(series,
+                    function (index, data) {
+                        if (data.Name !== "Total") {
+                        } else {
+                            var label = data.Name + ": " + data.Location;
+
+                            if (plotIndex2[label] == null) {
+
+                                plotIndex2[label] = { index: plotdata2.length, added: true }
+
+                                var color = "rgb(50, 255, 50)";
+                                if (data.Location === "Errors")
+                                    color = "rgb(255, 50, 50)";
+                                plotdata2[plotIndex2[label].index] = { label: label, data: [], color: color };
+                                for (var i = 0; i < 60; i++) {
+                                    plotdata2[plotIndex2[label].index].data.push([i, 0]);
+                                }
+                            }
+                            if (plotdata2[plotIndex2[label].index].data.length > 60)
+                                plotdata2[plotIndex2[label].index].data.shift();
+                            plotdata2[plotIndex2[label].index].data.push([0, data.ItemsReceived]);
+                            $.each(plotdata2[plotIndex2[label].index].data, function (id, d) { d[0] = id });
+                            $.plot("#smallGraph", plotdata2, options2);
+                            if (data.Location !== "Errors")
+                                $('#throughPutLabel').text(data.ItemsReceived.toString() + "m/sec");
+                        }
+                    });
+            }
+            $.connection.hub.reconnected(function () {
+                hub2.server.connect("Connected to log stream", $('#selected').text());
+            });
+            // Kick off the connection.
+            $.connection.hub.start().done(function () {
+                console.log("connected statistics");
+                hub2.server.connect("Connected to log stream", selected);
+                $.plot("#smallGraph", plotdata2, options2);
+            });
+
+        });
+    </script>
 </body>
 </html>

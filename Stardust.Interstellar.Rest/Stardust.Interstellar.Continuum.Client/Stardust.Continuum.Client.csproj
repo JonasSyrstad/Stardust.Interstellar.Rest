@@ -57,6 +57,7 @@
     <Compile Include="CallingMachineNameAttribute.cs" />
     <Compile Include="CallingMachineNameHandler.cs" />
     <Compile Include="ApiKeyAttribute.cs" />
+    <Compile Include="ContinuumClient.cs" />
     <Compile Include="ILogStream.cs" />
     <Compile Include="LogLevels.cs" />
     <Compile Include="LogStreamConfig.cs" />

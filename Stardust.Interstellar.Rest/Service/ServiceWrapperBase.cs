@@ -246,10 +246,10 @@ namespace Stardust.Interstellar.Rest.Service
 
                 Request.InitializeState();
                 var action = GetAction(name);
-                auth = action.RequireAuth;
-                Request.GetState().SetState("controller", this);
-                Request.GetState().SetState("controllerName", typeof(T).FullName);
-                Request.GetState().SetState("action", action.Name);
+                var state = Request.GetState();
+                state.SetState("controller", this);
+                state.SetState("controllerName", typeof(T).FullName);
+                state.SetState("action", action.Name);
                 this.ControllerContext.Request.Properties.Add(ActionId, Request.ActionId());
                 var i = 0;
                 foreach (var parameter in action.Parameters)
@@ -264,7 +264,7 @@ namespace Stardust.Interstellar.Rest.Service
                     headerHandler.GetServiceHeader(Request.Headers);
                 }
                 ExecuteInterceptors(action, wrappers);
-                ExecuteInitializers(action, Request.GetState(), wrappers);
+                ExecuteInitializers(action, state, wrappers);
 
             }
             catch (OperationCanceledException)
@@ -284,13 +284,13 @@ namespace Stardust.Interstellar.Rest.Service
             return wrappers.ToArray();
         }
 
-        private void ExecuteInitializers(ActionWrapper action, StateDictionary state, List<ParameterWrapper> wrappers)
+        private void ExecuteInitializers(ActionWrapper action, StateDictionary state, IEnumerable<ParameterWrapper> wrappers)
         {
             var service = implementation as IInitializableService;
             if (service != null)
             {
-                var parameters = wrappers.Select(p => p.value).ToArray();
-                action.Initializers?.ForEach(init => init.Initialize(service, state, parameters));
+                var parameters = wrappers?.Select(p => p.value).ToArray() ?? new object[] { };
+                action.Initializers?.ForEach(init => init?.Initialize(service, state, parameters));
             }
         }
 
