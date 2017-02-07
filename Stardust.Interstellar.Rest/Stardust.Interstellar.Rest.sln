@@ -13,7 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Confi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9498D521-91EA-4E6C-BD30-5C118C5BA5C8}"
 	ProjectSection(SolutionItems) = preProject
-		continuum.md = continuum.md
 		..\README.md = ..\README.md
 		WE-Markdown.css = WE-Markdown.css
 		WebEssentials2015-Settings.json = WebEssentials2015-Settings.json
@@ -32,6 +31,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Continuum", "..\Stardust.Continuum\Stardust.Continuum.csproj", "{DE8052E7-096C-4754-9275-1B0DC18F6A1A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Continuum.Client", "Stardust.Interstellar.Continuum.Client\Stardust.Continuum.Client.csproj", "{C32996BE-E728-4FBC-B294-E8C1EB563950}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallPackage", "InstallPackage", "{DB20A1DA-B1DA-4919-B638-1EB2482C031B}"
+	ProjectSection(SolutionItems) = preProject
+		..\ContinuumInstall\continuum.md = ..\ContinuumInstall\continuum.md
+		..\ContinuumInstall\Stardust.Continuum.deploy-readme.txt = ..\ContinuumInstall\Stardust.Continuum.deploy-readme.txt
+		..\ContinuumInstall\Stardust.Continuum.deploy.cmd = ..\ContinuumInstall\Stardust.Continuum.deploy.cmd
+		..\ContinuumInstall\Stardust.Continuum.SetParameters.xml = ..\ContinuumInstall\Stardust.Continuum.SetParameters.xml
+		..\ContinuumInstall\Stardust.Continuum.SourceManifest.xml = ..\ContinuumInstall\Stardust.Continuum.SourceManifest.xml
+		..\ContinuumInstall\Stardust.Continuum.zip = ..\ContinuumInstall\Stardust.Continuum.zip
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

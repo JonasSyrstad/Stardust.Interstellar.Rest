@@ -29,7 +29,7 @@
                             <li class="hidden-md hidden-sm hidden-xs"><a href="https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/blob/master/Stardust.Interstellar.Rest/continuum.md">The Continuum Project</a></li>
                             <li>
 
-                                <div id="throughPutText" class="div-inline hidden-sm hidden-xs hidden-md" style="padding-top: 20px;line-height: 20px; padding-right: 5px; width: 100px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>Throughput: </div>
+                                <div id="throughPutText" class="div-inline hidden-sm hidden-xs hidden-md" style="padding-top: 20px;line-height: 20px; padding-right: 5px; width: 100px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>Throughput </div>
                                 <div id="throughPutLabel" class="div-inline hidden-sm hidden-xs hidden-md pull-right" style="text-align: right;padding-top: 20px;line-height: 20px; width: 70px; margin-left: 10px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>m/sec</div>
                                 
 
@@ -63,6 +63,8 @@
     @RenderSection("scripts", required: false)
     <script language="javascript">
         $(function () {
+            var spin = "|/-\\";
+            var spinnChar = 0;
             var plotIndex2 = {};
             var plotdata2 = [];
             var hub2 = $.connection.updateFeed;
@@ -106,12 +108,8 @@
                         $.processNewEvents(series);
                 }
                 catch (e) { }
-
-                if (isAsterix)
-                { $("#throughPutText").text("Throughput" + "."); }
-                else {
-                    $("#throughPutText").text("Throughput" + ":");
-                }
+                spinnChar = spinnChar == spin.length - 1 ? 0 : ++spinnChar;
+                $("#throughPutText").text("Throughput  " + spin[spinnChar]);
                 isAsterix = !isAsterix;
                 $.each(series,
                     function (index, data) {
