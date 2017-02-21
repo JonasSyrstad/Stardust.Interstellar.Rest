@@ -1,13 +1,69 @@
+using System.Collections.Concurrent;
 using System.Configuration;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 using Stardust.Interstellar.Rest.Client;
 
 namespace Stardust.Continuum.Client
 {
     public static class ContinuumClient
     {
+        /// <summary>
+        /// If not null and greater than 1000 characters the streamed message element will be truncated for buffered transmissions
+        /// </summary>
+        /// <value>
+        /// The size of the limit message.
+        /// </value>
+        public static int? LimitMessageSize { get; set; }
+        private static Timer _timer = new Timer() { Interval = 500, AutoReset = true, Enabled = true };
         private static string url;
+
+        private static ConcurrentBag<StreamItem> _logBuffer = new ConcurrentBag<StreamItem>();
+
+        private static object triowing = new object();
+
+        static ContinuumClient()
+        {
+            _timer.Elapsed += _timer_Elapsed;
+            _timer.Start();
+        }
+
+        private static void _timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            _timer.Enabled = false;
+            try
+            {
+                StreamItem[] items;
+                lock (triowing)
+                {
+                    ConcurrentBag<StreamItem> tempBuffer;
+                    lock (bufferLock)
+                    {
+                        tempBuffer = _logBuffer;
+                        _logBuffer = new ConcurrentBag<StreamItem>(); 
+                    }
+                    items = tempBuffer.ToArray();
+
+                }
+                switch (items.Length)
+                {
+                    case 0:
+                        return;
+                    case 1:
+                        Task.Run(async () => await AddStreamInternal(items[0])).Wait();
+                        break;
+                    default:
+                        Task.Run(async () => await AddStreamInternal(items.Reverse().ToArray())).Wait();
+                        break;
+                }
+            }
+            finally
+            {
+                _timer.Enabled = true;
+            }
+        }
 
         public static string BaseUrl
         {
@@ -39,6 +95,7 @@ namespace Stardust.Continuum.Client
 
         private static string _environment;
         private static ILogStream client;
+        private static object bufferLock=new object();
 
         public static string Environment
         {
@@ -58,34 +115,56 @@ namespace Stardust.Continuum.Client
             LogStreamConfig.ApiKey = apiKey;
         }
 
-        public static void AddStream(StreamItem item)
+        public static void AddStream(StreamItem item, bool buffered = true)
         {
-            Task.Run(async () =>
+
+            if (buffered)
             {
-                try
+                if (LimitMessageSize.HasValue && LimitMessageSize.Value > 1000)
+                    item.Message = item.Message?.Substring(0, LimitMessageSize.Value);
+                lock (bufferLock)
                 {
-                    await LogStreamClient.AddStream(Project, Environment, item);
+                    _logBuffer.Add(item);
                 }
-                catch 
+                
+            }
+            else
+            {
+                Task.Run(async () =>
                 {
-                    
-                }
-            });
+                    await AddStreamInternal(item);
+                });
+            }
+        }
+
+        private static async Task AddStreamInternal(StreamItem item)
+        {
+            try
+            {
+                await LogStreamClient.AddStream(Project, Environment, item);
+            }
+            catch
+            {
+            }
         }
 
         public static void AddStream(StreamItem[] items)
         {
             Task.Run(async () =>
             {
-                try
-                {
-                    await LogStreamClient.AddStreamBatch(Project, Environment, items);
-                }
-                catch
-                {
-
-                }
+                await AddStreamInternal(items);
             });
+        }
+
+        private static async Task AddStreamInternal(StreamItem[] items)
+        {
+            try
+            {
+                await LogStreamClient.AddStreamBatch(Project, Environment, items);
+            }
+            catch
+            {
+            }
         }
 
         public static void AddStream(string environment, StreamItem item)
@@ -103,7 +182,7 @@ namespace Stardust.Continuum.Client
             });
         }
 
-        public static void AddStream(string environment,StreamItem[] items)
+        public static void AddStream(string environment, StreamItem[] items)
         {
             Task.Run(async () =>
             {
@@ -159,5 +238,5 @@ namespace Stardust.Continuum.Client
         }
     }
 
-    
+
 }

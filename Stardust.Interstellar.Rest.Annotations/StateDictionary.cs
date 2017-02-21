@@ -12,4 +12,4 @@ namespace Stardust.Interstellar.Rest.Extensions
         /// </summary>
         public Extras Extras => GetState<Extras>(StardustExtras);
     }
-}
+}   

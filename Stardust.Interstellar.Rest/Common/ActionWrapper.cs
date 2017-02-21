@@ -5,6 +5,7 @@ using System.Web.Http;
 using Stardust.Interstellar.Rest.Annotations;
 using Stardust.Interstellar.Rest.Annotations.Service;
 using Stardust.Interstellar.Rest.Extensions;
+using Stardust.Interstellar.Rest.Service;
 
 namespace Stardust.Interstellar.Rest.Common
 {
@@ -35,6 +36,7 @@ namespace Stardust.Interstellar.Rest.Common
         public bool IncrementalRetry { get; set; }
         public IErrorCategorizer ErrorCategorizer { get; set; }
         public List<ServiceInitializerAttribute> Initializers { get; set; }
+        public IErrorHandler ErrorHandler { get; set; }
     }
 
 

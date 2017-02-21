@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Web.Http;
 using Stardust.Interstellar.Rest.Annotations;
+using Stardust.Interstellar.Rest.Annotations.UserAgent;
 
 namespace Stardust.Continuum.Client
 {
@@ -9,6 +10,7 @@ namespace Stardust.Continuum.Client
     [CircuitBreaker(10, 3, 10)]
     [PerformanceHeaders]
     [CallingMachineName]
+    [FixedClientUserAgent("continuum (v1.1.beta;.net4.5++)")]
     [IAuthorize]
     public interface ILogStream
     {
@@ -18,6 +20,10 @@ namespace Stardust.Continuum.Client
 
         [Route("batch/{project}/{environment}")]
         [HttpPut]
-        Task AddStreamBatch([In(InclutionTypes.Path)]string project, [In(InclutionTypes.Path)]string environment, [In(InclutionTypes.Body)]StreamItem[] items); 
+        Task AddStreamBatch([In(InclutionTypes.Path)]string project, [In(InclutionTypes.Path)]string environment, [In(InclutionTypes.Body)]StreamItem[] items);
+
+        [HttpOptions]
+        [Route("single/{project}/{environment}")]
+        Task Options([In(InclutionTypes.Path)]string project, [In(InclutionTypes.Path)]string environment);
     }
 }

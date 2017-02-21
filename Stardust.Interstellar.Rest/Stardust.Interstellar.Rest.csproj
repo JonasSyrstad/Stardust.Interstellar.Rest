@@ -87,6 +87,7 @@
     <Compile Include="Client\Graph\IInternalGraphHelper.cs" />
     <Compile Include="Client\Graph\PagedGraphCollection.cs" />
     <Compile Include="Client\ISerializer.cs" />
+    <Compile Include="Client\StaticReflection.cs" />
     <Compile Include="Common\EmitHelpers.cs" />
     <Compile Include="Common\ActionWrapper.cs" />
     <Compile Include="Common\ExtensionsFactory.cs" />

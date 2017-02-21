@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Client;
 using Stardust.Interstellar.Rest.Client.CircuitBreaker;
 using Stardust.Interstellar.Rest.Common;
+using Stardust.Interstellar.Rest.Extensions;
 using Stardust.Interstellar.Rest.Legacy;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Nucleus;
@@ -64,7 +67,7 @@ namespace Stardust.Interstellar.Rest.Test
         [Fact]
         public void TestMessageExtensions()
         {
-            var msg = new StringWrapper {Value = "Test"};
+            var msg = new StringWrapper { Value = "Test" };
             var service = ProxyFactory.CreateInstance<ITestExtendableApi>("http://localhost/Stardust.Interstellar.Test/");
             service.SetGlobalProperty("test", "test");
             service.Test(msg);
@@ -138,8 +141,19 @@ namespace Stardust.Interstellar.Rest.Test
                 }
             }
             //Assert.True(retried);
-
+            Assert.Equal(0, StateHelper.StateContainerSize);
             await Task.Delay(TimeSpan.FromMinutes(1));
+        }
+
+        [Fact]
+        public void ConfigurationTest()
+        {
+            var actionConfig = ClientGlobalSettings.ServiceSettings<ITestApi>().ConfigureAction(a => a.FailingAction("", ""));
+            var oldHandler = actionConfig.GetErrorHandlers();
+            actionConfig.SetErrorHandler(new DummyHander());
+            Assert.NotEqual(oldHandler,actionConfig.GetErrorHandlers());
+            actionConfig.SetErrorHandler(oldHandler);
+            Assert.NotNull(actionConfig);
         }
 
         [Fact]
@@ -166,7 +180,7 @@ namespace Stardust.Interstellar.Rest.Test
             var getRes = testProxy.TestImplementationGet("test");
             output.WriteLine(getRes.Value);
             testProxy.SetGlobalProperty("test", "test");
-            var putRes = testProxy.TestImplementationPut("hello", new StringWrapper {Value = "hell"});
+            var putRes = testProxy.TestImplementationPut("hello", new StringWrapper { Value = "hell" });
             output.WriteLine(putRes.Value);
         }
 
@@ -237,6 +251,20 @@ namespace Stardust.Interstellar.Rest.Test
                     if (i > 20) Assert.IsType<SuspendedDependencyException>(ex);
                 }
             }
+        }
+    }
+
+    public class DummyHander : IErrorHandler
+    {
+        public HttpResponseMessage ConvertToErrorResponse(Exception exception, HttpRequestMessage request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool OverrideDefaults { get; }
+        public Exception ProduceClientException(string statusMessage, HttpStatusCode status, Exception error, string value)
+        {
+            throw new NotImplementedException();
         }
     }
 

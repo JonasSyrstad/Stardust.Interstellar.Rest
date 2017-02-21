@@ -12,14 +12,28 @@ namespace Stardust.Interstellar.Rest.Extensions
     {
         static StateHelper()
         {
-            PeriodicTask.Run(CleanStateCache, null, TimeSpan.FromMinutes(1), CancellationToken.None);
+            if (AutoCleaning)
+                PeriodicTask.Run(CleanStateCache, null, TimeSpan.FromMinutes(1), CancellationToken.None);
         }
+
+        public static bool AutoCleaning { get; set; }
+
+        public static long StateContainerSize => stateContainer.Count;
 
         private static void CleanStateCache(object o, CancellationToken cancellationToken)
         {
+            CleanStateStore(10);
+        }
+
+        /// <summary>
+        /// Cleans the state store by removing all entries older than n minutes.
+        /// </summary>
+        /// <param name="maxAge">The maximum age in minutes.</param>
+        public static void CleanStateStore(double maxAge)
+        {
             try
             {
-                foreach (var c in stateContainer.Where(i => i.Value.Created < DateTime.UtcNow.AddMinutes(-10)).ToArray())
+                foreach (var c in stateContainer.Where(i => i.Value.Created < DateTime.UtcNow.AddMinutes(maxAge * -1)).ToArray())
                 {
                     LowPriorityContainer deprecatedItem;
                     stateContainer.TryRemove(c.Key, out deprecatedItem);
@@ -57,7 +71,10 @@ namespace Stardust.Interstellar.Rest.Extensions
 
                 actionId = Guid.NewGuid().ToString();
                 request.Headers.Add(ActionIdName, actionId);
+               
             }
+            if (!request.Properties.ContainsKey(ActionIdName))
+                request.Properties.Add(ActionIdName, actionId);
             return InitializeState(actionId);
         }
 

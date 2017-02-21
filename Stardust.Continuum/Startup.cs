@@ -89,8 +89,11 @@ namespace Stardust.Continuum
 
     }
 
-    public class StreamServiceImp : ILogStream, IServiceExtensions
+    public class StreamServiceImp : ILogStream
     {
+        private static long receivedTotal = 0;
+        private static long receivedLastHour = 0;
+        private static DateTime resetTime = DateTime.UtcNow.AddHours(1);
         private const string Sourceaddress = "SourceAddress";
         private const string Machinename = "MachineName";
         private const string XCallingmachine = "x-callingMachine";
@@ -100,11 +103,12 @@ namespace Stardust.Continuum
         private static long error = 0;
         private static DateTime collectionSince = DateTime.UtcNow;
         private Dictionary<string, string> _headers;
-        internal static UsageItem Total=new UsageItem {Name = "Total",Location= "All", ItemsReceived = 0};
+        internal static UsageItem Total = new UsageItem { Name = "Total", Location = "All", ItemsReceived = 0 };
         internal static UsageItem Errors = new UsageItem { Name = "Total", Location = "Errors", ItemsReceived = 0 };
         internal static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, UsageItem>> ActivityPrLocation = new ConcurrentDictionary<string, ConcurrentDictionary<string, UsageItem>>();
         public Task AddStream(string project, string environment, StreamItem item)
         {
+            LogBytesReceived();
             var key = $"{project}.{environment}";
             AddCommonProperties(item);
             totalCnt++;
@@ -126,6 +130,18 @@ namespace Stardust.Continuum
             {
                 throw;
             }
+        }
+
+        private static void LogBytesReceived()
+        {
+            var size = HttpContext.Current.Request.ContentLength;
+            receivedTotal += size;
+            if (resetTime < DateTime.UtcNow)
+            {
+                resetTime = DateTime.UtcNow.AddHours(1);
+                receivedLastHour = 0;
+            }
+            receivedLastHour += size;
         }
 
         private static void LogUsage(StreamItem item, string key)
@@ -152,7 +168,7 @@ namespace Stardust.Continuum
             }
             catch (Exception)
             {
-                
+
             }
         }
 
@@ -171,9 +187,20 @@ namespace Stardust.Continuum
         {
             if (cnt > 200)
             {
+
+                var errorPercent = totalCnt > 0 ? (error / totalCnt) * 100 : 0;
                 cnt = 0;
                 var timeSpan = (DateTime.UtcNow - collectionSince);
-                Logging.DebugMessage($"{DateTime.UtcNow}: {dbg} debug, {error} error and total {totalCnt} messages added since {collectionSince}. {totalCnt / timeSpan.TotalSeconds}m/sec, {totalCnt / timeSpan.TotalMinutes}m/min");
+                Logging.DebugMessage($"{DateTime.UtcNow}: {dbg:N0} debug, {error:N0} error and total {totalCnt:N0}. {(totalCnt / timeSpan.TotalSeconds):N2} msg/sec, {(totalCnt / timeSpan.TotalMinutes):N2} msg/min.");
+                Logging.DebugMessage($"{errorPercent:P} errors");
+
+                FileSizeTypes totalQ;
+                var rtSize = DateTimeHelper.GetSizeIn(receivedTotal, out totalQ);
+                FileSizeTypes lastHourQ;
+                var timeSinceReset = DateTime.UtcNow - resetTime.AddHours(-1);
+                var lhSize = DateTimeHelper.GetSizeIn(receivedLastHour, out lastHourQ);
+                Logging.DebugMessage($"{lhSize:N1}{lastHourQ.ToString()} last {timeSinceReset.TotalMinutes:N0} minute{(timeSinceReset.TotalMinutes<2?"":"s")} . {rtSize:N1}{totalQ.ToString()} in total");
+                Logging.DebugMessage($"Uptime {(DateTime.UtcNow - collectionSince):g}");
 
             }
             if (!HomeController.sources.ContainsKey($"{project}.{environment}"))
@@ -186,6 +213,7 @@ namespace Stardust.Continuum
 
         public Task AddStreamBatch(string project, string environment, StreamItem[] items)
         {
+            LogBytesReceived();
             var key = $"{project}.{environment}";
             totalCnt += items.Length;
             cnt++;
@@ -194,7 +222,7 @@ namespace Stardust.Continuum
                 AddSource(project, environment);
                 foreach (var streamItem in items)
                 {
-                    LogUsage(streamItem,key);
+                    
                     AddCommonProperties(streamItem);
                     if (streamItem.LogLevel != LogLevels.Error)
                         dbg++;
@@ -202,8 +230,9 @@ namespace Stardust.Continuum
                         error++;
                     streamItem.Environment = environment;
                     if (streamItem.Timestamp == null) streamItem.Timestamp = DateTime.UtcNow;
+                    LogUsage(streamItem, key);
                 }
-                Startup.hub.Clients.All.cmessages(items);
+                Startup.hub.Clients.Groups(new List<string> { "All", key }).cmessages(items);
                 return Task.FromResult("");
             }
             catch (Exception ex)
@@ -213,19 +242,11 @@ namespace Stardust.Continuum
             }
         }
 
-        public void SetControllerContext(HttpControllerContext currentContext)
+        public Task Options(string project, string environment)
         {
+            return Task.FromResult(0);
         }
 
-        public void SetResponseHeaderCollection(Dictionary<string, string> headers)
-        {
-
-        }
-
-        public Dictionary<string, string> GetHeaders()
-        {
-            return new Dictionary<string, string> { { "x-service-runtime", "continuum.V.1.1.beta" } };
-        }
     }
 
     internal class UsageItem
@@ -248,7 +269,7 @@ namespace Stardust.Continuum
         {
             try
             {
-                List<UsageItem> messages = new List<UsageItem> {StreamServiceImp.Total.MakeUpdateMessage(),StreamServiceImp.Errors.MakeUpdateMessage()};
+                List<UsageItem> messages = new List<UsageItem> { StreamServiceImp.Total.MakeUpdateMessage(), StreamServiceImp.Errors.MakeUpdateMessage() };
                 foreach (var service in StreamServiceImp.ActivityPrLocation)
                 {
                     foreach (var item in service.Value)
@@ -265,7 +286,7 @@ namespace Stardust.Continuum
 
         private UsageItem MakeUpdateMessage()
         {
-            var message= new UsageItem { ItemsReceived = ItemsReceived, Name = Name, Location = Location, TimeStamp = DateTime.UtcNow.Truncate(TimeSpan.FromSeconds(1))};
+            var message = new UsageItem { ItemsReceived = ItemsReceived, Name = Name, Location = Location, TimeStamp = DateTime.UtcNow.Truncate(TimeSpan.FromSeconds(1)) };
             ItemsReceived = 0;
             return message;
         }
@@ -284,5 +305,36 @@ namespace Stardust.Continuum
             if (timeSpan == TimeSpan.Zero) return dateTime;
             return dateTime.AddTicks(-(dateTime.Ticks % timeSpan.Ticks));
         }
+        public static double GetSizeIn(long lengthInByte, out FileSizeTypes sizeQualifier)
+        {
+            try
+            {
+                List<FileSizeTypes> sizes = EnumHelper.EnumToList<FileSizeTypes>();
+                double len = lengthInByte;
+                var order = 0;
+                while (len >= 1024 && ++order < 5)
+                {
+                    len = len / 1024;
+                }
+
+                sizeQualifier = (FileSizeTypes)order;
+                return len;
+            }
+            catch (Exception ex)
+            {
+                ex.Log();
+                sizeQualifier = FileSizeTypes.MB;
+                double len = lengthInByte;
+                return len / 1024 / 1024;
+            }
+        }
+    }
+    public enum FileSizeTypes
+    {
+        B = 0,
+        kB = 1,
+        MB = 2,
+        GB = 3,
+        TB = 4
     }
 }

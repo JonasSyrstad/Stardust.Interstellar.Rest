@@ -27,8 +27,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/9b581290-fa5a-4eb3-bc2d-1fafcc2ada1c/resourcegroups/continuumTest/providers/microsoft.insights/components/continuumDev</ApplicationInsightsResourceId>
-    <ApplicationInsightsAnnotationResourceId>
-    </ApplicationInsightsAnnotationResourceId>
+    <ApplicationInsightsAnnotationResourceId>/subscriptions/9b581290-fa5a-4eb3-bc2d-1fafcc2ada1c/resourcegroups/continuumTest/providers/microsoft.insights/components/continuumDev</ApplicationInsightsAnnotationResourceId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -428,6 +427,7 @@
     <None Include="Properties\PublishProfiles\thrill-log - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\thrill-log - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\continuum.js" />
     <Content Include="Scripts\flot\excanvas.js" />
     <Content Include="Scripts\flot\excanvas.min.js" />
     <Content Include="Scripts\flot\jquery.colorhelpers.js" />

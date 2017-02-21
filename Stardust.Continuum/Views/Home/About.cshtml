@@ -18,7 +18,7 @@
             <div class="col-lg-10">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <b class="glyphicon glyphicon-list-alt"></b> Activity <div class="dropdown div-inline">
+                        <b class="glyphicon glyphicon-random"></b> Activity <div class="dropdown div-inline">
                             <button class="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown">
                                 <i class="glyphicon glyphicon-tags"></i>&nbsp; Sources<span id="label"></span>
                                 <span class="caret"></span>
@@ -105,7 +105,7 @@
                     </div>
                     <div class="panel-body" style="background-color: black; color: white; font-weight: bolder;">
                         <b>
-                            PM&gt; Install-Package Stardust.Continuum.Client -Pre<br />
+                            PM&gt; Install-Package Stardust.Continuum.Client<br />
                         </b>
                     </div>
                 </div>
@@ -143,16 +143,46 @@
             });
             var plotIndex = {};
             var plotdata = [];
+            var options = {
+                lines: {
+                    show: true,
+                    zero: true,
+                    steps: false,
+                    labelMargin:3
+                },
+                points: {
+                    show: false
+                },
+                xaxis: {
+                    tickDecimals: 0,
+                    tickSize: 1,
+                    show: false
+
+                },
+                yaxis: { min: 0 },
+                legend: {
+                    position: "nw",
+                    backgroundOpacity: 0.3,
+                    noColumns: 3,
+                    sorted: true,
+                    labelMargin: 3
+                   
+                },
+                grid: {
+                    borderWidth: 1,
+                    borderColor: "rgb(40, 40, 40)",
+                    backgroundColor: { colors: ["#111", "#333"] }
+                }
+
+            };
             $.plot("#placeholder", plotdata, options);
 
             
             hub.client.cmessage = function (data) {
-                // Container for newItem
                 AppendData(data);
             }
-            hub.client.cmessages = function (data) {
-                // Container for newItem'
-                //debugger;
+
+            hub.client.cmessages = function (data) {;
                 $.each(data,
                     function (i, d) {
                         AppendData(d);
@@ -173,10 +203,10 @@
                                 var color = "rgb(50, 255, 50)";
                                 if (data.Location === "Errors")
                                     color = "rgb(255, 50, 50)";
-                                plotdata[plotIndex[label].index] = { label: data.Location + "  ", data: [], color: color };
+                                plotdata[plotIndex[label].index] = { label: "&nbsp;" + data.Location + "&nbsp;", data: [], color: color };
                             }
                             else
-                                plotdata[plotIndex[label].index] = { label: data.Location+"  ", data: [] };
+                                plotdata[plotIndex[label].index] = { label: "&nbsp;" + data.Location + "&nbsp;", data: [] };
                             for (var p = 0; p < 600; p++) {
                                 plotdata[plotIndex[label].index].data.push([p, 0]);
                             }
@@ -193,7 +223,7 @@
                 });
             }
             $.connection.hub.reconnected(function () {
-                hub.server.connect("Connected to log stream", $('#selected').text());
+                hub.server.connect("Connected to log stream", "the.continuum");
             });
             // Kick off the connection.
             $.connection.hub.start().done(function () {
@@ -203,30 +233,7 @@
                 $("#start").addClass('disabled');
                 $("#pause").removeClass('disabled');
             });
-            var options = {
-                lines: {
-                    show: true,
-                    zero: true,
-                    steps: false
-                },
-                points: {
-                    show: false
-                },
-                xaxis: {
-                    tickDecimals: 0,
-                    tickSize: 1,
-                    show: false
-
-                },
-                yaxis: { min: 0 },
-                legend: {
-                    position: "nw",
-                    backgroundOpacity: 0.3,
-                    noColumns: 3,
-                    sorted:true
-                }
-
-            };
+           
         });
         //$(function () {
 
@@ -267,7 +274,7 @@
             if ($('#selected').text() === "All" && data.Environment != null)
                 prefix = "[" + data.Environment + "] ";
             // Holds the update
-            var newItem = $("<div class='alert" +
+            var newItem = $("<div class=\"itemContainer\"><div class='alert" +
                 data.LogLevel +
                 "_item'><span class='truncate'>" +
                 prefix +
@@ -278,23 +285,18 @@
                 errorBox +
                 "'>" +
                 data.StackTrace +
-                "<div>");
+                "</div></div>");
 
-            // Hide our blank div (that will contain the new update), and our new item itself.
-            // The blank div will slide down, and our newItem will fade into existence.
-            blankDiv.hide();
-            newItem.hide();
 
             // Insert the update at the top of the list, as it's sorted in descending order by publish date.
             $("div#container div:first").before(blankDiv);
             blankDiv.html(newItem);
 
             // Slide down the blank div (it has a fixed height in CSS), and then fade the new update in.
-            blankDiv.slideDown(25,
-                null,
-                function () {
-                    newItem.fadeIn(50);
-                });
+            $("div#container").prepend(newItem);
+            if ($("#container").children().size() > 15)
+                $("div#container").children().last().remove();
+               
 
 
         }

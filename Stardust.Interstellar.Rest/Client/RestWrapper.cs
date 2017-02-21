@@ -40,7 +40,9 @@ namespace Stardust.Interstellar.Rest.Client
 
         private readonly CookieContainer cookieContainer;
 
-        private ErrorHandlerAttribute errorInterceptor;
+        private ErrorHandlerAttribute _errorInterceptor;
+
+        internal static ConcurrentDictionary<Type, ConcurrentDictionary<string, ActionWrapper>> Cache() => cache;
 
         public void SetBaseUrl(string url)
         {
@@ -65,7 +67,7 @@ namespace Stardust.Interstellar.Rest.Client
             var newWrapper = new ConcurrentDictionary<string, ActionWrapper>();
             var templatePrefix = interfaceType.GetCustomAttribute<IRoutePrefixAttribute>()
                 ?? interfaceType.GetInterfaces().FirstOrDefault()?.GetCustomAttribute<IRoutePrefixAttribute>();
-            errorInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
+            _errorInterceptor = interfaceType.GetCustomAttribute<ErrorHandlerAttribute>();
             ExtensionsFactory.GetService<ILogger>()?.Message($"Initializing client {interfaceType.Name}");
             var retry = interfaceType.GetCustomAttribute<RetryAttribute>();
             if (interfaceType.GetCustomAttribute<CircuitBreakerAttribute>() != null)
@@ -86,8 +88,10 @@ namespace Stardust.Interstellar.Rest.Client
                 var actions = methodInfo.GetCustomAttributes(true).OfType<IActionHttpMethodProvider>().ToList();
                 var methods = ExtensionsFactory.GetHttpMethods(actions, methodInfo);
                 var handlers = ExtensionsFactory.GetHeaderInspectors(methodInfo);
+                
                 action.UseXml = methodInfo.GetCustomAttributes().OfType<UseXmlAttribute>().Any();
                 action.CustomHandlers = handlers.Where(h=>headerHandlers.All(parent=>parent.GetType()!=h.GetType())).OrderBy(i => i.ProcessingOrder).ToList();
+                action.ErrorHandler = _errorInterceptor?.ErrorHandler;
                 action.Actions = methods;
                 if (actionRetry != null)
                 {
@@ -135,9 +139,9 @@ namespace Stardust.Interstellar.Rest.Client
                         if (result.Error is SuspendedDependencyException) return result;
                         if (!action.Retry || cnt > action.NumberOfRetries || !IsTransient(action, result.Error)) return result;
                         ExtensionsFactory.GetService<ILogger>()?.Error(result.Error);
-                        ExtensionsFactory.GetService<ILogger>()?
-                            .Message($"Retrying action {action.Name}, retry count {cnt}");
+                        ExtensionsFactory.GetService<ILogger>()?.Message($"Retrying action {action.Name}, retry count {cnt}");
                         waittime = waittime * (action.IncrementalRetry ? cnt : 1);
+                        result.EndState();
                         Thread.Sleep(waittime);
                     }
                     else
@@ -179,6 +183,7 @@ namespace Stardust.Interstellar.Rest.Client
                 try
                 {
                     webError.Response?.Close();
+                    webError.Response?.Dispose();
                 }
                 catch (Exception)
                 {
@@ -193,6 +198,7 @@ namespace Stardust.Interstellar.Rest.Client
                 try
                 {
                     response?.Close();
+                    response?.Dispose();
                 }
                 catch (Exception)
                 {
@@ -473,6 +479,7 @@ namespace Stardust.Interstellar.Rest.Client
                         ExtensionsFactory.GetService<ILogger>()?
                             .Message($"Retrying action {action.Name}, retry count {cnt}");
                         waittime = waittime * (action.IncrementalRetry ? cnt : 1);
+                        result.EndState();
                         await Task.Delay(waittime);
                     }
                     else
@@ -531,6 +538,7 @@ namespace Stardust.Interstellar.Rest.Client
                 try
                 {
                     webError.Response?.Close();
+                    webError.Response?.Dispose();
                 }
                 catch (Exception)
                 {
@@ -545,6 +553,7 @@ namespace Stardust.Interstellar.Rest.Client
                 try
                 {
                     response?.Close();
+                    response?.Dispose();
                 }
                 catch (Exception)
                 {
@@ -595,17 +604,17 @@ namespace Stardust.Interstellar.Rest.Client
         private void CreateException(string name, ResultWrapper result)
         {
             var action = GetAction(name);
-            var handler = GetErrorHandler();
+            var handler = GetErrorHandler(action);
             if (handler != null) throw handler.ProduceClientException(result.StatusMessage, result.Status, result.Error, result.Value as string);
             if (result.Value != null) throw new RestWrapperException(result.StatusMessage, result.Status, result.Value, result.Error);
             throw new RestWrapperException(result.StatusMessage, result.Status, result.Error);
         }
 
-        private IErrorHandler GetErrorHandler()
+        private IErrorHandler GetErrorHandler(ActionWrapper action)
         {
             IErrorHandler handler;
             var globalErrorHandler = ExtensionsFactory.GetService<IErrorHandler>();
-            var errorHandler = errorInterceptor?.ErrorHandler;
+            var errorHandler = action?.ErrorHandler;
             if (globalErrorHandler != null && errorHandler != null)
             {
                 handler = new AggregateHandler(globalErrorHandler, errorHandler);
@@ -624,6 +633,7 @@ namespace Stardust.Interstellar.Rest.Client
         public async Task InvokeVoidAsync(string name, ParameterWrapper[] parameters)
         {
             var result = await ExecuteAsync(GetActionName(name), parameters);
+            StateHelper.EndState(result.ActionId);
             if (result.Error == null)
                 return;
             CreateException(name, result);
@@ -632,6 +642,7 @@ namespace Stardust.Interstellar.Rest.Client
         public void InvokeVoid(string name, ParameterWrapper[] parameters)
         {
             var result = Execute(name, parameters);
+            StateHelper.EndState(result.ActionId);
             if (result.Error == null)
                 return;
             CreateException(name, result);

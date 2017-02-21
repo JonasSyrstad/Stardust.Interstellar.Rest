@@ -49,9 +49,9 @@ namespace Stardust.Continuum
             try
             {
                 
-                if (!context.Request.Headers.Authorization.Scheme.Equals("ApiKey", StringComparison.InvariantCultureIgnoreCase) && string.IsNullOrWhiteSpace(context.Request.Headers.Authorization.Parameter)&&context.Request.RequestUri.ParseQueryString()["api_key"].IsNullOrWhiteSpace())
+                if ((context.Request?.Headers?.Authorization?.Scheme != null && (!context.Request.Headers.Authorization.Scheme.Equals("ApiKey", StringComparison.InvariantCultureIgnoreCase)) && string.IsNullOrWhiteSpace(context.Request.Headers?.Authorization?.Parameter)&&context.Request.RequestUri.ParseQueryString()["api_key"].IsNullOrWhiteSpace()))
                     Logging.DebugMessage( $"No api-key provided for {configKey}");
-                var apiKey = context.Request.Headers.Authorization.Parameter;
+                var apiKey = context.Request.Headers?.Authorization?.Parameter;
                 if (apiKey.IsNullOrWhiteSpace())
                     apiKey = context.Request.RequestUri.ParseQueryString()["api_key"];
                 bool isAllowed;

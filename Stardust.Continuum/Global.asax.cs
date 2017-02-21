@@ -31,14 +31,6 @@ namespace Stardust.Continuum
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-            //Task.Run(async () =>
-            //{
-            //    while (true)
-            //    {
-            //        await Task.Delay(1000);
-            //        GlobalHost.ConnectionManager.GetHubContext<StreamHub>().Clients.All.cmessage("Please let this message go through!!");
-            //    }
-            //});
         }
     }
 

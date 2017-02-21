@@ -250,7 +250,6 @@ namespace Stardust.Interstellar.Rest.Service
                 state.SetState("controller", this);
                 state.SetState("controllerName", typeof(T).FullName);
                 state.SetState("action", action.Name);
-                this.ControllerContext.Request.Properties.Add(ActionId, Request.ActionId());
                 var i = 0;
                 foreach (var parameter in action.Parameters)
                 {

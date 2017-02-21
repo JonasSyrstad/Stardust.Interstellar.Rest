@@ -29,11 +29,11 @@
                             <li class="hidden-md hidden-sm hidden-xs"><a href="https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/blob/master/Stardust.Interstellar.Rest/continuum.md">The Continuum Project</a></li>
                             <li>
 
-                                <div id="throughPutText" class="div-inline hidden-sm hidden-xs hidden-md" style="padding-top: 20px;line-height: 20px; padding-right: 5px; width: 100px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>Throughput </div>
-                                <div id="throughPutLabel" class="div-inline hidden-sm hidden-xs hidden-md pull-right" style="text-align: right;padding-top: 20px;line-height: 20px; width: 70px; margin-left: 10px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>m/sec</div>
+                                <div id="throughPutText" class="div-inline hidden-sm hidden-xs hidden-md" style="padding-top: 20px;line-height: 20px; margin-left: 15px; width: 100px;" >Throughput </div>
+                                <div id="throughPutLabel" class="div-inline hidden-sm hidden-xs hidden-md pull-right" style="text-align: right;padding-top: 20px;line-height: 20px; width: 90px; margin-left: 2px;" data-toggle="tooltip" data-placement="bottom-left" data-placement='top-right'>m/sec</div>
                                 
 
-                            </li><li><div class="div-inline" style="padding-top: 12.5px;line-height: 20px;">
+                            </li><li><div class="div-inline" style="padding-top: 12.5px;line-height: 20px;margin-left: 10px;">
     <div id="smallGraph" class="demo-placeholder div-inline" style="vert-align: middle;height: 30px; width: 250px; "></div>
 </div></li>
                             
@@ -135,7 +135,7 @@
                             $.each(plotdata2[plotIndex2[label].index].data, function (id, d) { d[0] = id });
                             $.plot("#smallGraph", plotdata2, options2);
                             if (data.Location !== "Errors")
-                                $('#throughPutLabel').text(data.ItemsReceived.toString() + "m/sec");
+                                $('#throughPutLabel').text(data.ItemsReceived.toString() + " msg/sec");
                         }
                     });
             }
