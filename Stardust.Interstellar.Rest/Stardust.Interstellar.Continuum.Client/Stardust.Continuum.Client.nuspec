@@ -7,6 +7,10 @@
     <authors>Stardust</authors>
     <description>Client for the continuum live log stream service
 </description>
+    <summary>
+      Download and install the Contunuum service:
+      https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/tree/master/ContinuumInstall
+    </summary>
     <licenseUrl>http://stardustframework.com/license</licenseUrl>
     <projectUrl>https://github.com/JonasSyrstad/Stardust.Interstellar.Rest/blob/master/Stardust.Interstellar.Rest/continuum.md</projectUrl>
     <iconUrl>http://stardustframework.wdfiles.com/local--files/blog%3A_start/logo_smal.png</iconUrl>
