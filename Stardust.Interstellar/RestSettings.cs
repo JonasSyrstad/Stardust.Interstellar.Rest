@@ -13,7 +13,7 @@ namespace Stardust.Interstellar
     public static class RestSettings
     {
         internal static bool initialized = false;
-        public static void Initialize(bool useRestAsDefault = true)
+        public static void Initialize(bool useRestAsDefault = true) 
         {
             if(initialized) return;
            
