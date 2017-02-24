@@ -11,9 +11,11 @@
             }
         </ul>
     </div>
-    <div class="btn btn-sm btn-danger div-inline" id="clearFeed" title="Clear feed"><i class="glyphicon glyphicon-remove"></i></div>
-    <div class="btn btn-sm btn-info div-inline hidden" id="pause" title="Pause feed"><i class="glyphicon glyphicon-pause"></i></div>
-    <div class="btn btn-sm btn-info div-inline hidden" id="start" title="Resume feed"><i class="glyphicon glyphicon-play"></i></div>
+    <div class="btn btn-sm btn-danger div-inline" id="clearFeed" title="Clear feed (Alt + C)"><i class="glyphicon glyphicon-remove"></i></div>
+    <div class="btn btn-sm btn-info div-inline hidden" id="pause" title="Pause feed (Alt + P)"><i class="glyphicon glyphicon-pause"></i></div>
+    <div class="btn btn-sm btn-info div-inline hidden" id="start" title="Resume feed (Alt + P)"><i class="glyphicon glyphicon-play"></i></div>
+    <div class="div-inline hidden-xs hidden-sm">&nbsp;</div>
+    <div class="btn btn-sm btn-info div-inline hidden-xs hidden-sm" id="fullscreen" title="Full screen (Alt + F)"><i class="glyphicon glyphicon-fullscreen"></i></div>
     <input type="hidden" id="selected" />
     <input type="hidden" id="state" />
     <div class="div-inline">&nbsp;</div>
@@ -21,12 +23,13 @@
         <i title="filter" class="glyphicon glyphicon-filter ">&nbsp;&nbsp;</i>
         <input style="display: inline-block; padding-left: 30px; width: 200px; padding-right: 10px; " type="text" class="form-control " id="filterBox" />
     </div><div class="btn btn-sm div-inline btn-default" id="filter"><i class="glyphicon glyphicon-filter"></i></div>
+    <div class="btn btn-sm div-inline btn-default hidden-xs hidden-sm" id="clearFilter"><i class="glyphicon glyphicon-remove-sign"></i></div>
     <input type="hidden" id="filterString" />
     <div class="info help-block" id="filterhelp" style="font-size: 10px;">Filter: </div>
 </div>
 
 <hr style="margin-top: 5px; margin-bottom: 10px;" />
-<div id="container" style="width: 100%; height: 100%;font-family: monospace; background-image: url('/assets/logo_darkGray.svg');background-repeat: no-repeat; background-size: 40%; background-position: center; " class="pre-scrollable">
+<div id="container" style="width: 100%; height: 100%;font-family: monospace; background-color: black; background-image: url('/assets/logo_darkGray.svg');background-repeat: no-repeat; background-size: 40%; background-position: center; " class="pre-scrollable">
     <div class='itemContainer'>
         <div class="truncate" style="width: 100%">
             <span style="font-weight: bolder">Select a stream....</span>
@@ -57,10 +60,9 @@
             $("#pause").addClass('hidden');
             var hub = $.connection.updateFeed;
             $("#clearFeed").click(function () {
-                $("#container").empty();
-                $("#container").append("<div class=\"itemContainer\"></div>");
+                cleanStream();
             });
-            $("#pause").click(function () {
+            var pause = function () {
                 if ($("#state").text() !== "running") {
                     return;
                 }
@@ -68,18 +70,8 @@
                 $("#pause").addClass('hidden');
                 $("#start").removeClass('hidden');
                 $.connection.hub.stop();
-
-            });
-            $("#filter").click(function () {
-                $("#filterString").text($("#filterBox").val());
-                if ($("#filterBox").val() !== "")
-                    $("#filterhelp").text("Filter: " + $("#filterBox").val());
-                else {
-                    $("#filterhelp").text("Filter: ");
-                }
-            });
-            $("#start").click(function () {
-
+            };
+            var resume = function () {
                 if ($("#state").text() === "running") {
 
                     return;
@@ -109,6 +101,64 @@
                 $.connection.hub.reconnected(function () {
                     hub.server.connect("Connected to log stream", $('#selected').text());
                 });
+            };
+            document.onkeydown = function (e) {
+
+                if (e.altKey && e.keyCode === 67) {
+                    cleanStream();
+                }
+                else if (e.altKey && e.keyCode === 70) {
+                    if (e.preventDefault) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    $("#container").toggleFullScreen();
+                }
+                else if (e.altKey && e.keyCode === 80) {
+                    if (e.preventDefault) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    if ($("#state").text() === "running") pause();
+                    else resume();
+
+                }
+            };
+            function cleanStream() {
+                $("#container").empty();
+                $("#container").append("<div class=\"itemContainer\"></div>");
+            }
+            
+            $("#pause").click(function () {
+                
+                pause();
+
+            });
+            $("#filter").click(function () {
+                $("#filterString").text($("#filterBox").val());
+                if ($("#filterBox").val() !== "")
+                    $("#filterhelp").text("Filter: " + $("#filterBox").val());
+                else {
+                    $("#filterhelp").text("Filter: ");
+                }
+            });
+            $("#clearFilter").click(function () {
+                $("#filterBox").val("");
+                $("#filterString").text($("#filterBox").val());
+                if ($("#filterBox").val() !== "")
+                    $("#filterhelp").text("Filter: " + $("#filterBox").val());
+                else {
+                    $("#filterhelp").text("Filter: ");
+                }
+            });
+            $("#fullscreen").click(function () {
+                $("#container").fullScreen(true);
+            });
+            
+            $("#start").click(function () {
+                
+                resume();
 
             });
             //$("#clearFeed").click(function () { });
@@ -178,7 +228,7 @@
                     info += "\n" + data2.Properties.SourceAddress;
                 return info;
             };
-            
+
             var errorBox = "alert alert-danger";
             var errorStyle = "style='color:red;font-weight: bold;'";
 
@@ -218,6 +268,17 @@
             if ($("#container").children().size() > $.maxElements)
                 $("div#container").children().last().remove();
         }
-        
+        /*
+ jquery.fullscreen 1.1.5
+ https://github.com/kayahr/jquery-fullscreen-plugin
+ Copyright (C) 2012-2013 Klaus Reimer <k@ailis.de>
+ Licensed under the MIT license
+ (See http://www.opensource.org/licenses/mit-license)
+*/
+        function d(c) {
+            var b, a; if (!this.length) return this; b = this[0]; b.ownerDocument ? a = b.ownerDocument : (a = b, b = a.documentElement); if (null == c) { if (!a.exitFullscreen && !a.webkitExitFullscreen && !a.webkitCancelFullScreen && !a.msExitFullscreen && !a.mozCancelFullScreen) return null; c = !!a.fullscreenElement || !!a.msFullscreenElement || !!a.webkitIsFullScreen || !!a.mozFullScreen; return !c ? c : a.fullscreenElement || a.webkitFullscreenElement || a.webkitCurrentFullScreenElement || a.msFullscreenElement || a.mozFullScreenElement || c } c ? (c =
+            b.requestFullscreen || b.webkitRequestFullscreen || b.webkitRequestFullScreen || b.msRequestFullscreen || b.mozRequestFullScreen) && c.call(b) : (c = a.exitFullscreen || a.webkitExitFullscreen || a.webkitCancelFullScreen || a.msExitFullscreen || a.mozCancelFullScreen) && c.call(a); return this
+        } jQuery.fn.fullScreen = d; jQuery.fn.toggleFullScreen = function () { return d.call(this, !d.call(this)) }; var e, f, g; e = document;
+        e.webkitCancelFullScreen ? (f = "webkitfullscreenchange", g = "webkitfullscreenerror") : e.msExitFullscreen ? (f = "MSFullscreenChange", g = "MSFullscreenError") : e.mozCancelFullScreen ? (f = "mozfullscreenchange", g = "mozfullscreenerror") : (f = "fullscreenchange", g = "fullscreenerror"); jQuery(document).bind(f, function () { jQuery(document).trigger(new jQuery.Event("fullscreenchange")) }); jQuery(document).bind(g, function () { jQuery(document).trigger(new jQuery.Event("fullscreenerror")) });
     </script>
 }
