@@ -51,6 +51,14 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Stardust.2.1.1.127\lib\net45\Excel.4.5.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="GravatarHelper, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\GravatarHelper.4.0.0\lib\net45\GravatarHelper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="GravatarHelper.Common, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\GravatarHelper.Common.1.1.0\lib\net45\GravatarHelper.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\Stardust.Interstellar.Rest\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>

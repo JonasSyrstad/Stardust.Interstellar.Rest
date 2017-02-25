@@ -110,6 +110,7 @@ code {
     line-height: 25px;
     height: 60px;
     padding-top: 18px;
+    padding-right: 0px;
 }
 
     .navbar-brand > img {
@@ -124,6 +125,7 @@ code {
 .navbar {
     color: white;
 }
+.nav>li>a { padding-right: 7px;padding-left: 7px;}
 /*
     .navbar-inner:before,
     .navbar-inner:after {

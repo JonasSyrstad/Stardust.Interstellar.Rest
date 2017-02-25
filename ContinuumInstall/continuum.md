@@ -17,7 +17,11 @@ entries to a centralized service. The developers can on their side connect to th
 
 * Follow the instructions: [How to: Install a Deployment Package](https://msdn.microsoft.com/en-us/library/ff356104(v=vs.110).aspx)
 
-* Add your projects and environments in the web.config file. 
+* Add your projects and environments in the web.config file.
+  *  <add key="project.environment" value="apikey"/ >
+* Add Authentication
+  * <add key="authority" value="azure ad url or adfs 2016 url"/ >  
+  * <add key="clientId" value="appId from IDP"/ >
 
 
 ##Usage:

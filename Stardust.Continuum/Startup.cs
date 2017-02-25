@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
@@ -14,6 +15,7 @@ using Stardust.Continuum.Client;
 using Stardust.Continuum.Controllers;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Particles;
+using WebGrease.Configuration;
 
 [assembly: OwinStartup(typeof(Stardust.Continuum.Startup))]
 
@@ -25,14 +27,19 @@ namespace Stardust.Continuum
 
         public void Configuration(IAppBuilder app)
         {
+
             ConfigureAuth(app);
             app.MapSignalR("/signalr", new HubConfiguration
             {
                 EnableJSONP = true,
                 EnableDetailedErrors = true,
-                EnableJavaScriptProxies = true
+                EnableJavaScriptProxies = true,
+
             });
+            if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace())
+                GlobalHost.HubPipeline.RequireAuthentication();
             hub = GlobalHost.ConnectionManager.GetHubContext<StreamHub>();
+
 
         }
     }
@@ -199,7 +206,7 @@ namespace Stardust.Continuum
                 FileSizeTypes lastHourQ;
                 var timeSinceReset = DateTime.UtcNow - resetTime.AddHours(-1);
                 var lhSize = DateTimeHelper.GetSizeIn(receivedLastHour, out lastHourQ);
-                Logging.DebugMessage($"{lhSize:N1}{lastHourQ.ToString()} last {timeSinceReset.TotalMinutes:N0} minute{(timeSinceReset.TotalMinutes<2?"":"s")} . {rtSize:N1}{totalQ.ToString()} in total");
+                Logging.DebugMessage($"{lhSize:N1}{lastHourQ.ToString()} last {timeSinceReset.TotalMinutes:N0} minute{(timeSinceReset.TotalMinutes < 2 ? "" : "s")} . {rtSize:N1}{totalQ.ToString()} in total");
                 Logging.DebugMessage($"Uptime {(DateTime.UtcNow - collectionSince):g}");
 
             }
@@ -222,7 +229,7 @@ namespace Stardust.Continuum
                 AddSource(project, environment);
                 foreach (var streamItem in items)
                 {
-                    
+
                     AddCommonProperties(streamItem);
                     if (streamItem.LogLevel != LogLevels.Error)
                         dbg++;
