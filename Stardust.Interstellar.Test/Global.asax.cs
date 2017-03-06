@@ -184,5 +184,10 @@ namespace Stardust.Interstellar.Test
         {
             return Task.FromResult(new List<string> { "Stardust", "Interstellar", "Rest", "2.4.*" });
         }
+
+        public Task Throttled()
+        {
+            return Task.FromResult(1);
+        }
     }
 }

@@ -8,18 +8,16 @@ namespace Stardust.Interstellar.Rest.Test
 {
     public class TestClient : RestWrapper, ITestApi
     {
-
-
-        public TestClient(IAuthenticationHandler authenticationHandler, IHeaderHandlerFactory headerHandlers, TypeWrapper interfaceType)
+        public TestClient(IAuthenticationHandler authenticationHandler, IHeaderHandlerFactory headerHandlers,
+            TypeWrapper interfaceType)
             : base(authenticationHandler, headerHandlers, interfaceType)
         {
-
         }
 
         public string Apply1(string id, string name)
         {
             const string apply = "Apply";
-            var par = new object[] { id, name };
+            var par = new object[] {id, name};
             var parameters = GetParameters(apply, par);
             var result = Invoke<string>(apply, parameters);
             return result;
@@ -28,7 +26,7 @@ namespace Stardust.Interstellar.Rest.Test
         public Task<StringWrapper> Apply2(string id, string name, string item3)
         {
             const string apply = "Apply";
-            var par = new object[] { id, name, item3 };
+            var par = new object[] {id, name, item3};
             var parameters = GetParameters(apply, par);
             var result = Invoke<string>(apply, parameters);
             return Task.FromResult(new StringWrapper {Value = result});
@@ -38,7 +36,7 @@ namespace Stardust.Interstellar.Rest.Test
         public string Apply3(string id, string name, string item3, string item4)
         {
             const string apply = "Apply";
-            var par = new object[] { id, name, item3, item4 };
+            var par = new object[] {id, name, item3, item4};
             var parameters = GetParameters(apply, par);
             var result = Invoke<string>(apply, parameters);
             return result;
@@ -47,7 +45,7 @@ namespace Stardust.Interstellar.Rest.Test
         public void Put(string id, DateTime timestamp)
         {
             const string apply = "Put";
-            var par = new object[] { id, timestamp };
+            var par = new object[] {id, timestamp};
             var parameters = GetParameters(apply, par);
             InvokeVoid(apply, parameters);
         }
@@ -55,7 +53,7 @@ namespace Stardust.Interstellar.Rest.Test
         public Task<StringWrapper> ApplyAsync(string id, string name, string item3, string item4)
         {
             const string apply = "ApplyAsync";
-            var par = new object[] { id, name, item3, item4 };
+            var par = new object[] {id, name, item3, item4};
             var parameters = GetParameters(apply, par);
             var result = InvokeAsync<StringWrapper>(apply, parameters);
             return result;
@@ -64,7 +62,7 @@ namespace Stardust.Interstellar.Rest.Test
         public Task PutAsync(string id, DateTime timestamp)
         {
             const string apply = "PutAsync";
-            var par = new object[] { id, timestamp };
+            var par = new object[] {id, timestamp};
             var parameters = GetParameters(apply, par);
             var result = InvokeAsync<int>(apply, parameters);
             return result;
@@ -81,6 +79,11 @@ namespace Stardust.Interstellar.Rest.Test
         }
 
         public Task GetHead()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Throttled()
         {
             throw new NotImplementedException();
         }

@@ -161,7 +161,7 @@ namespace Stardust.Interstellar.Rest.Extensions
             if (string.IsNullOrWhiteSpace(actionId)) return;
             LowPriorityContainer removedState;
             stateContainer.TryRemove(actionId, out removedState);
-            removedState.StateReference.Clear();
+            removedState?.StateReference?.Clear();
         }
     }
 }

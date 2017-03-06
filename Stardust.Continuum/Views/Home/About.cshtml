@@ -30,10 +30,11 @@
                                 }
                             </ul>
                         </div>
+                        <div id="fullscreen" class="btn btn-default btn-xs"><i class="glyphicon glyphicon-fullscreen"> </i></div>
                         <input type="hidden" id="selected" />
                         <input type="hidden" id="state" />
                     </div>
-                    <div class="panel-body" style="background-color: black;">
+                    <div id="graphContainer" class="panel-body" style="background-color: black;">
                         <div class="counter">
                             <div id="placeholder" class="demo-placeholder"></div>
                         </div>
@@ -140,6 +141,9 @@
                 $.connection.hub.start().done(function () {
                     hub.server.connect("Connected to log stream", "the.continuum");
                 });
+            });
+            $("#fullscreen").click(function () {
+                $("#graphContainer").fullScreen(true);
             });
             var plotIndex = {};
             var plotdata = [];

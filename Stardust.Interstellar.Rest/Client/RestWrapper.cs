@@ -603,7 +603,10 @@ namespace Stardust.Interstellar.Rest.Client
 
         private void CreateException(string name, ResultWrapper result)
         {
+            
             var action = GetAction(name);
+            if (result.Status==(HttpStatusCode) 429)
+                throw new RestWrapperException(result.StatusMessage, result.Status, new ThrottledRequestException(result.Error));
             var handler = GetErrorHandler(action);
             if (handler != null) throw handler.ProduceClientException(result.StatusMessage, result.Status, result.Error, result.Value as string);
             if (result.Value != null) throw new RestWrapperException(result.StatusMessage, result.Status, result.Value, result.Error);

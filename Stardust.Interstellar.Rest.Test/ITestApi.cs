@@ -67,7 +67,12 @@ namespace Stardust.Interstellar.Rest.Test
         [Route("head")]
         [HttpHead]
         Task GetHead();
-        
+
+
+        [Route("tr")]
+        [HttpGet]
+        [Throttling(0)]
+        Task Throttled();
     }
 
     public class ErrorCategorizer : IErrorCategorizer

@@ -37,6 +37,7 @@ namespace Stardust.Interstellar.Rest.Common
         public IErrorCategorizer ErrorCategorizer { get; set; }
         public List<ServiceInitializerAttribute> Initializers { get; set; }
         public IErrorHandler ErrorHandler { get; set; }
+        public IThrottlingManager Throttler { get; set; }
     }
 
 

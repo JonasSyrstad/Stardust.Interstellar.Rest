@@ -1,8 +1,141 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Net;
 
 namespace Stardust.Interstellar.Rest.Annotations
 {
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface | AttributeTargets.Assembly)]
+    public class ThrottlingAttribute : Attribute
+    {
+        private readonly Type _throttlingManager;
+        private readonly long? _maxRequestsPerSecound;
+
+        public ThrottlingAttribute(long maxRequestsPerSecound)
+        {
+            _maxRequestsPerSecound = maxRequestsPerSecound;
+        }
+
+        public ThrottlingAttribute(Type throttlingManager)
+        {
+            if (!typeof(IThrottlingManager).IsAssignableFrom(throttlingManager)) throw new InvalidCastException($"Unable to cast {throttlingManager.FullName} to {nameof(IThrottlingManager)}");
+                _throttlingManager = throttlingManager;
+        }
+
+        public IThrottlingManager GetManager(AppliesToTypes appliesTo)
+        {
+            if (_maxRequestsPerSecound != null)
+                return new RequestsPerSecoundManager(_maxRequestsPerSecound, appliesTo);
+            return (IThrottlingManager)Activator.CreateInstance(_throttlingManager);
+        }
+    }
+
+    public class RequestsPerSecoundManager : IThrottlingManager
+    {
+        private readonly long? _maxRequestsPerSecound;
+        private readonly AppliesToTypes _appliesTo;
+
+        public RequestsPerSecoundManager(long? maxRequestsPerSecound, AppliesToTypes appliesTo, long waitTime = 1000)
+        {
+            _maxRequestsPerSecound = maxRequestsPerSecound;
+            _appliesTo = appliesTo;
+            _waitTime = waitTime;
+        }
+
+        private static ConcurrentDictionary<string, CounterItem> reqPerSecCounter = new ConcurrentDictionary<string, CounterItem>();
+        private long _waitTime;
+
+        public long? IsThrottled(string method, string service, string host)
+        {
+            CounterItem validator;
+            switch (_appliesTo)
+            {
+                case AppliesToTypes.Method:
+
+                    if (!reqPerSecCounter.TryGetValue($"method:{method}", out validator))
+                    {
+                        validator = new CounterItem(_maxRequestsPerSecound.Value, _waitTime);
+                        reqPerSecCounter.TryAdd($"method:{method}", validator);
+                    }
+                    break;
+                case AppliesToTypes.Service:
+                    if (!reqPerSecCounter.TryGetValue($"service:{service}", out validator))
+                    {
+                        validator = new CounterItem(_maxRequestsPerSecound.Value, _waitTime);
+                        reqPerSecCounter.TryAdd($"service:{service}", validator);
+                    }
+                    break;
+                case AppliesToTypes.Host:
+                    if (!reqPerSecCounter.TryGetValue($"host:{host}", out validator))
+                    {
+                        validator = new CounterItem(_maxRequestsPerSecound.Value, _waitTime);
+                        reqPerSecCounter.TryAdd($"host:{host}", validator);
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+            return validator.CountAndValidate();
+        }
+
+    }
+
+    internal class CounterItem
+    {
+        private DateTime CounterSecound = NowTruncated;
+        private long _counter = 0;
+        private long _maxLimit;
+        private readonly long _waitTime = 1000;
+
+        public CounterItem(long maxLimit)
+        {
+            _maxLimit = maxLimit;
+        }
+
+        public CounterItem(long maxLimit, long waitTime)
+        {
+            _maxLimit = maxLimit;
+            _waitTime = waitTime;
+        }
+
+        private static DateTime Truncate(DateTime dateTime, TimeSpan timeSpan)
+        {
+            if (timeSpan == TimeSpan.Zero) return dateTime;
+            return dateTime.AddTicks(-(dateTime.Ticks % timeSpan.Ticks));
+        }
+
+        public long? CountAndValidate()
+        {
+            if (CounterSecound == NowTruncated)
+            {
+                _counter++;
+                return _counter < _maxLimit ? 0 : _waitTime;
+            }
+            _counter = 0;
+            return null;
+        }
+
+        private static DateTime NowTruncated => Truncate(DateTime.UtcNow, TimeSpan.FromMilliseconds(1));
+    }
+
+    public enum AppliesToTypes
+    {
+        Method,
+        Service,
+        Host
+    }
+
+    public interface IThrottlingManager
+    {
+        /// <summary>
+        /// Determines whether the specified method is throttled. If throttled, it returns the wait time in ms, if not null
+        /// </summary>
+        /// <param name="method">The method.</param>
+        /// <param name="service">The service.</param>
+        /// <param name="host">The host.</param>
+        /// <returns></returns>
+        long? IsThrottled(string method, string service, string host);
+    }
+
     /// <summary>
     /// Apply the Circuit breaker pattern to the service client
     /// </summary>

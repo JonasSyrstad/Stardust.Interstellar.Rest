@@ -239,7 +239,7 @@ namespace Stardust.Interstellar.Rest.Test
             CircuitBreakerContainer.Register<DummyExternaDependencyImpl>(10, 1);
             for (int i = 0; i < 20; i++)
             {
-                try
+                try     
                 {
                     var dummy = new DummyExternaDependencyImpl();
                     var result = dummy.ExecuteWithCircuitBreaker("", s => s.DoWorkFail("hi"));
@@ -250,6 +250,37 @@ namespace Stardust.Interstellar.Rest.Test
                     output.WriteLine(ex.Message);
                     if (i > 20) Assert.IsType<SuspendedDependencyException>(ex);
                 }
+            }
+        }
+
+        [Fact]
+        public async void ThrottlingTest()
+        {
+            var testProxy = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test",
+               extras =>
+               {
+                   foreach (var extra in extras)
+                   {
+                       output.WriteLine($"{extra.Key}:{extra.Value}");
+                   }
+               });
+            try
+            {
+                await testProxy.Throttled();
+                Assert.True(false);
+            }
+            catch (RestWrapperException e)
+            {
+                output.WriteLine(e.InnerException.GetType().FullName);
+                output.WriteLine(e.InnerException.StackTrace);
+                Assert.True(e.InnerException is ThrottledRequestException);
+            }
+            catch (Exception e)
+            {
+
+                output.WriteLine(e.Message);
+                output.WriteLine(e.StackTrace);
+                Assert.True(e.InnerException is ThrottledRequestException);
             }
         }
     }

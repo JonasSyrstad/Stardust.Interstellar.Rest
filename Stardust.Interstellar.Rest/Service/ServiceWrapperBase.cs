@@ -29,6 +29,7 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected HttpResponseMessage CreateResponse<TMessage>(HttpStatusCode statusCode, TMessage message = default(TMessage))
         {
+
             HttpResponseMessage result;
             var action = GetAction();
             foreach (var interceptor in action.Interceptor)
@@ -188,9 +189,18 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected HttpResponseMessage CreateErrorResponse(Exception ex)
         {
-            var errorHandler = GetErrorHandler();
             HttpResponseMessage result = null;
-            result = ConvertExceptionToErrorResult(ex, result, errorHandler);
+            var exception = ex as ThrottledRequestException;
+            if (exception != null)
+            {
+                result = Request.CreateErrorResponse((System.Net.HttpStatusCode)429, "Throttled request");
+                result.Headers.RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromMilliseconds(exception.WaitValue));
+            }
+            if (result == null)
+            {
+                var errorHandler = GetErrorHandler();
+                result = ConvertExceptionToErrorResult(ex, result, errorHandler);
+            }
             if (result == null) result = Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.Message);
             SetHeaders(result);
             Request.EndState();
@@ -246,6 +256,9 @@ namespace Stardust.Interstellar.Rest.Service
 
                 Request.InitializeState();
                 var action = GetAction(name);
+                var wait = action.Throttler?.IsThrottled(name, implementation.GetType().FullName, implementation.GetType().Assembly.FullName);
+                if (wait != null)
+                    throw new ThrottledRequestException(wait.Value);
                 var state = Request.GetState();
                 state.SetState("controller", this);
                 state.SetState("controllerName", typeof(T).FullName);
@@ -357,6 +370,9 @@ namespace Stardust.Interstellar.Rest.Service
         private static ConcurrentDictionary<Type, ErrorHandlerAttribute> errorhanderCache = new ConcurrentDictionary<Type, ErrorHandlerAttribute>();
         protected void InitializeServiceApi(Type interfaceType)
         {
+            var assemblyThrottler = interfaceType.Assembly.GetCustomAttributes<ThrottlingAttribute>().FirstOrDefault();
+            var serviceThrottler = interfaceType.GetCustomAttributes<ThrottlingAttribute>().FirstOrDefault();
+
             var classInitializers = interfaceType.GetCustomAttributes<ServiceInitializerAttribute>();
             var serviceInitializerAttributes = classInitializers as ServiceInitializerAttribute[] ?? classInitializers.ToArray();
             GetErrorInterceptor(interfaceType);
@@ -366,6 +382,7 @@ namespace Stardust.Interstellar.Rest.Service
 
             foreach (var methodInfo in interfaceType.GetMethods().Length == 0 ? interfaceType.GetInterfaces().First().GetMethods() : interfaceType.GetMethods())
             {
+                var methodThrottler = methodInfo.GetCustomAttributes<ThrottlingAttribute>().FirstOrDefault();
                 var methodInitializers = methodInfo.GetCustomAttributes<ServiceInitializerAttribute>().ToList();
                 methodInitializers.AddRange(serviceInitializerAttributes);
                 var template = ExtensionsFactory.GetServiceTemplate(methodInfo);
@@ -380,6 +397,12 @@ namespace Stardust.Interstellar.Rest.Service
                 action.RequireAuth.AddRange(interfaceType.GetCustomAttributes().OfType<IAuthorizeAttribute>());
                 action.Interceptor = methodInfo.GetCustomAttributes().OfType<InputInterceptorAttribute>().ToArray();
                 action.Initializers = methodInitializers;
+                if (assemblyThrottler != null)
+                    action.Throttler = assemblyThrottler.GetManager(AppliesToTypes.Host);
+                else if (serviceThrottler != null)
+                    action.Throttler = serviceThrottler.GetManager(AppliesToTypes.Service);
+                else if (methodThrottler != null)
+                    action.Throttler = methodThrottler.GetManager(AppliesToTypes.Method);
                 BuildParameterInfo(methodInfo, action);
 
                 newWrapper.TryAdd(action.Name, action);
@@ -494,5 +517,22 @@ namespace Stardust.Interstellar.Rest.Service
         }
     }
 
+    public class ThrottledRequestException : Exception
+    {
+        public long WaitValue { get; }
 
+        public ThrottledRequestException(long waitValue)
+        {
+            WaitValue = waitValue;
+        }
+
+        public ThrottledRequestException()
+        {
+            throw new NotImplementedException();
+        }
+
+        public ThrottledRequestException(Exception innerException) : base("Throttled request", innerException)
+        {
+        }
+    }
 }
