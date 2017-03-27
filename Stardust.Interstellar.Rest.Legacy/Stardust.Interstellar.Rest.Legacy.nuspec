@@ -13,6 +13,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>false</developmentDependency>
     <copyright>Copyright © Stardust 2016</copyright>
+    <tags>rest webapi wcf proxy</tags>
     <frameworkAssemblies />
     <dependencies>
       <group>

@@ -119,6 +119,19 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
                 if (result.Error != null)
                 {
                     PostProcessing(path, result);
+                    var exception = result.Error as WebException;
+                    if (exception != null)
+                    {
+                        try
+                        {
+                            exception.Response?.Close();
+                            exception.Response?.Dispose();
+                        }
+                        catch
+                        {
+
+                        }
+                    }
                     return result;
                 }
             }
@@ -141,6 +154,19 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
                 if (result.Error != null)
                 {
                     PostProcessing(path, result);
+                    var exception = result.Error as WebException;
+                    if (exception != null)
+                    {
+                        try
+                        {
+                            exception.Response?.Close();
+                            exception.Response?.Dispose();
+                        }
+                        catch
+                        {
+
+                        }
+                    }
                     return result;
                 }
             }

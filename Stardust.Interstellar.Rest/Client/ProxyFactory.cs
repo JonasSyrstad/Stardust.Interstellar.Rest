@@ -26,11 +26,15 @@ namespace Stardust.Interstellar.Rest.Client
         {
             Type type;
             if (proxyTypeCache.TryGetValue(interfaceType, out type)) return type;
-            var builder = new ProxyBuilder(interfaceType);
-            var newType = builder.Build();
-            if (proxyTypeCache.TryGetValue(interfaceType, out type)) return type;
-            proxyTypeCache.TryAdd(interfaceType, newType);
-            return newType;
+            lock (interfaceType)
+            {
+                if (proxyTypeCache.TryGetValue(interfaceType, out type)) return type;
+                var builder = new ProxyBuilder(interfaceType);
+                var newType = builder.Build();
+                if (proxyTypeCache.TryGetValue(interfaceType, out type)) return type;
+                proxyTypeCache.TryAdd(interfaceType, newType);
+                return newType;
+            }
         }
 
         public static T CreateInstance<T>(string baseUrl)

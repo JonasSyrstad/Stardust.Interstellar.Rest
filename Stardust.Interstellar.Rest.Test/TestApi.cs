@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -14,7 +16,57 @@ namespace Stardust.Interstellar.Rest.Test
         public TestApi(ITestApi implementation)
             : base(implementation)
         {
+            //var project = VisualStudioHelper.CurrentProject;
+            //// get all class items from the code model
 
+            //// iterate all classes
+            //foreach (VSLangProj.Reference reference in vsProject.References)
+            //{
+            //    // get all interfaces implemented by this class
+            //    var assembly = Assembly.LoadFile(reference.Path) as System.Reflection.Assembly;
+            //    try
+            //    {
+            //        foreach (Type t in assembly.GetTypes())
+            //        {
+            //            if (t.IsInterface)
+            //            {
+            //                var marker =
+            //                    t.GetCustomAttributes(true)
+            //                        .Where(
+            //                            tt =>
+            //                                tt.GetType().FullName ==
+            //                                "Stardust.Interstellar.Rest.Annotations.IRoutePrefixAttribute")
+            //                        .SingleOrDefault();
+            //                if (marker != null)
+            //                {
+            //                    try
+            //                    {
+            //                        //public class t.Name.Remove(0,1)
+            //                        foreach (System.Reflection.MethodInfo item in t.GetMethods())
+            //                        {
+            //                            //	#>
+            //                            //	public class <#= t.Name.Remove(0,1) #> : <#= t.Name #>
+            //                            //	{
+            //                            //}
+
+            //                            //	<#
+            //                        }
+            //                    }
+            //                    catch (Exception ex)
+            //                    {
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+
+            //    catch (Exception ex)
+            //    {
+
+            //    }
+
+
+            //}
         }
 
         [Route("test1/{id}", Name = "Apply1", Order = 1)]
@@ -63,7 +115,7 @@ namespace Stardust.Interstellar.Rest.Test
 
             try
             {
-                var parameters = new object[] { id, timestamp};
+                var parameters = new object[] { id, timestamp };
                 var serviceParameters = GatherParameters("Apply3", parameters);
                 return base.ExecuteMethodVoidAsync(
                     delegate { return base.implementation.PutAsync((string)serviceParameters[0].value, (DateTime)serviceParameters[1].value); });

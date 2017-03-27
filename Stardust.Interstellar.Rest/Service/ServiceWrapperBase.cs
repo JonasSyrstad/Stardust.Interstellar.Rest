@@ -256,17 +256,20 @@ namespace Stardust.Interstellar.Rest.Service
 
                 Request.InitializeState();
                 var action = GetAction(name);
-                var wait = action.Throttler?.IsThrottled(name, implementation.GetType().FullName, implementation.GetType().Assembly.FullName);
+                var state = Request.GetState();
+                var wait = action.Throttler?.IsThrottled(name, implementation.GetType().FullName,implementation.GetType().Assembly.FullName);
                 if (wait != null)
                     throw new ThrottledRequestException(wait.Value);
-                var state = Request.GetState();
+
                 state.SetState("controller", this);
                 state.SetState("controllerName", typeof(T).FullName);
                 state.SetState("action", action.Name);
                 var i = 0;
                 foreach (var parameter in action.Parameters)
                 {
-                    var val = parameter.In == InclutionTypes.Header ? GetFromHeaders(parameter) : fromWebMethodParameters[i];
+                    var val = parameter.In == InclutionTypes.Header
+                        ? GetFromHeaders(parameter)
+                        : fromWebMethodParameters[i];
                     wrappers.Add(parameter.Create(val));
                     i++;
                 }
@@ -284,6 +287,10 @@ namespace Stardust.Interstellar.Rest.Service
                 throw;
             }
             catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
+            catch (ThrottledRequestException)
             {
                 throw;
             }

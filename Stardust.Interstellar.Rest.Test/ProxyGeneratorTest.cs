@@ -137,7 +137,10 @@ namespace Stardust.Interstellar.Rest.Test
                 }
                 catch (Exception ex)
                 {
-                    Assert.IsType<SuspendedDependencyException>(ex.InnerException);
+                    if (!(ex.InnerException is WebException))
+                    {
+                        Assert.IsType<SuspendedDependencyException>(ex.InnerException);
+                    }
                 }
             }
             //Assert.True(retried);
@@ -151,7 +154,7 @@ namespace Stardust.Interstellar.Rest.Test
             var actionConfig = ClientGlobalSettings.ServiceSettings<ITestApi>().ConfigureAction(a => a.FailingAction("", ""));
             var oldHandler = actionConfig.GetErrorHandlers();
             actionConfig.SetErrorHandler(new DummyHander());
-            Assert.NotEqual(oldHandler,actionConfig.GetErrorHandlers());
+            Assert.NotEqual(oldHandler, actionConfig.GetErrorHandlers());
             actionConfig.SetErrorHandler(oldHandler);
             Assert.NotNull(actionConfig);
         }
@@ -239,7 +242,7 @@ namespace Stardust.Interstellar.Rest.Test
             CircuitBreakerContainer.Register<DummyExternaDependencyImpl>(10, 1);
             for (int i = 0; i < 20; i++)
             {
-                try     
+                try
                 {
                     var dummy = new DummyExternaDependencyImpl();
                     var result = dummy.ExecuteWithCircuitBreaker("", s => s.DoWorkFail("hi"));
@@ -266,22 +269,32 @@ namespace Stardust.Interstellar.Rest.Test
                });
             try
             {
-                await testProxy.Throttled();
+                for (int i = 0; i < 10; i++)
+                {
+                    await testProxy.Throttled(); 
+                }
                 Assert.True(false);
             }
             catch (RestWrapperException e)
             {
                 output.WriteLine(e.InnerException.GetType().FullName);
+                if (e.InnerException.StackTrace != null) output.WriteLine(e.InnerException.StackTrace);
+                Assert.IsType<ThrottledRequestException>(e.InnerException);
+            }
+            catch (AggregateException e)
+            {
+                output.WriteLine(e.InnerException.GetType().FullName);
                 output.WriteLine(e.InnerException.StackTrace);
-                Assert.True(e.InnerException is ThrottledRequestException);
+                Assert.IsType<ThrottledRequestException>(e.InnerException);
             }
             catch (Exception e)
             {
 
                 output.WriteLine(e.Message);
                 output.WriteLine(e.StackTrace);
-                Assert.True(e.InnerException is ThrottledRequestException);
+                Assert.True(e is ThrottledRequestException);
             }
+            
         }
     }
 

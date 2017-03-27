@@ -108,10 +108,15 @@ namespace Stardust.Interstellar.Rest.Annotations
             if (CounterSecound == NowTruncated)
             {
                 _counter++;
-                return _counter < _maxLimit ? 0 : _waitTime;
+                return _counter < _maxLimit ? (long?) null : _waitTime;
             }
-            _counter = 0;
-            return null;
+            else
+            {
+                _counter = 0;
+                CounterSecound = NowTruncated;
+                _counter++;
+                return _counter < _maxLimit ? (long?)null : _waitTime;
+            }
         }
 
         private static DateTime NowTruncated => Truncate(DateTime.UtcNow, TimeSpan.FromMilliseconds(1));

@@ -75,7 +75,7 @@ namespace Stardust.Interstellar.Rest.Common
                 if (templatePrefix.IncludeTypeName) prefix = prefix + "/" + (interfaceType.GetGenericArguments().Any() ? interfaceType.GetGenericArguments().FirstOrDefault()?.Name.ToLower() : interfaceType.GetInterfaces().FirstOrDefault()?.GetGenericArguments().First().Name.ToLower());
 
             }
-            return templatePrefix == null ? "" : (prefix + "/") + template.Template;
+            return( templatePrefix == null ? "" : (prefix + "/") + template.Template).Replace("//","/");
         }
 
         internal static void BuildParameterInfo(MethodInfo methodInfo, ActionWrapper action)

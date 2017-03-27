@@ -71,7 +71,7 @@ namespace Stardust.Interstellar.Rest.Test
 
         [Route("tr")]
         [HttpGet]
-        [Throttling(0)]
+        [Throttling(-1)]
         Task Throttled();
     }
 
