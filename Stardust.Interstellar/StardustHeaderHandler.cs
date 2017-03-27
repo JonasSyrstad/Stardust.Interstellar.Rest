@@ -31,6 +31,7 @@ namespace Stardust.Interstellar
 
         protected override void DoSetHeader(StateDictionary state, HttpWebRequest req)
         {
+            
             var runtime = RuntimeFactory.Current;
             var tracer = TracerFactory.StartTracer(this, req.RequestUri.ToString());
             state.Add("tracer", tracer);
@@ -46,26 +47,29 @@ namespace Stardust.Interstellar
 
             if (supportCode.ContainsCharacters())
                 req.Headers.Set(SupportCodeHeaderName, supportCode);
-            var respHeader = new RequestHeader
+            if (ConfigurationManagerHelper.GetValueOnKey("stardust.enableMetadataInHeaders",false)) 
             {
-                ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
-                RuntimeInstance = runtime.InstanceId.ToString(),
-                MessageId = state.GetState<Guid>(Messageid).ToString(),
-                ServerIdentity = Environment.MachineName,
-                SupportCode = supportCode,
-                TimeStamp = DateTime.UtcNow,
-                Environment = runtime.Environment,
-                ConfigSet = Utilities.Utilities.GetConfigSetName(),
-                MethodName = req.RequestUri.ToString(),
-                ServiceName = Utilities.Utilities.GetServiceName(),
-                ConfigVersion = runtime.Context.GetEnvironmentConfiguration().Version
-            };
-
-            req.Headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
+                var respHeader = new RequestHeader
+                {
+                    ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
+                    RuntimeInstance = runtime.InstanceId.ToString(),
+                    MessageId = state.GetState<Guid>(Messageid).ToString(),
+                    ServerIdentity = Environment.MachineName,
+                    SupportCode = supportCode,
+                    TimeStamp = DateTime.UtcNow,
+                    Environment = runtime.Environment,
+                    ConfigSet = Utilities.Utilities.GetConfigSetName(),
+                    MethodName = req.RequestUri.ToString(),
+                    ServiceName = Utilities.Utilities.GetServiceName(),
+                    ConfigVersion = runtime.Context.GetEnvironmentConfiguration().Version
+                };
+                req.Headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
+            }
         }
 
         protected override void DoGetHeader(StateDictionary state, HttpWebResponse response)
         {
+            if (!ConfigurationManagerHelper.GetValueOnKey("stardust.enableMetadataInHeaders", false)) return;
             var meta = response.Headers[StardustMetadataName];
             if (meta != null)
             {
@@ -83,21 +87,25 @@ namespace Stardust.Interstellar
             var runtime = RuntimeFactory.Current;
             runtime.TearDown("");
 
-            
-            var respHeader = new ResponseHeader
+            if (ConfigurationManagerHelper.GetValueOnKey("stardust.enableMetadataInHeaders", false))
             {
-                ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
-                OriginalRuntimeInstance = runtime.RequestContext?.RequestHeader?.RuntimeInstance,
-                RuntimeInstance = runtime.InstanceId.ToString(),
-                CallStack = runtime.CallStack,
-                ExecutionTime = (long)(runtime.CallStack!=null&& runtime.CallStack.ExecutionTime.HasValue ? runtime.CallStack.ExecutionTime.Value : -1),
-                MessageId = state.GetState<Guid>(Messageid).ToString(),
-                ServerIdentity = Environment.MachineName,
-                SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
-                TimeStamp = DateTime.UtcNow,
-                ConfigVersion = runtime.Context.GetEnvironmentConfiguration().Version
-            };
-            headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
+                var respHeader = new ResponseHeader
+                {
+                    ReferingMessageId = runtime.RequestContext?.RequestHeader?.MessageId,
+                    OriginalRuntimeInstance = runtime.RequestContext?.RequestHeader?.RuntimeInstance,
+                    RuntimeInstance = runtime.InstanceId.ToString(),
+                    CallStack = runtime.CallStack,
+                    ExecutionTime = (long)(runtime.CallStack!=null&& runtime.CallStack.ExecutionTime.HasValue ? runtime.CallStack.ExecutionTime.Value : -1),
+                    MessageId = state.GetState<Guid>(Messageid).ToString(),
+                    ServerIdentity = Environment.MachineName,
+                    SupportCode = runtime.RequestContext?.RequestHeader?.SupportCode,
+                    TimeStamp = DateTime.UtcNow,
+                    ConfigVersion = runtime.Context.GetEnvironmentConfiguration().Version
+                };
+                if(!ConfigurationManagerHelper.GetValueOnKey("stardust.enableMetadataInHeaders",false)) return;
+                headers.Add(StardustMetadataName, Convert.ToBase64String(JsonConvert.SerializeObject(respHeader).GetByteArray()));
+
+            }
             headers.Add(SupportCodeHeaderName, state.GetState<string>(SupportCodeHeaderName));
         }
 

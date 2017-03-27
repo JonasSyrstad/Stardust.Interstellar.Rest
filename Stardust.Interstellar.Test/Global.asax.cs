@@ -128,7 +128,7 @@ namespace Stardust.Interstellar.Test
         public StringWrapper TestImplementationPut2(string id, IDictionary<string, IEnumerable<object>> hierarcy)
         {
             Logging.DebugMessage(this.GetExtendedMessage().ToString());
-            return new StringWrapper {Value = "OK"};
+            return new StringWrapper { Value = "OK" };
         }
     }
 
@@ -141,7 +141,7 @@ namespace Stardust.Interstellar.Test
 
         public Task<StringWrapper> Apply2(string id, string name, string item3)
         {
-            return Task.FromResult(new StringWrapper { Value = string.Join("-", id, name, item3),NullDateTime = DateTime.UtcNow});
+            return Task.FromResult(new StringWrapper { Value = string.Join("-", id, name, item3), NullDateTime = DateTime.UtcNow });
         }
 
         public string Apply3(string id, string name, string item3, string item4)
@@ -156,11 +156,12 @@ namespace Stardust.Interstellar.Test
 
         public async Task<StringWrapper> ApplyAsync(string id, string name, string item3, string item4)
         {
-            //await Task.Run(() => {
-            //    throw new Exception("test"); 
-            //});
-            //var rnd = new Random();
-            //if (rnd.Next(0, 3) == 2) throw new StatusException(HttpStatusCode.RequestTimeout);
+            await Task.Run(() =>
+            {
+                throw new Exception("test");
+            });
+            var rnd = new Random();
+            if (rnd.Next(0, 3) == 2) throw new StatusException(HttpStatusCode.RequestTimeout);
             return new StringWrapper { Value = string.Join("-", id, name, item3, item4) };
             //return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3, item4) });
         }

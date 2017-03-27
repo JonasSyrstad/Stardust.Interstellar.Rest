@@ -40,7 +40,7 @@ namespace Stardust.Interstellar
         public IServiceContainer<T> SetCredentials(string username, string password)
         {
             var autHandler = Resolver.Activate<IAuthenticationHandler>() as AuthHandler;
-            autHandler.SetNetworkCredentials(new NetworkCredential(username, password));
+            autHandler?.SetNetworkCredentials(new NetworkCredential(username, password));
             return this;
         }
 

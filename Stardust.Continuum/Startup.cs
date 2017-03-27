@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Web;
@@ -16,6 +17,7 @@ using Stardust.Continuum.Controllers;
 using Stardust.Interstellar.Rest.Service;
 using Stardust.Particles;
 using WebGrease.Configuration;
+using Timer = System.Timers.Timer;
 
 [assembly: OwinStartup(typeof(Stardust.Continuum.Startup))]
 
@@ -104,8 +106,8 @@ namespace Stardust.Continuum
         private const string Sourceaddress = "SourceAddress";
         private const string Machinename = "MachineName";
         private const string XCallingmachine = "x-callingMachine";
-        private static int cnt = 0;
-        private static long totalCnt = 0;
+        private static long cnt = 0;
+        private static  long totalCnt = 0;
         private static long dbg = 0;
         private static long error = 0;
         private static DateTime collectionSince = DateTime.UtcNow;
@@ -117,13 +119,20 @@ namespace Stardust.Continuum
         {
             LogBytesReceived();
             var key = $"{project}.{environment}";
-            AddCommonProperties(item);
-            totalCnt++;
-            cnt++;
-            if (item.LogLevel != LogLevels.Error)
-                dbg++;
-            else
-                error++;
+            try
+            {
+                AddCommonProperties(item);
+                Interlocked.Increment(ref totalCnt);//++
+                Interlocked.Increment(ref cnt);//++;
+                if (item.LogLevel != LogLevels.Error)
+                    Interlocked.Increment(ref dbg); //++;
+                else
+                    Interlocked.Increment(ref error);//++;
+            }
+            catch 
+            {
+                
+            }
             try
             {
                 item.Environment = environment;
@@ -141,14 +150,22 @@ namespace Stardust.Continuum
 
         private static void LogBytesReceived()
         {
-            var size = HttpContext.Current.Request.ContentLength;
-            receivedTotal += size;
-            if (resetTime < DateTime.UtcNow)
+            try
             {
-                resetTime = DateTime.UtcNow.AddHours(1);
-                receivedLastHour = 0;
+                var size = HttpContext.Current.Request.ContentLength;
+                Interlocked.Add(ref receivedTotal, size);
+                if (resetTime < DateTime.UtcNow)
+                {
+                    resetTime = DateTime.UtcNow.AddHours(1);
+                    Interlocked.Exchange(ref receivedLastHour , 0);
+                }
+                Interlocked.Add(ref receivedLastHour, size);
+                //receivedLastHour += size;
             }
-            receivedLastHour += size;
+            catch 
+            {
+                
+            }
         }
 
         private static void LogUsage(StreamItem item, string key)
@@ -168,10 +185,10 @@ namespace Stardust.Continuum
                     locationCounter = new UsageItem() { Name = key, Location = loc };
                     site.TryAdd(loc, locationCounter);
                 }
-                locationCounter.ItemsReceived++;
-                Total.ItemsReceived++;
+                locationCounter.Increment();//.ItemsReceived++;
+                Total.Increment();
                 if (item.LogLevel == LogLevels.Error)
-                    Errors.ItemsReceived++;
+                    Errors.Increment();
             }
             catch (Exception)
             {
@@ -192,29 +209,38 @@ namespace Stardust.Continuum
 
         private static void AddSource(string project, string environment)
         {
-            if (cnt > 200)
+            try
             {
+                if (Interlocked.Read(ref cnt) > 200)
+                {
 
-                var errorPercent = totalCnt > 0 ? (error / totalCnt) * 100 : 0;
-                cnt = 0;
-                var timeSpan = (DateTime.UtcNow - collectionSince);
-                Logging.DebugMessage($"{DateTime.UtcNow}: {dbg:N0} debug, {error:N0} error and total {totalCnt:N0}. {(totalCnt / timeSpan.TotalSeconds):N2} msg/sec, {(totalCnt / timeSpan.TotalMinutes):N2} msg/min.");
-                Logging.DebugMessage($"{errorPercent:P} errors");
+                    var errorPercent = Interlocked.Read(ref totalCnt) > 0 ? (Interlocked.Read(ref error) / Interlocked.Read(ref totalCnt)) * 100 : 0;
+                    Interlocked.Exchange(ref cnt, 0);
+                    var timeSpan = (DateTime.UtcNow - collectionSince);
+                    Logging.DebugMessage($"{DateTime.UtcNow}: {Interlocked.Read(ref dbg):N0} debug, {Interlocked.Read(ref error):N0} error and total {Interlocked.Read(ref totalCnt):N0}. {(Interlocked.Read(ref totalCnt) / timeSpan.TotalSeconds):N2} msg/sec, {(Interlocked.Read(ref totalCnt) / timeSpan.TotalMinutes):N2} msg/min.");
+                    Logging.DebugMessage($"{errorPercent:P} errors");
 
-                FileSizeTypes totalQ;
-                var rtSize = DateTimeHelper.GetSizeIn(receivedTotal, out totalQ);
-                FileSizeTypes lastHourQ;
-                var timeSinceReset = DateTime.UtcNow - resetTime.AddHours(-1);
-                var lhSize = DateTimeHelper.GetSizeIn(receivedLastHour, out lastHourQ);
-                Logging.DebugMessage($"{lhSize:N1}{lastHourQ.ToString()} last {timeSinceReset.TotalMinutes:N0} minute{(timeSinceReset.TotalMinutes < 2 ? "" : "s")} . {rtSize:N1}{totalQ.ToString()} in total");
-                Logging.DebugMessage($"Uptime {(DateTime.UtcNow - collectionSince):g}");
+                    FileSizeTypes totalQ;
+                    var rtSize = DateTimeHelper.GetSizeIn(Interlocked.Read(ref receivedTotal), out totalQ);
+                    FileSizeTypes lastHourQ;
+                    var timeSinceReset = DateTime.UtcNow - resetTime.AddHours(-1);
+                    var lhSize = DateTimeHelper.GetSizeIn(Interlocked.Read(ref receivedLastHour), out lastHourQ);
+                    Logging.DebugMessage($"{lhSize:N1}{lastHourQ} last {timeSinceReset.TotalMinutes:N0} minute{(timeSinceReset.TotalMinutes < 2 ? "" : "s")} . {rtSize:N1}{totalQ.ToString()} in total");
+                    Logging.DebugMessage($"Uptime {(DateTime.UtcNow - collectionSince):g}");
 
+                }
+                if (!HomeController.sources.ContainsKey($"{project}.{environment}"))
+                {
+                    if (!HomeController.sources.ContainsKey($"{project}.{environment}"))
+                        HomeController.itemd.Add($"{project}.{environment}");
+                    if (!HomeController.sources.ContainsKey($"{project}.{environment}"))
+                        HomeController.itemc.Add($"{project}.{environment}");
+                    HomeController.sources.TryAdd($"{project}.{environment}", $"{project}.{environment}");
+                }
             }
-            if (!HomeController.sources.ContainsKey($"{project}.{environment}"))
+            catch 
             {
-                HomeController.sources.TryAdd($"{project}.{environment}", $"{project}.{environment}");
-                HomeController.itemd.Add($"{project}.{environment}");
-                HomeController.itemc.Add($"{project}.{environment}");
+                
             }
         }
 
@@ -222,8 +248,8 @@ namespace Stardust.Continuum
         {
             LogBytesReceived();
             var key = $"{project}.{environment}";
-            totalCnt += items.Length;
-            cnt++;
+            Interlocked.Add(ref totalCnt,items.Length);// totalCnt += items.Length;
+            Interlocked.Increment(ref cnt);
             try
             {
                 AddSource(project, environment);
@@ -232,9 +258,9 @@ namespace Stardust.Continuum
 
                     AddCommonProperties(streamItem);
                     if (streamItem.LogLevel != LogLevels.Error)
-                        dbg++;
+                        Interlocked.Increment(ref dbg);
                     else
-                        error++;
+                        Interlocked.Increment(ref error);
                     streamItem.Environment = environment;
                     if (streamItem.Timestamp == null) streamItem.Timestamp = DateTime.UtcNow;
                     LogUsage(streamItem, key);
@@ -259,6 +285,7 @@ namespace Stardust.Continuum
     internal class UsageItem
     {
         private static Timer timer;
+        private long _itemsReceived;
 
         static UsageItem()
         {
@@ -293,17 +320,27 @@ namespace Stardust.Continuum
 
         private UsageItem MakeUpdateMessage()
         {
-            var message = new UsageItem { ItemsReceived = ItemsReceived, Name = Name, Location = Location, TimeStamp = DateTime.UtcNow.Truncate(TimeSpan.FromSeconds(1)) };
-            ItemsReceived = 0;
+            var message = new UsageItem { ItemsReceived = Interlocked.Read(ref _itemsReceived), Name = Name, Location = Location, TimeStamp = DateTime.UtcNow.Truncate(TimeSpan.FromSeconds(1)) };
+            Interlocked.Exchange(ref _itemsReceived, 0);
             return message;
         }
 
         public string Name { get; set; }
 
-        public long ItemsReceived { get; set; }
+        public long ItemsReceived
+        {
+            get { return _itemsReceived; }
+            set { _itemsReceived = value; }
+        }
+
         public string Location { get; set; }
 
         public DateTime TimeStamp { get; set; }
+
+        public void Increment()
+        {
+            Interlocked.Increment(ref _itemsReceived);
+        }
     }
     public static class DateTimeHelper
     {

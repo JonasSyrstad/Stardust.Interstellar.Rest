@@ -24,7 +24,7 @@
                                 <span class="caret"></span>
                             </button>
                             <ul class="dropdown-menu">
-                                @foreach (var i in ViewBag.Sources)
+                                @foreach (var i in Enumerable.Distinct(ViewBag.Sources))
                                 {
                                     <li><a href="#">@i</a></li>
                                 }

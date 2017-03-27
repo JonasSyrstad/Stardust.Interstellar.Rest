@@ -37,7 +37,7 @@ namespace Stardust.Continuum.Client
 
         public void SetServiceHeaders(HttpResponseHeaders headers)
         {
-            headers.Add("x-service-runtime", "continuum.V.1.1.beta");
+            headers.Add("x-service-runtime", "continuum.V.1.2.rc1");
         }
     }
 }

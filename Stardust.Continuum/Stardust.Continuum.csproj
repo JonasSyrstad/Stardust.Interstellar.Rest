@@ -492,6 +492,7 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Service References\Application Insights\ConnectedService.json" />
+    <Content Include="Views\Home\Map.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -505,6 +506,10 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest\Continuum.Master.Model\Continuum.Master.Model.csproj">
+      <Project>{4ffb526b-b623-48e4-904e-b21c44cf49f6}</Project>
+      <Name>Continuum.Master.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stardust.Interstellar.Rest\Stardust.Interstellar.Continuum.Client\Stardust.Continuum.Client.csproj">
       <Project>{c32996be-e728-4fbc-b294-e8c1eb563950}</Project>
       <Name>Stardust.Continuum.Client</Name>

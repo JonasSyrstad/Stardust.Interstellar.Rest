@@ -10,12 +10,43 @@ namespace Stardust.Interstellar.Rest.Client.CircuitBreaker
     {
         public ResultWrapper Execute(string path, Func<ResultWrapper> func)
         {
-            return func();
+            var result = func();
+
+            var exception = result.Error as WebException;
+            if (exception != null)
+            {
+                try
+                {
+                    exception.Response?.Close();
+                    exception.Response?.Dispose();
+                }
+                catch
+                {
+
+                }
+            }
+            return result;
         }
 
         public async Task<ResultWrapper> ExecuteAsync(string path,Func<Task<ResultWrapper>> func)
         {
-            return await func();
+            var result= await func();
+
+            var exception = result.Error as WebException;
+            if (exception != null)
+            {
+                try
+                {
+                    exception.Response?.Close();
+                    exception.Response?.Dispose();
+                }
+                catch
+                {
+                    
+                }
+            }
+            return result;
+
         }
 
         public T Invoke<T>(string actionUrl, Func<T> func)

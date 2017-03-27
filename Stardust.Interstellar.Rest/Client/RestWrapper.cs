@@ -180,14 +180,14 @@ namespace Stardust.Interstellar.Rest.Client
 
                 GetHeaderValues(action, webError.Response as HttpWebResponse);
                 errorResult = HandleWebException(webError, action);
-                try
-                {
-                    webError.Response?.Close();
-                    webError.Response?.Dispose();
-                }
-                catch (Exception)
-                {
-                }
+                //try
+                //{
+                //    webError.Response?.Close();
+                //    webError.Response?.Dispose();
+                //}
+                //catch (Exception)
+                //{
+                //}
             }
             catch (Exception ex)
             {
@@ -535,14 +535,14 @@ namespace Stardust.Interstellar.Rest.Client
                 EnsureActionId(webError, req);
                 GetHeaderValues(action, webError.Response as HttpWebResponse);
                 errorResult = HandleWebException(webError, action);
-                try
-                {
-                    webError.Response?.Close();
-                    webError.Response?.Dispose();
-                }
-                catch (Exception)
-                {
-                }
+                //tryr
+                //{
+                //    webError.Response?.Close();
+                //    webError.Response?.Dispose();
+                //}
+                //catch (Exception)
+                //{
+                //}
             }
             catch (Exception ex)
             {
