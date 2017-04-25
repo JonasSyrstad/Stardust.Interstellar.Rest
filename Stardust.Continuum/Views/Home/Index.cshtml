@@ -24,6 +24,10 @@
         <input style="display: inline-block; padding-left: 30px; width: 200px; padding-right: 10px; " type="text" class="form-control " id="filterBox" />
     </div><div class="btn btn-sm div-inline btn-default" id="filter"><i class="glyphicon glyphicon-filter"></i></div>
     <div class="btn btn-sm div-inline btn-default hidden-xs hidden-sm" id="clearFilter"><i class="glyphicon glyphicon-remove-sign"></i></div>
+    <div class="div-inline">&nbsp;</div>
+    <div class="checkbox div-inline hidden-xs hidden-sm">
+        <label><input type="checkbox" value="" id="clearOnOverflow">Clear on overflow</label>
+    </div>
     <input type="hidden" id="filterString" />
     <div class="info help-block" id="filterhelp" style="font-size: 10px;">Filter: </div>
 </div>
@@ -129,11 +133,14 @@
                 $("#container").empty();
                 $("#container").append("<div class=\"itemContainer\"></div>");
             }
-            
+
             $("#pause").click(function () {
-                
+
                 pause();
 
+            });
+            $("#clearOnOverflow").change(function () {
+                $.clearOnOverflow = $('#clearOnOverflow').val($(this).is(':checked'));
             });
             $("#filter").click(function () {
                 $("#filterString").text($("#filterBox").val());
@@ -155,9 +162,9 @@
             $("#fullscreen").click(function () {
                 $("#container").fullScreen(true);
             });
-            
+
             $("#start").click(function () {
-                
+
                 resume();
 
             });
@@ -265,8 +272,17 @@
                 getStackTrace(data) + "</div>");
             $("div#container").prepend(newItem);
             $("span.my-tool-tip").tooltip();
-            if ($("#container").children().size() > $.maxElements)
-                $("div#container").children().last().remove();
+            if ($("#container").children().size() > $.maxElements) {
+                if ($.clearOnOverflow) {
+                    //console.log("Clearing");
+                    $("#container").empty();
+                    $("#container").append("<div class=\"itemContainer\"></div>");
+                }
+                else {
+                    //console.log("trunkating");
+                    $("div#container").children().last().remove();
+                }
+            }
         }
-     </script>
+    </script>
 }
