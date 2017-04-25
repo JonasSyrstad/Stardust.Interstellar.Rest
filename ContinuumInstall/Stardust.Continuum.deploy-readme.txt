@@ -3,7 +3,7 @@
 Prerequisites :
 --------------------------
 To deploy this Web package, Web Deploy (msdeploy.exe) must be installed on the computer that runs the .cmd file. For information about how to install Web Deploy, see the following URL:
-http://go.microsoft.com/?linkid=9278654
+https://go.microsoft.com/?linkid=9278654
 This batch file requires that the package file "Stardust.Continuum.zip" and optionally provided the parameters file "Stardust.Continuum.SetParameters.xml" in the same folder or destination folder by environment variable.
 
 ===========================
@@ -59,5 +59,5 @@ Environment-Specific Settings:
 	To customize application-specific settings for each deployment environment (for example, the IIS application name, the physical path, and any connection strings), edit the settings in the following file: 
 		 "Stardust.Continuum.SetParameters.xml"
 ===========================
-For more information on this deploy script visit:	http://go.microsoft.com/fwlink/?LinkID=183544
+For more information on this deploy script visit:	https://go.microsoft.com/fwlink/?LinkID=183544
 

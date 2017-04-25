@@ -2,7 +2,7 @@
 @rem Copyright 2008 Microsoft Corporation. All rights reserved.
 @rem This is provided as sample to deploy the package using msdeploy.exe
 @rem For information about IIS Web Deploy technology,
-@rem please visit http://go.microsoft.com/?linkid=9278654
+@rem please visit https://go.microsoft.com/?linkid=9278654
 @rem Note: This batch file assumes the package and setparametsrs.xml are in the same folder with this file
 @rem ---------------------------------------------------------------------------------
 @if %_echo%!==! echo off
@@ -32,7 +32,7 @@ set MSDeployPath=%%j
                       
 if not exist "%MSDeployPath%msdeploy.exe" (
 echo. msdeploy.exe is not found on this machine. Please install Web Deploy before execute the script. 
-echo. Please visit http://go.microsoft.com/?linkid=9278654
+echo. Please visit https://go.microsoft.com/?linkid=9278654
 goto :usage
 )
 
@@ -144,13 +144,13 @@ if /I "%_ArgLocalIIS%" == "true" (
 if not exist "%IISExpressPath%%IISExpressManifest%" (
 echo. IISExpress is not found on this machine. Please install through Web Platform Installer before execute the script. 
 echo. or remove /L flag
-echo. Please visit http://go.microsoft.com/?linkid=9278654
+echo. Please visit https://go.microsoft.com/?linkid=9278654
 goto :usage
 )
 if not exist "%IISExpressUserProfileDirectory%" (
 echo. %IISExpressUserProfileDirectory% is not exists
 echo. IISExpress is found on the machine. But the user have run IISExpress at least once.
-echo. Please visit http://go.microsoft.com/?linkid=9278654 for detail
+echo. Please visit https://go.microsoft.com/?linkid=9278654 for detail
 goto :usage
 )
                       
@@ -297,13 +297,13 @@ echo.[additional msdeploy flags]: note: " is required for passing = through comm
 echo  "-skip:objectName=setAcl" "-skip:objectName=dbFullSql"
 echo.Alternative environment variable _MsDeployAdditionalFlags is also honored.
 echo.
-echo. Please make sure MSDeploy is installed in the box http://go.microsoft.com/?linkid=9278654
+echo. Please make sure MSDeploy is installed in the box https://go.microsoft.com/?linkid=9278654
 echo.
 echo In addition, you can change IIS Application Name, Physical path, 
 echo connectionString and other deploy parameters in the following file:
 echo "%_DeploySetParametersFile%"
 echo.
-echo For more information about this batch file, visit http://go.microsoft.com/fwlink/?LinkID=183544 
+echo For more information about this batch file, visit https://go.microsoft.com/fwlink/?LinkID=183544 
 ) else (
 start notepad "%RootPath%Stardust.Continuum.deploy-readme.txt"
 )
