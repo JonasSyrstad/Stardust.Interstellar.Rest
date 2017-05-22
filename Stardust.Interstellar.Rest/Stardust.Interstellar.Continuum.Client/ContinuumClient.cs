@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Configuration;
 using System.Diagnostics;
@@ -30,38 +31,49 @@ namespace Stardust.Continuum.Client
             _timer.Start();
         }
 
+        public static void Shutdown()
+        {
+            _timer.Enabled = false;
+            _logPumpIsDisabled = true;
+            Flush();
+        }
+
         private static void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             _timer.Enabled = false;
             try
             {
-                StreamItem[] items;
-                lock (triowing)
-                {
-                    ConcurrentBag<StreamItem> tempBuffer;
-                    lock (bufferLock)
-                    {
-                        tempBuffer = _logBuffer;
-                        _logBuffer = new ConcurrentBag<StreamItem>(); 
-                    }
-                    items = tempBuffer.ToArray();
-
-                }
-                switch (items.Length)
-                {
-                    case 0:
-                        return;
-                    case 1:
-                        Task.Run(async () => await AddStreamInternal(items[0])).Wait();
-                        break;
-                    default:
-                        Task.Run(async () => await AddStreamInternal(items.Reverse().ToArray())).Wait();
-                        break;
-                }
+                Flush();
             }
             finally
             {
                 _timer.Enabled = true;
+            }
+        }
+
+        private static void Flush()
+        {
+            StreamItem[] items;
+            lock (triowing)
+            {
+                ConcurrentBag<StreamItem> tempBuffer;
+                lock (bufferLock)
+                {
+                    tempBuffer = _logBuffer;
+                    _logBuffer = new ConcurrentBag<StreamItem>();
+                }
+                items = tempBuffer.ToArray();
+            }
+            switch (items.Length)
+            {
+                case 0:
+                    return;
+                case 1:
+                    Task.Run(async () => await AddStreamInternal(items[0])).Wait();
+                    break;
+                default:
+                    Task.Run(async () => await AddStreamInternal(items.Reverse().ToArray())).Wait();
+                    break;
             }
         }
 
@@ -95,7 +107,8 @@ namespace Stardust.Continuum.Client
 
         private static string _environment;
         private static ILogStream client;
-        private static object bufferLock=new object();
+        private static object bufferLock = new object();
+        private static bool _logPumpIsDisabled;
 
         public static string Environment
         {
@@ -120,13 +133,14 @@ namespace Stardust.Continuum.Client
 
             if (buffered)
             {
+                if(_logPumpIsDisabled) throw new ObjectDisposedException(nameof(ContinuumClient),"Batch message pump is closed");
                 if (LimitMessageSize.HasValue && LimitMessageSize.Value > 1000)
                     item.Message = item.Message?.Substring(0, LimitMessageSize.Value);
                 lock (bufferLock)
                 {
                     _logBuffer.Add(item);
                 }
-                
+
             }
             else
             {

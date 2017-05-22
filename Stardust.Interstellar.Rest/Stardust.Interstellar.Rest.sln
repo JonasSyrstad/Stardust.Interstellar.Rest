@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Rest", "Stardust.Interstellar.Rest.csproj", "{5EE819E3-B588-431F-B5DA-3EBC0557242B}"
 EndProject
@@ -51,6 +51,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Continuum.Master.Model", "Continuum.Master.Model\Continuum.Master.Model.csproj", "{4FFB526B-B623-48E4-904E-B21C44CF49F6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Continuum.Master.ControlUnit", "Continuum.Master.ControlUnit\Continuum.Master.ControlUnit.csproj", "{3E912607-A168-44E6-9CF7-5F01E55D5593}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Continuum.Log4Net", "..\Stardust.Continuum.Log4Net\Stardust.Continuum.Log4Net.csproj", "{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -118,6 +120,10 @@ Global
 		{3E912607-A168-44E6-9CF7-5F01E55D5593}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E912607-A168-44E6-9CF7-5F01E55D5593}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E912607-A168-44E6-9CF7-5F01E55D5593}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -129,5 +135,6 @@ Global
 		{6467146C-1EE8-4271-AC76-16A2033B3B36} = {F74F09E4-27D1-4254-988D-E4E5FD2B438C}
 		{4FFB526B-B623-48E4-904E-B21C44CF49F6} = {F74F09E4-27D1-4254-988D-E4E5FD2B438C}
 		{3E912607-A168-44E6-9CF7-5F01E55D5593} = {F74F09E4-27D1-4254-988D-E4E5FD2B438C}
+		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C} = {F74F09E4-27D1-4254-988D-E4E5FD2B438C}
 	EndGlobalSection
 EndGlobal

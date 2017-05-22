@@ -34,7 +34,7 @@ namespace Stardust.Interstellar.Rest.Test
         }
 
         [Fact]
-        public async Task GeneratorTest()
+        public async Task GeneratorTest()   
 
         {
             var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");

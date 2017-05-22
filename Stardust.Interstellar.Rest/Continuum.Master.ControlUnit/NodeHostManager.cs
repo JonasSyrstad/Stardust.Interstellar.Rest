@@ -15,20 +15,4 @@ namespace Continuum.Master.ControlUnit
             _provider = provider;
         }
     }
-
-    public interface IDataContextProvider
-    {
-        ContinuumContext Current { get; }
-    }
-
-    class DataContextProvider : IDataContextProvider
-    {
-        private ContinuumContext _context;
-
-        public ContinuumContext Current => _context ?? (_context = new ContinuumContext());
-    }
-
-    public interface INodeHostManager
-    {
-    }
 }

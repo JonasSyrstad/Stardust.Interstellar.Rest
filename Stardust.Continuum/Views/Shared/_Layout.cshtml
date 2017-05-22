@@ -5,6 +5,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href="~/favicon.ico?a" type="image/x-icon" />
+    <link rel="shortcut icon" href="~/favicon.ico?a" type="image/x-icon" />
     <title>@ViewBag.Title - Continuum</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
@@ -49,6 +51,7 @@
                                
 
                                 <ul class="nav navbar-nav navbar-right" style="display: inline-block;">
+                                    <li class="hidden-xs hidden-md hidden-sm"><a  target="_blank" href="https://gravatar.com/" title="Edit profile picture in gravatar.com"><i class="glyphicon glyphicon-edit"></i></a></li>
                                     <li>
                                         <a style="padding-top: 10px; padding-bottom: 0; margin-right: 50px;" href="#">@Html.Gravatar(User.Identity.GetUserName(), 40, new { Title = User.Identity.Name, @class = "img-circle" }) <span class="hidden-md hidden-sm"></span></a>
                                     </li>

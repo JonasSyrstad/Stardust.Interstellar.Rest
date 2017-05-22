@@ -362,10 +362,10 @@
       <DependentUpon>Site.css</DependentUpon>
     </Content>
     <Content Include="Content\vis.min.css" />
-    <Content Include="favicon.ico" />
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <Content Include="favicon.ico" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Areas\HelpPage\Views\Web.config" />
@@ -421,6 +421,8 @@
     <None Include="Properties\PublishProfiles\continuumDev - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\continuumDev - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\ContinuumWebDeployPackage.pubxml" />
+    <None Include="Properties\PublishProfiles\myDnvGlLogStream - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\myDnvGlLogStream - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\thrill-log - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\thrill-log - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\TimeExpProdContinuumWebAppwesteurope - FTP.pubxml" />

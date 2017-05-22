@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Stardust.Interstellar.Rest.Annotations.Portable\Stardust.Interstellar.Rest.Annotations.Portable.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Stardust.Interstellar.Rest.Annotations">
+      <HintPath>..\..\Stardust.Interstellar.Rest.Annotations.Portable\bin\Release\netstandard1.6\Stardust.Interstellar.Rest.Annotations.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

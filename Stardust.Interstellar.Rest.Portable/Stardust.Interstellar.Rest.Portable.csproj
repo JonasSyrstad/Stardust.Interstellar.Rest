@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A2CE4D03-16DB-429A-B065-BEDD9E5E2A58}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Stardust.Interstellar.Rest</RootNamespace>
+    <AssemblyName>Stardust.Interstellar.Rest</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="project.json" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Client\CircuitBreaker\CircuitBreaker.cs" />
+    <Compile Include="Client\CircuitBreaker\CircuitBreakerContainer.cs" />
+    <Compile Include="Client\CircuitBreaker\CircuitBreakerState.cs" />
+    <Compile Include="Client\CircuitBreaker\ClosedState.cs" />
+    <Compile Include="Client\CircuitBreaker\HalfOpenState.cs" />
+    <Compile Include="Client\CircuitBreaker\ICircuitBreaker.cs" />
+    <Compile Include="Client\CircuitBreaker\NullBreaker.cs" />
+    <Compile Include="Client\CircuitBreaker\OpenState.cs" />
+    <Compile Include="Client\CircuitBreaker\SuspendedDependencyException.cs" />
+    <Compile Include="Client\ClientGlobalSettings.cs" />
+    <Compile Include="Client\Graph\GraphBase.cs" />
+    <Compile Include="Client\Graph\GraphCollection.cs" />
+    <Compile Include="Client\Graph\GraphContext.cs" />
+    <Compile Include="Client\Graph\GraphItem.cs" />
+    <Compile Include="Client\Graph\GraphQuery.cs" />
+    <Compile Include="Client\Graph\GraphQueryPart.cs" />
+    <Compile Include="Client\Graph\GraphSortStatement.cs" />
+    <Compile Include="Client\Graph\IGraphCollection.cs" />
+    <Compile Include="Client\Graph\IGraphCollectionService.cs" />
+    <Compile Include="Client\Graph\IGraphItem.cs" />
+    <Compile Include="Client\Graph\IInternalGraphHelper.cs" />
+    <Compile Include="Client\Graph\InternalHelpers\GraphHelpers.cs" />
+    <Compile Include="Client\Graph\IPagedGraphCollection.cs" />
+    <Compile Include="Client\Graph\NavigationAttribute.cs" />
+    <Compile Include="Client\Graph\PagedGraphCollection.cs" />
+    <Compile Include="Client\ISerializer.cs" />
+    <Compile Include="Client\ProxyBuilder.cs" />
+    <Compile Include="Client\ProxyFactory.cs" />
+    <Compile Include="Client\RestWrapper.cs" />
+    <Compile Include="Client\RestWrapperException.cs" />
+    <Compile Include="Client\ResultWrapper.cs" />
+    <Compile Include="Client\StaticReflection.cs" />
+    <Compile Include="Client\TypeWrapper.cs" />
+    <Compile Include="Common\ActionWrapper.cs" />
+    <Compile Include="Common\EmitHelpers.cs" />
+    <Compile Include="Common\ExtensionsFactory.cs" />
+    <Compile Include="Common\ILogger.cs" />
+    <Compile Include="Common\IRouteTemplateResolver.cs" />
+    <Compile Include="Common\IServiceParameterResolver.cs" />
+    <Compile Include="Common\IWebMethodConverter.cs" />
+    <Compile Include="Common\JsonSerializerExtensions.cs" />
+    <Compile Include="Common\ParameterWrapper.cs" />
+    <Compile Include="Extensions\HeaderHandlerFactory.cs" />
+    <Compile Include="Extensions\IHeaderHandlerFactory.cs" />
+    <Compile Include="Extensions\NullAuthHandler.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Service\AggregateHandler.cs" />
+    <Compile Include="Service\CustomAssebliesResolver.cs" />
+    <Compile Include="Service\ErrorHandlerAttribute.cs" />
+    <Compile Include="Service\HttpContextMessageContainer.cs" />
+    <Compile Include="Service\IErrorHandler.cs" />
+    <Compile Include="Service\IServiceExtensions.cs" />
+    <Compile Include="Service\ParameterReflectionException.cs" />
+    <Compile Include="Service\ServiceBuilder.cs" />
+    <Compile Include="Service\ServiceFactory.cs" />
+    <Compile Include="Service\ServiceWrapperBase.cs" />
+    <Compile Include="Service\VoidDelegateBuilder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Annotations\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Annotations.Portable\Stardust.Interstellar.Rest.Annotations.Portable.csproj">
+      <Project>{79c1addb-f1e0-4682-80fa-4497779b860b}</Project>
+      <Name>Stardust.Interstellar.Rest.Annotations.Portable</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

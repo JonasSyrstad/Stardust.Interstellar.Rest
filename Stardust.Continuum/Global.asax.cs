@@ -31,6 +31,24 @@ namespace Stardust.Continuum
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
+            {
+                
+                args.SetObserved();
+                args.Exception.Handle(e =>
+                {
+                    var aggregate = e as AggregateException;
+                    if (aggregate != null)
+                    {
+                        foreach (var aggregateInnerException in aggregate.InnerExceptions)
+                        {
+                            aggregateInnerException.Log("TaskException");
+                        }
+                    }
+                    else e.Log("TaskException");
+                    return true;
+                });
+            };
         }
     }
 
