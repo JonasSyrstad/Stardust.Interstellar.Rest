@@ -1,5 +1,8 @@
 # Stardust.Interstellar.Rest
 
+> note: a new version of this library that is built on .net standard 2 is moved to: https://github.com/JonasSyrstad/Stardust.Rest 
+ 
+
 This is a tool for creating webapi controllers and clients based upon an interface that is mostly decorated by the common annotations you are used to. It is mainly intended to be used inside the organization 0r the product. But workes well to provide .net clients to the public as well.
 
 When both the client and the service are located in the same solution you will have ctrl-F12 support from the client code.
