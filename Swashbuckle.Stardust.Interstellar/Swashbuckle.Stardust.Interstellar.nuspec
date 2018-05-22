@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata>
     <id>Stardust.Interstellar.Swashbuckle</id>
-    <version>1.1.7.0</version>
+    <version>1.1.12.0</version>
     <title>Stardust.Interstellar.Swashbuckle</title>
     <authors>Stardust</authors>
     <description>Adds swagger to the stardust generated WebApi's</description>
@@ -21,7 +21,7 @@
         <dependency id="Microsoft.AspNet.WebApi.Core" version="4.0.20710.0" />
         <dependency id="Microsoft.Net.Http" version="2.0.20710.0" />
         <dependency id="Newtonsoft.Json" version="4.5.6" />
-        <dependency id="Swashbuckle.Core" version="5.3.2" />
+        <dependency id="Swashbuckle.Core" version="5.5.3" />
         <dependency id="Stardust.Interstellar.Rest" version="2.1.2" />
         <dependency id="Stardust.Interstellar.Rest.Annotations" version="1.1.0.0" />
       </group>

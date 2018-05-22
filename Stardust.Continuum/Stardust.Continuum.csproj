@@ -28,6 +28,7 @@
     </NuGetPackageImportStamp>
     <ApplicationInsightsResourceId>/subscriptions/9b581290-fa5a-4eb3-bc2d-1fafcc2ada1c/resourcegroups/continuumTest/providers/microsoft.insights/components/continuumDev</ApplicationInsightsResourceId>
     <ApplicationInsightsAnnotationResourceId>/subscriptions/9b581290-fa5a-4eb3-bc2d-1fafcc2ada1c/resourcegroups/continuumTest/providers/microsoft.insights/components/continuumDev</ApplicationInsightsAnnotationResourceId>
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -144,8 +145,8 @@
       <HintPath>..\Stardust.Interstellar.Rest\packages\Microsoft.Rest.ClientRuntime.2.1.0\lib\net45\Microsoft.Rest.ClientRuntime.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\Stardust.Interstellar.Rest\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\Stardust.Interstellar.Rest\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin.Security.Providers.AzureAD, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -421,6 +422,10 @@
     <None Include="Properties\PublishProfiles\continuumDev - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\continuumDev - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\ContinuumWebDeployPackage.pubxml" />
+    <None Include="Properties\PublishProfiles\eazyportlogstream - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\eazyportlogstream - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\ecompapilogstream - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\ecompapilogstream - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\myDnvGlLogStream - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\myDnvGlLogStream - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\thrill-log - FTP.pubxml" />
@@ -508,6 +513,10 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Stardust.Interstellar.Rest.Jil\Stardust.Interstellar.Rest.Jil.csproj">
+      <Project>{F84C83F6-768D-4D19-92F9-CB9478C98D4C}</Project>
+      <Name>Stardust.Interstellar.Rest.Jil</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Stardust.Interstellar.Rest\Continuum.Master.Model\Continuum.Master.Model.csproj">
       <Project>{4ffb526b-b623-48e4-904e-b21c44cf49f6}</Project>
       <Name>Continuum.Master.Model</Name>

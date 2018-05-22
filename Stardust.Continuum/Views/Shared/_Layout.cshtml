@@ -53,7 +53,7 @@
                                 <ul class="nav navbar-nav navbar-right" style="display: inline-block;">
                                     <li class="hidden-xs hidden-md hidden-sm"><a  target="_blank" href="https://gravatar.com/" title="Edit profile picture in gravatar.com"><i class="glyphicon glyphicon-edit"></i></a></li>
                                     <li>
-                                        <a style="padding-top: 10px; padding-bottom: 0; margin-right: 50px;" href="#">@Html.Gravatar(User.Identity.GetUserName(), 40, new { Title = User.Identity.Name, @class = "img-circle" }) <span class="hidden-md hidden-sm"></span></a>
+                                        <a style="padding-top: 10px; padding-bottom: 0; margin-right: 50px;" href="#">@Html.Gravatar(User.Identity.GetUserName().Split('#').Last(), 40, new { Title = User.Identity.Name.Split('#').Last(), @class = "img-circle" }) <span class="hidden-md hidden-sm"></span></a>
                                     </li>
 
                                 </ul>

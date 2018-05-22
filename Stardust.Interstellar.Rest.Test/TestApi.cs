@@ -116,9 +116,8 @@ namespace Stardust.Interstellar.Rest.Test
             try
             {
                 var parameters = new object[] { id, timestamp };
-                var serviceParameters = GatherParameters("Apply3", parameters);
-                return base.ExecuteMethodVoidAsync(
-                    delegate { return base.implementation.PutAsync((string)serviceParameters[0].value, (DateTime)serviceParameters[1].value); });
+                var serviceParameters = GatherParameters("Put", parameters);
+                return base.ExecuteMethodVoidAsync(delegate { return base.implementation.PutAsync((string)serviceParameters[0].value, serviceParameters[1].value.ToString()); });
                 //    var result = base.implementation.ApplyAsync((string)serviceParameters[0].value, (string)serviceParameters[1].value, (string)serviceParameters[2].value, (string)serviceParameters[3].value);
                 //    return base.CreateResponseAsync(HttpStatusCode.OK, result);
             }
@@ -130,7 +129,7 @@ namespace Stardust.Interstellar.Rest.Test
             {
                 var parameters = new object[] { id, timestamp };
                 var serviceParameters = GatherParameters("PutAsync", parameters);
-                var result = base.implementation.PutAsync((string)serviceParameters[0].value, (DateTime)serviceParameters[1].value);
+                var result = base.implementation.PutAsync((string)serviceParameters[0].value, serviceParameters[1].value.ToString());
                 return base.CreateResponseVoidAsync(HttpStatusCode.OK, result);
             }
             catch (Exception ex)

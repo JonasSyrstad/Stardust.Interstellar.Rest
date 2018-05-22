@@ -59,7 +59,7 @@ namespace Stardust.Interstellar.Rest.Test
             return result;
         }
 
-        public Task PutAsync(string id, DateTime timestamp)
+        public Task PutAsync(string id, string timestamp)
         {
             const string apply = "PutAsync";
             var par = new object[] {id, timestamp};

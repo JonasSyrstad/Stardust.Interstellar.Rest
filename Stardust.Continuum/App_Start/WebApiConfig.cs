@@ -13,6 +13,7 @@ using System.Web.Http.Filters;
 using System.Web.Http.Results;
 using Microsoft.Owin.Security.OAuth;
 using Newtonsoft.Json.Serialization;
+using Stardust.Interstellar.Rest.Jil;
 using Stardust.Particles;
 
 namespace Stardust.Continuum
@@ -35,6 +36,7 @@ namespace Stardust.Continuum
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+            //config.Formatters.Insert(0, new JilSerializerFormatter());
         }
     }
 

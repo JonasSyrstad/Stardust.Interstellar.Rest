@@ -156,19 +156,19 @@ namespace Stardust.Interstellar.Test
 
         public async Task<StringWrapper> ApplyAsync(string id, string name, string item3, string item4)
         {
-            await Task.Run(() =>
-            {
-                throw new Exception("test");
-            });
+            //await Task.Run(() =>
+            //{
+            //    throw new Exception("test");
+            //});
             var rnd = new Random();
             if (rnd.Next(0, 3) == 2) throw new StatusException(HttpStatusCode.RequestTimeout);
             return new StringWrapper { Value = string.Join("-", id, name, item3, item4) };
             //return Task.FromResult(new StringWrapper {Value = string.Join("-", id, name, item3, item4) });
         }
 
-        public Task PutAsync(string id, DateTime timestamp)
+        public async Task PutAsync(string id, string timestamp)
         {
-            return Task.FromResult(2);
+             await Task.FromResult(2);
         }
 
         public Task FailingAction(string id, string timestamp)

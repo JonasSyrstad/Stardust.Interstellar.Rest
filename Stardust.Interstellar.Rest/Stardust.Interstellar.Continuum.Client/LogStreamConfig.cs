@@ -7,7 +7,14 @@ namespace Stardust.Continuum.Client
     {
         static LogStreamConfig()
         {
-            ProxyFactory.CreateProxy<ILogStream>();
+            try
+            {
+                ProxyFactory.CreateProxy<ILogStream>();
+            }
+            catch (System.Exception)
+            {
+                // ignored
+            }
         }
         private static string _apiKey;
 
@@ -15,7 +22,14 @@ namespace Stardust.Continuum.Client
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(_apiKey)) _apiKey = ConfigurationManager.AppSettings["continuum:apiKey"];
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(_apiKey)) _apiKey = ConfigurationManager.AppSettings["continuum:apiKey"];
+                }
+                catch (System.Exception)
+                {
+                    // ignored
+                }
                 return _apiKey;
             }
             set { _apiKey = value; }

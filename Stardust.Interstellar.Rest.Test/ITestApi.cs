@@ -54,7 +54,7 @@ namespace Stardust.Interstellar.Rest.Test
         [Route("put2/{id}")]
         [HttpPut]
         [ServiceDescription("Sample description", Responses = "404;not found|401;Unauthorized access")]
-        Task PutAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] DateTime timestamp);
+        Task PutAsync([In(InclutionTypes.Path)] string id, [In(InclutionTypes.Body)] string timestamp);
 
         [Route("failure/{id}")]
         [HttpPut]

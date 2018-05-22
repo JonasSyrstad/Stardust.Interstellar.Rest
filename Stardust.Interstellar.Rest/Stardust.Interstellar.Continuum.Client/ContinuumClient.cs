@@ -6,9 +6,93 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Timers;
 using Stardust.Interstellar.Rest.Client;
+using System.Threading;
+using Timer = System.Timers.Timer;
 
 namespace Stardust.Continuum.Client
 {
+    public class BufferedHttpLogger<T> where T : class
+    {
+        private readonly ReaderWriterLockSlim _synclock = new ReaderWriterLockSlim();
+        private readonly Func<T[], Task> _transmitterAction;
+        private ConcurrentBag<T> buffer = new ConcurrentBag<T>();
+        public bool Running { get; private set; }
+        public BufferedHttpLogger(Func<T[], Task> transmitterAction)
+        {
+            _transmitterAction = transmitterAction;
+            Start();
+        }
+
+        public void Enqueue(T item)
+        {
+            _synclock.TryEnterReadLock(2);
+            try
+            {
+                buffer.Add(item);
+            }
+            finally
+            {
+                _synclock.ExitReadLock();
+            }
+
+        }
+        public void Start()
+        {
+            Running = true;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    while (Running)
+                    {
+                        try
+                        {
+                            if (buffer.IsEmpty)
+                            {
+                                await Task.Delay(200);
+                                continue;
+                            }
+
+                            T[] buff;
+                            buff = ExtractBuffer();
+                            await _transmitterAction.Invoke(buff);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.Print(ex.Message);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.Print(ex.Message);
+                }
+            });
+        }
+
+        private T[] ExtractBuffer()
+        {
+            T[] buff;
+            _synclock.TryEnterWriteLock(10);
+            ConcurrentBag<T> b;
+            try
+            {
+                b = buffer;
+                buffer = new ConcurrentBag<T>();
+            }
+            finally
+            {
+                _synclock.ExitWriteLock();
+            }
+            buff = b?.ToArray();
+            return buff;
+        }
+
+        public void Stop()
+        {
+            Running = false;
+        }
+    }
     public static class ContinuumClient
     {
         /// <summary>

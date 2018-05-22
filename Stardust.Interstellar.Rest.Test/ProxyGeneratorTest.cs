@@ -45,7 +45,7 @@ namespace Stardust.Interstellar.Rest.Test
             res = await service.Apply2("101?20", "Stardust", "Hello");
             output?.WriteLine(res.Value);
 
-            await service.PutAsync("test", DateTime.Today);
+            await service.PutAsync("test", DateTime.Today.ToString());
             output?.WriteLine("Put was successfull");
         }
 
@@ -80,7 +80,7 @@ namespace Stardust.Interstellar.Rest.Test
             var service = ProxyFactory.CreateInstance<ITestApi>("http://localhost/Stardust.Interstellar.Test/");
             var res = await service.Apply2("101", "Stardust", "Hello");
             output.WriteLine(res.Value);
-            await service.PutAsync("test", DateTime.Today);
+            await service.PutAsync("test", DateTime.Today.ToString());
             output.WriteLine("Put was successfull");
         }
 

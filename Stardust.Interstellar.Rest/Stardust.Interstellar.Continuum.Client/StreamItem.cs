@@ -27,12 +27,7 @@ namespace Stardust.Continuum.Client
 
         public string Environment { get; set; }
 
-        /// <summary>
-        /// Gets or sets the properties., not in use in the current demo....
-        /// </summary>
-        /// <value>
-        /// The properties.
-        /// </value>
+        
         public Dictionary<string,object> Properties { get; set; }
     }
 }

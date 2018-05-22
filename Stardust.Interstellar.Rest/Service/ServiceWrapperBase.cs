@@ -17,6 +17,7 @@ using Stardust.Interstellar.Rest.Annotations.Messaging;
 using Stardust.Interstellar.Rest.Annotations.Service;
 using Stardust.Interstellar.Rest.Common;
 using Stardust.Interstellar.Rest.Extensions;
+using System.Web;
 
 namespace Stardust.Interstellar.Rest.Service
 {
@@ -245,6 +246,7 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected ParameterWrapper[] GatherParameters(string name, object[] fromWebMethodParameters)
         {
+            _name = name;
             GetMessageExtensions();
             var serviceExtensions = implementation as IServiceExtensions;
             serviceExtensions?.SetControllerContext(ControllerContext);
@@ -257,7 +259,7 @@ namespace Stardust.Interstellar.Rest.Service
                 Request.InitializeState();
                 var action = GetAction(name);
                 var state = Request.GetState();
-                var wait = action.Throttler?.IsThrottled(name, implementation.GetType().FullName,implementation.GetType().Assembly.FullName);
+                var wait = action.Throttler?.IsThrottled(name, implementation.GetType().FullName, implementation.GetType().Assembly.FullName);
                 if (wait != null)
                     throw new ThrottledRequestException(wait.Value);
 
@@ -300,6 +302,7 @@ namespace Stardust.Interstellar.Rest.Service
                 throw new ParameterReflectionException(string.Format("Unable to gather parameters for {0}", name), ex);
             }
             if (!ModelState.IsValid) throw new InvalidDataException("Invalid input data");
+            _wrappers = wrappers;
             return wrappers.ToArray();
         }
 
@@ -336,8 +339,9 @@ namespace Stardust.Interstellar.Rest.Service
             }
         }
 
-        private void ExecuteInterceptors(ActionWrapper action, List<ParameterWrapper> wrappers)
+        private void ExecuteInterceptors(ActionWrapper action, IEnumerable<ParameterWrapper> wrappers)
         {
+            if (action.ReturnType.IsAssignableFrom(typeof(Task))) return;
             if (action.Interceptor != null)
             {
                 foreach (var interceptor in action.Interceptor)
@@ -347,6 +351,18 @@ namespace Stardust.Interstellar.Rest.Service
                     HttpStatusCode statusCode;
                     cancel = interceptor.GetInterceptor().Intercept(wrappers.Select(p => p.value).ToArray(), Request.GetState(), out cancellationMessage, out statusCode);
                     if (cancel) throw new OperationAbortedException(statusCode, cancellationMessage);
+                }
+            }
+        }
+
+        private async Task ExecuteInterceptorsAsync(ActionWrapper action, IEnumerable<ParameterWrapper> wrappers)
+        {
+            if (action.Interceptor != null)
+            {
+                foreach (var interceptor in action.Interceptor)
+                {
+                    var cancel = await interceptor.GetInterceptor().InterceptAsync(wrappers.Select(p => p.value).ToArray(), Request.GetState());
+                    if (cancel.Cancel) throw new OperationAbortedException(cancel.StatusCode, cancel.CancellationMessage);
                 }
             }
         }
@@ -375,6 +391,9 @@ namespace Stardust.Interstellar.Rest.Service
         }
 
         private static ConcurrentDictionary<Type, ErrorHandlerAttribute> errorhanderCache = new ConcurrentDictionary<Type, ErrorHandlerAttribute>();
+        private string _name;
+        private List<ParameterWrapper> _wrappers;
+
         protected void InitializeServiceApi(Type interfaceType)
         {
             var assemblyThrottler = interfaceType.Assembly.GetCustomAttributes<ThrottlingAttribute>().FirstOrDefault();
@@ -486,9 +505,14 @@ namespace Stardust.Interstellar.Rest.Service
 
         protected async Task<HttpResponseMessage> ExecuteMethodAsync<TMessage>(Func<Task<TMessage>> func)
         {
+
             try
             {
+                var action = GetAction(_name);
+                var context = HttpContext.Current;
+                await ExecuteInterceptorsAsync(action, _wrappers);
                 AggregateException error = null;
+                HttpContext.Current = context;
                 var result = await func().ContinueWith(a =>
                 {
                     if (a.IsFaulted)
@@ -514,6 +538,8 @@ namespace Stardust.Interstellar.Rest.Service
         {
             try
             {
+                var action = GetAction(_name);
+                await ExecuteInterceptorsAsync(action, _wrappers);
                 await func();
                 return CreateResponse(HttpStatusCode.NoContent, (object)null);
             }

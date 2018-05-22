@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Rest", "Stardust.Interstellar.Rest.csproj", "{5EE819E3-B588-431F-B5DA-3EBC0557242B}"
 EndProject
@@ -53,6 +53,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Continuum.Master.ControlUnit", "Continuum.Master.ControlUnit\Continuum.Master.ControlUnit.csproj", "{3E912607-A168-44E6-9CF7-5F01E55D5593}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Continuum.Log4Net", "..\Stardust.Continuum.Log4Net\Stardust.Continuum.Log4Net.csproj", "{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stardust.Interstellar.Rest.Jil", "..\Stardust.Interstellar.Rest.Jil\Stardust.Interstellar.Rest.Jil.csproj", "{F84C83F6-768D-4D19-92F9-CB9478C98D4C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -124,6 +126,10 @@ Global
 		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9D379AF-7269-4F97-B7B7-5EC3FCAEA54C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F84C83F6-768D-4D19-92F9-CB9478C98D4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F84C83F6-768D-4D19-92F9-CB9478C98D4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F84C83F6-768D-4D19-92F9-CB9478C98D4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F84C83F6-768D-4D19-92F9-CB9478C98D4C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
