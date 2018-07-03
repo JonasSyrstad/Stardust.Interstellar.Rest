@@ -210,7 +210,7 @@
         });
         function AppendData(data) {
             if ($("#filterString").text() !== null && $("#filterString").text() !== "")
-                if ($("#filterString").text() !== data.UserName && $("#filterString").text() !== data.CorrelationToken) return;
+                if ($("#filterString").text() !== data.UserName && $("#filterString").text() !== data.CorrelationToken && $("#filterString").text() !== data.ServiceName) return;
             var getStackTrace = function (data1) {
                 if (data1.StackTrace === "") return "";
                 return "<div class='" +
