@@ -54,9 +54,11 @@ namespace Stardust.Continuum
                 if (apiKey.IsNullOrWhiteSpace())
                     apiKey = context.Request.RequestUri.ParseQueryString()["api_key"];
 
-                if (!apiKeyState.TryGetValue($"{apiKey}.{configKey}", out bool isAllowed))
+                bool isAllowed;
+                if (!apiKeyState.TryGetValue($"{apiKey}.{configKey}", out  isAllowed))
                 {
-                    if (!apiKeys.TryGetValue(configKey, out List<string> setting))
+                    List<string> setting;
+                    if (!apiKeys.TryGetValue(configKey, out setting))
                     {
                         setting = ConfigurationManager.AppSettings[configKey]?.Split('|').ToList();
                         if (!(setting ?? new List<string>()).Any())
