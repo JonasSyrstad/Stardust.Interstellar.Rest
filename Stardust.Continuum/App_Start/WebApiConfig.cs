@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Stardust.Particles;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -11,10 +11,6 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Filters;
 using System.Web.Http.Results;
-using Microsoft.Owin.Security.OAuth;
-using Newtonsoft.Json.Serialization;
-using Stardust.Interstellar.Rest.Jil;
-using Stardust.Particles;
 
 namespace Stardust.Continuum
 {
@@ -48,25 +44,33 @@ namespace Stardust.Continuum
         public Task AuthenticateAsync(HttpAuthenticationContext context, CancellationToken cancellationToken)
         {
             var configKey = string.Join(".", context.ActionContext.ControllerContext.RouteData.Values.Values);
+            var configKey2 = string.Join(".", context.ActionContext.ControllerContext.RouteData.Values.Values.First(), "*");
             try
             {
-                
-                if ((context.Request?.Headers?.Authorization?.Scheme != null && (!context.Request.Headers.Authorization.Scheme.Equals("ApiKey", StringComparison.InvariantCultureIgnoreCase)) && string.IsNullOrWhiteSpace(context.Request.Headers?.Authorization?.Parameter)&&context.Request.RequestUri.ParseQueryString()["api_key"].IsNullOrWhiteSpace()))
-                    Logging.DebugMessage( $"No api-key provided for {configKey}");
+
+                if ((context.Request?.Headers?.Authorization?.Scheme != null && (!context.Request.Headers.Authorization.Scheme.Equals("ApiKey", StringComparison.InvariantCultureIgnoreCase)) && string.IsNullOrWhiteSpace(context.Request.Headers?.Authorization?.Parameter) && context.Request.RequestUri.ParseQueryString()["api_key"].IsNullOrWhiteSpace()))
+                    Logging.DebugMessage($"No api-key provided for {configKey}");
                 var apiKey = context.Request.Headers?.Authorization?.Parameter;
                 if (apiKey.IsNullOrWhiteSpace())
                     apiKey = context.Request.RequestUri.ParseQueryString()["api_key"];
-                bool isAllowed;
-                
-                if (!apiKeyState.TryGetValue($"{apiKey}.{configKey}", out isAllowed))
+
+                if (!apiKeyState.TryGetValue($"{apiKey}.{configKey}", out bool isAllowed))
                 {
-                    List<string> setting;
-                    if (!apiKeys.TryGetValue(configKey, out setting))
+                    if (!apiKeys.TryGetValue(configKey, out List<string> setting))
                     {
                         setting = ConfigurationManager.AppSettings[configKey]?.Split('|').ToList();
-                        apiKeys.TryAdd(configKey, setting);
+                        if (!(setting ?? new List<string>()).Any())
+                            setting = null;
+                        else apiKeys.TryAdd(configKey, setting);
                     }
-
+                    if (setting == null)
+                    {
+                        if (!apiKeys.TryGetValue(configKey2, out setting))
+                        {
+                            setting = ConfigurationManager.AppSettings[configKey2]?.Split('|').ToList();
+                            apiKeys.TryAdd(configKey2, setting);
+                        }
+                    }
                     isAllowed = setting.Contains(apiKey);
                     apiKeyState.TryAdd(apiKey, isAllowed);
                 }
