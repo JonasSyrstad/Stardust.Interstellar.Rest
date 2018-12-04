@@ -132,6 +132,8 @@
                 }
             };
             var isAsterix = true;
+            var throughputText = $("#throughPutText");
+            var throughPutLabel = $('#throughPutLabel');
             hub2.client.usageUpdate = function (series) {
                 try {
                     if ($.processNewEvents !== null)
@@ -139,7 +141,7 @@
                 }
                 catch (e) { }
                 spinnChar = spinnChar == spin.length - 1 ? 0 : ++spinnChar;
-                $("#throughPutText").text("Throughput  " + spin[spinnChar]);
+                throughputText.text("Throughput  " + spin[spinnChar]);
                 isAsterix = !isAsterix;
                 $.each(series,
                     function (index, data) {
@@ -165,7 +167,7 @@
                             $.each(plotdata2[plotIndex2[label].index].data, function (id, d) { d[0] = id });
                             $.plot("#smallGraph", plotdata2, options2);
                             if (data.Location !== "Errors")
-                                $('#throughPutLabel').text(data.ItemsReceived.toString() + " msg/sec");
+                                throughPutLabel.text(data.ItemsReceived.toString() + " msg/sec");
                         }
                     });
             }
