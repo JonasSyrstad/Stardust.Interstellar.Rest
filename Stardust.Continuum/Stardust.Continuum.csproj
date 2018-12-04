@@ -432,6 +432,8 @@
     <None Include="Properties\PublishProfiles\thrill-log - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\TimeExpProdContinuumWebAppwesteurope - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\TimeExpProdContinuumWebAppwesteurope - Web Deploy.pubxml" />
+    <None Include="Properties\PublishProfiles\veracityLogStreamDev - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\veracityLogStreamDev - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\continuum.js" />
     <Content Include="Scripts\flot\excanvas.js" />

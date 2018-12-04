@@ -208,9 +208,13 @@
             });
 
         });
+        var filter = $("#filterString");
+        var selected = $('#selected');
+        var streamContainer = $("div#container");
+        var toolTipBox = $("span.my-tool-tip");
         function AppendData(data) {
-            if ($("#filterString").text() !== null && $("#filterString").text() !== "")
-                if ($("#filterString").text() !== data.UserName && $("#filterString").text() !== data.CorrelationToken && $("#filterString").text() !== data.ServiceName) return;
+            if (filter.text() !== null && filter.text() !== "")
+                if (filter.text() !== data.UserName && filter.text() !== data.CorrelationToken && filter.text() !== data.ServiceName) return;
             var getStackTrace = function (data1) {
                 if (data1.StackTrace === "") return "";
                 return "<div class='" +
@@ -254,7 +258,7 @@
             if (data.UserName == null)
                 data.UserName = "";
             var prefix = "";
-            if ($('#selected').text() === "All" && data.Environment != null)
+            if (selected.text() === "All" && data.Environment != null)
                 prefix = "[" + data.Environment + "] ";
             // Holds the update
             var newItem = $("<div class=\"itemContainer\"><div class='info'><span class='truncate'" + errorStyle + ">" +
@@ -270,17 +274,17 @@
                 data.Message +
                 "</span></div>" +
                 getStackTrace(data) + "</div>");
-            $("div#container").prepend(newItem);
-            $("span.my-tool-tip").tooltip();
-            if ($("#container").children().size() > $.maxElements) {
+            streamContainer.prepend(newItem);
+            toolTipBox.tooltip();
+            if (streamContainer.children().size() > $.maxElements) {
                 if ($.clearOnOverflow) {
                     //console.log("Clearing");
-                    $("#container").empty();
-                    $("#container").append("<div class=\"itemContainer\"></div>");
+                    streamContainer.empty();
+                    streamContainer.append("<div class=\"itemContainer\"></div>");
                 }
                 else {
                     //console.log("trunkating");
-                    $("div#container").children().last().remove();
+                    streamContainer.children().last().remove();
                 }
             }
         }
