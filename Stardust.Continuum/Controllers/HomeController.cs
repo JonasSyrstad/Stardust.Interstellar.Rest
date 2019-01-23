@@ -8,6 +8,7 @@ using System.Web.Mvc;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.OpenIdConnect;
+using Newtonsoft.Json;
 using Stardust.Core.Service.Web.Identity.Passive;
 using Stardust.Interstellar;
 using Stardust.Particles;
@@ -16,6 +17,7 @@ namespace Stardust.Continuum.Controllers
 {
     public class HomeController : Controller
     {
+		private static ConcurrentDictionary<string,string> _accessControl=new ConcurrentDictionary<string, string>();
         static HomeController()
         {
             
@@ -27,8 +29,35 @@ namespace Stardust.Continuum.Controllers
 
         internal static List<string> itemd = new List<string> { "-Select source-", "All" };
         internal static List<string> itemc = new List<string> { "-Select source-", "Total" };
-        public ActionResult Index()
+	    private DateTime _lastReadTimestamp=DateTime.MinValue;
+
+	    public HomeController()
+	    {
+
+			if (ConfigurationManagerHelper.GetValueOnKey("allowedUsersFile", "") != "")
+			{
+				if (_lastReadTimestamp < System.IO.File.GetLastWriteTimeUtc(ConfigurationManagerHelper.GetValueOnKey("allowedUsersFile", ""))
+				)
+				{
+					var data = System.IO.File.ReadAllText(
+						ConfigurationManagerHelper.GetValueOnKey("allowedUsersFile", ""));
+					var users = JsonConvert.DeserializeObject<List<string>>(data);
+					lock (_accessControl)
+					{
+						_accessControl.Clear();
+						foreach (var user in users)
+						{
+							_accessControl.TryAdd(user.ToLower(), user);
+						}
+					}
+
+				}
+				_lastReadTimestamp = DateTime.UtcNow;
+			}
+		}
+	    public ActionResult Index()
         {
+			Authorize();
             if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace() &&
                 !User.Identity.IsAuthenticated) return RedirectToAction("Login", "Auth");
             Logging.DebugMessage($"Serving request from {Request.UserHostAddress}");
@@ -49,7 +78,8 @@ namespace Stardust.Continuum.Controllers
 
         public ActionResult About()
         {
-            if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace() &&
+	        Authorize();
+	        if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace() &&
                 !User.Identity.IsAuthenticated) return RedirectToAction("Login", "Auth");
             Logging.DebugMessage($"Serving request from {Request.UserHostAddress}");
             try
@@ -69,6 +99,20 @@ namespace Stardust.Continuum.Controllers
             }
 
         }
+
+	    private void Authorize()
+	    {
+		    var user = (User.Identity as ClaimsIdentity).Claims.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value
+			    ?.ToLower();
+		    lock (_accessControl)
+		    {
+			    if (_accessControl.Count != 0)
+			    {
+				    if (!_accessControl.TryGetValue(user, out var u))
+					    throw new UnauthorizedAccessException("Unauthorized");
+			    }
+		    }
+	    }
     }
 
     public class AuthController : Controller
