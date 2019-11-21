@@ -22,6 +22,7 @@ namespace Stardust.Continuum
     {
         protected void Application_Start()
         {
+            MvcHandler.DisableMvcResponseHeader = true;
             this.LoadBindingConfiguration<ContinuumBlueprint>();
             ServiceFactory.CreateServiceImplementationForAllInCotainingAssembly<ILogStream>();
             ServiceFactory.FinalizeRegistration();
