@@ -30,8 +30,9 @@ namespace Stardust.Continuum.Controllers
         internal static List<string> itemd = new List<string> { "-Select source-", "All" };
         internal static List<string> itemc = new List<string> { "-Select source-", "Total" };
 	    private DateTime _lastReadTimestamp=DateTime.MinValue;
+        private ClaimsIdentity claimsIdentity;
 
-	    public HomeController()
+        public HomeController()
 	    {
 
 			if (ConfigurationManagerHelper.GetValueOnKey("allowedUsersFile", "") != "")
@@ -102,12 +103,14 @@ namespace Stardust.Continuum.Controllers
 
 	    private void Authorize()
 	    {
-		    var user = (User.Identity as ClaimsIdentity).Claims.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value
+            claimsIdentity = (User.Identity as ClaimsIdentity);
+            var user = claimsIdentity.Claims.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value
 			    ?.ToLower();
 
+            Logging.DebugMessage(JsonConvert.SerializeObject(claimsIdentity.Claims));
             if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "").ContainsCharacters())
             {
-                var roles = (User.Identity as ClaimsIdentity).Claims.Where(c => c.Type == "roles").ToList();
+                var roles = claimsIdentity.Claims.Where(c => c.Type == "roles").ToList();
                 if (roles.All(c => c.Value != ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "")))
                 {
                     Logging.DebugMessage($"Unauthorized access, { string.Join(" ", roles.Select(c => c.Value))}");
