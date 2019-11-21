@@ -109,16 +109,23 @@ namespace Stardust.Continuum.Controllers
 
             try
             {
-                Logging.DebugMessage(JsonConvert.SerializeObject(claimsIdentity.Claims.ToDictionary(k => k.Type, v => v.Value)));
+                Logging.DebugMessage(
+                    JsonConvert.SerializeObject(claimsIdentity.Claims.Select(c => new {c.Type, c.Value})));
                 if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "").ContainsCharacters())
                 {
-                    var roles = claimsIdentity.Claims.Where(c => c.Type == ConfigurationManagerHelper.GetValueOnKey("rolesClaim", "roles")).ToList();
+                    var roles = claimsIdentity.Claims
+                        .Where(c => c.Type == ConfigurationManagerHelper.GetValueOnKey("rolesClaim", "roles")).ToList();
                     if (roles.All(c => c.Value != ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "")))
                     {
-                        Logging.DebugMessage($"Unauthorized access, { string.Join(" ", roles.Select(c => c.Value))}");
-                        throw new UnauthorizedAccessException($"Unauthorized access, {string.Join(" ", roles.Select(c => c.Value))}");
+                        Logging.DebugMessage($"Unauthorized access, {string.Join(" ", roles.Select(c => c.Value))}");
+                        throw new UnauthorizedAccessException(
+                            $"Unauthorized access, {string.Join(" ", roles.Select(c => c.Value))}");
                     }
                 }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
