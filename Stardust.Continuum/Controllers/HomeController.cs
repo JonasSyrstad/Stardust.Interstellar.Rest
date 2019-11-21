@@ -107,10 +107,10 @@ namespace Stardust.Continuum.Controllers
             var user = claimsIdentity.Claims.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value
 			    ?.ToLower();
 
-            Logging.DebugMessage(JsonConvert.SerializeObject(claimsIdentity.Claims));
+            Logging.DebugMessage(JsonConvert.SerializeObject(claimsIdentity.Claims.ToDictionary(k=>k.Type,v=>v.Value)));
             if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "").ContainsCharacters())
             {
-                var roles = claimsIdentity.Claims.Where(c => c.Type == "roles").ToList();
+                var roles = claimsIdentity.Claims.Where(c => c.Type == ConfigurationManagerHelper.GetValueOnKey("rolesClaim", "roles")).ToList();
                 if (roles.All(c => c.Value != ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "")))
                 {
                     Logging.DebugMessage($"Unauthorized access, { string.Join(" ", roles.Select(c => c.Value))}");
