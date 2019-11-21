@@ -37,7 +37,7 @@ namespace Stardust.Continuum.Controllers
                 var roles=(User.Identity as ClaimsIdentity).Claims.Where(c => c.Type == "roles").ToList();
                 if (roles.All(c => c.Value != ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "")))
                 {
-                    throw new UnauthorizedAccessException("Unauthorized access");
+                    throw new UnauthorizedAccessException($"Unauthorized access, {string.Join(" ",roles.Select(c=>c.Value))}");
                 }
             }
             try
