@@ -32,6 +32,14 @@ namespace Stardust.Continuum.Controllers
             if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace() &&
                 !User.Identity.IsAuthenticated) return RedirectToAction("Login", "Auth");
             Logging.DebugMessage($"Serving request from {Request.UserHostAddress}");
+            if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles","").ContainsCharacters())
+            {
+                var roles=(User.Identity as ClaimsIdentity).Claims.Where(c => c.Type == "roles").ToList();
+                if (roles.All(c => c.Value != ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "")))
+                {
+                    throw new UnauthorizedAccessException("Unauthorized access");
+                }
+            }
             try
             {
                 ViewBag.Title = "Log stream";
