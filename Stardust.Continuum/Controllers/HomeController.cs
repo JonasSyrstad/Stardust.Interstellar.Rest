@@ -135,7 +135,7 @@ namespace Stardust.Continuum.Controllers
                 {
                     Logging.DebugMessage($"Checking access right for user {user}");
                     string u;
-                    if (!_accessControl.TryGetValue(user, out u))
+                    if (user==null||!_accessControl.TryGetValue(user, out u))
 					    throw new UnauthorizedAccessException("Unauthorized");
                 }
 		    }
