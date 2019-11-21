@@ -104,7 +104,7 @@ namespace Stardust.Continuum.Controllers
 	    private void Authorize()
 	    {
             claimsIdentity = (User.Identity as ClaimsIdentity);
-            var user = claimsIdentity.Claims.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value
+            var user = claimsIdentity.Claims.SingleOrDefault(c => c.Type == ClaimTypes.Upn)?.Value
 			    ?.ToLower();
             
             try
