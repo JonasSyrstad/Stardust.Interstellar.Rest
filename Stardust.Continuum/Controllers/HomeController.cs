@@ -109,7 +109,7 @@ namespace Stardust.Continuum.Controllers
             
             try
             {
-                Logging.DebugMessage(JsonConvert.SerializeObject(claimsIdentity.Claims.Select(c=>new {c.Type,c.Value})));
+                //Logging.DebugMessage(JsonConvert.SerializeObject(claimsIdentity.Claims.Select(c=>new {c.Type,c.Value})));
                 if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "").ContainsCharacters())
                 {
                     var roles = claimsIdentity.Claims
