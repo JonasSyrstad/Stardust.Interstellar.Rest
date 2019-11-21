@@ -109,8 +109,6 @@ namespace Stardust.Continuum.Controllers
 
             try
             {
-                Logging.DebugMessage(
-                    JsonConvert.SerializeObject(claimsIdentity.Claims.Select(c => new {c.Type, c.Value})));
                 if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "").ContainsCharacters())
                 {
                     var roles = claimsIdentity.Claims
@@ -135,6 +133,7 @@ namespace Stardust.Continuum.Controllers
 		    {
 			    if (_accessControl.Count != 0)
                 {
+                    Logging.DebugMessage($"Checking access right for user {user}");
                     string u;
                     if (!_accessControl.TryGetValue(user, out u))
 					    throw new UnauthorizedAccessException("Unauthorized");
