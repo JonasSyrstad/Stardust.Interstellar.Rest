@@ -106,9 +106,10 @@ namespace Stardust.Continuum.Controllers
             claimsIdentity = (User.Identity as ClaimsIdentity);
             var user = claimsIdentity.Claims.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value
 			    ?.ToLower();
-
+            
             try
             {
+                Logging.DebugMessage(JsonConvert.SerializeObject(claimsIdentity.Claims.Select(c=>new {c.Type,c.Value})));
                 if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "").ContainsCharacters())
                 {
                     var roles = claimsIdentity.Claims
