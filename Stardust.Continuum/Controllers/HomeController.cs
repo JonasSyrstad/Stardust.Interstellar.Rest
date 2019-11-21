@@ -104,6 +104,7 @@ namespace Stardust.Continuum.Controllers
 	    {
 		    var user = (User.Identity as ClaimsIdentity).Claims.SingleOrDefault(c => c.Type == ClaimTypes.Email)?.Value
 			    ?.ToLower();
+
             if (ConfigurationManagerHelper.GetValueOnKey("allowedRoles", "").ContainsCharacters())
             {
                 var roles = (User.Identity as ClaimsIdentity).Claims.Where(c => c.Type == "roles").ToList();
@@ -116,10 +117,11 @@ namespace Stardust.Continuum.Controllers
             lock (_accessControl)
 		    {
 			    if (_accessControl.Count != 0)
-			    {
-				    if (!_accessControl.TryGetValue(user, out var u))
+                {
+                    string u;
+                    if (!_accessControl.TryGetValue(user, out u))
 					    throw new UnauthorizedAccessException("Unauthorized");
-			    }
+                }
 		    }
 	    }
     }
