@@ -58,7 +58,14 @@ namespace Stardust.Continuum.Controllers
 		}
 	    public ActionResult Index()
         {
-			Authorize();
+            try
+            {
+                Authorize();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
             if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace() &&
                 !User.Identity.IsAuthenticated) return RedirectToAction("Login", "Auth");
             Logging.DebugMessage($"Serving request from {Request.UserHostAddress}");
@@ -79,8 +86,15 @@ namespace Stardust.Continuum.Controllers
 
         public ActionResult About()
         {
-	        Authorize();
-	        if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace() &&
+            try
+            {
+                Authorize();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return RedirectToAction("Login", "Auth");
+            }
+            if (!ConfigurationManagerHelper.GetValueOnKey("authority").IsNullOrWhiteSpace() &&
                 !User.Identity.IsAuthenticated) return RedirectToAction("Login", "Auth");
             Logging.DebugMessage($"Serving request from {Request.UserHostAddress}");
             try
